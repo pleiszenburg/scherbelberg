@@ -84,7 +84,7 @@ class Cluster:
         worker: str = 'cx11',
         image: str = 'ubuntu-20.04',
         datacenter: str = 'fsn1-dc14',
-        nodes: int = 1,
+        workers: int = 1,
     ):
 
         self._log.info('Creating ...')
@@ -92,7 +92,7 @@ class Cluster:
         assert self._scheduler is None
         assert len(self._workers) == 0
 
-        assert 0 < nodes <= 100
+        assert 0 < workers <= 100
 
         self._create_ssh_key()
         self._create_network(ip_range = '10.0.1.0/24')
@@ -113,7 +113,7 @@ class Cluster:
                 image = image,
                 ip = f'10.0.1.{100+node:d}',
             )
-            for node in range(nodes)
+            for node in range(workers)
         ]
 
 
