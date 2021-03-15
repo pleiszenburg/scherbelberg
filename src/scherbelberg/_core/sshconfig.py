@@ -7,7 +7,7 @@ HPC cluster deployment and management for the Hetzner Cloud
 
 https://github.com/pleiszenburg/scherbelberg
 
-    src/scherbelberg/_core/abc.py: Abstract base classes
+    src/scherbelberg/_core/sshconfig.py: SSH configuration
 
     Copyright (C) 2021 Sebastian M. Ernst <ernst@pleiszenburg.de>
 
@@ -27,19 +27,69 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from abc import ABC
+from typeguard import typechecked
+
+from .abc import SSHConfigABC
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# CLASSES
+# CLASS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-class ClusterABC(ABC):
-    pass
+
+@typechecked
+class SSHConfig(SSHConfigABC):
+    """
+    Holds informaton on an SSH connection.
+
+    Immutable.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        user: str,
+        port: int = 22,
+        compression: bool = True,
+        cipher: str = "aes256-gcm@openssh.com",
+    ):
+
+        assert len(name) > 0
+        assert len(user) > 0
+        assert port > 0
+        assert len(cipher) > 0
+
+        self._name = name
+        self._user = user
+        self._port = port
+        self._compression = compression
+        self._cipher = cipher
 
 
-class CommandABC(ABC):
-    pass
+    @property
+    def name(self) -> str:
+
+        return self._name
 
 
-class SSHConfigABC(ABC):
-    pass
+    @property
+    def user(self) -> str:
+
+        return self._user
+
+
+    @property
+    def port(self) -> int:
+
+        return self._port
+
+
+    @property
+    def compression(self) -> bool:
+
+        return self._compression
+
+
+    @property
+    def cipher(self) -> str:
+
+        return self._cipher
