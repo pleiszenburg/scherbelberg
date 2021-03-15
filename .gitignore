@@ -1,0 +1,4 @@
+*.pyc
+__*__/
+.ipynb_checkkpoints/
+.virtual_documents/
