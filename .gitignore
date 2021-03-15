@@ -2,3 +2,6 @@
 __*__/
 .ipynb_checkpoints/
 .virtual_documents/
+build/
+dist/
+*.egg-info/
