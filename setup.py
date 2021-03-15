@@ -97,7 +97,7 @@ setup(
     include_package_data=True,
     python_requires=">=3.{MINOR:d}".format(MINOR=python_minor_min),
     setup_requires=[],
-    install_requires=["click", "pyyaml", "typeguard",],
+    install_requires=["click", "hcloud", "pyyaml", "typeguard",],
     extras_require=extras_require,
     zip_safe=False,
     entry_points={}, # {"console_scripts": ["scherbelberg = scherbelberg.cli:cli",],},
