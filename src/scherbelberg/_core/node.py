@@ -27,6 +27,9 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+from hcloud import Client
+from hcloud.servers.client import BoundServer
+
 from typeguard import typechecked
 
 from .abc import NodeABC
@@ -44,6 +47,23 @@ class Node(NodeABC):
     Mutable.
     """
 
-    def __init__(self):
+    def __init__(self, server: BoundServer, client: Client):
 
-        pass
+        self._server = BoundServer
+        self._client = client
+
+        self._name = self._server.name
+
+
+    def update(self):
+
+        self._server = self._client.servers.get_by_name(name = self._name)
+
+
+    @classmethod
+    def from_name(cls, name: str, client: Client) -> NodeABC:
+
+        return cls(
+            server = client.servers.get_by_name(name = name),
+            client = client,
+        )
