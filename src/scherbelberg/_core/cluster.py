@@ -27,14 +27,17 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+import logging
 import os
 from subprocess import Popen
+from time import sleep
 
 from hcloud import Client
 from hcloud.datacenters.domain import Datacenter
 from hcloud.firewalls.domain import FirewallRule
 from hcloud.images.domain import Image
 from hcloud.networks.domain import NetworkSubnet
+from hcloud.servers.client import BoundServer
 from hcloud.servers.domain import Server
 from hcloud.server_types.domain import ServerType
 
@@ -53,6 +56,11 @@ class Cluster:
     def __init__(self, prefix: str = 'cluster', tokenvar: str = 'HETZNER',):
 
         self._client = Client(token = os.environ[tokenvar])
+        logging.basicConfig(
+            format = '%(name)s/%(levelname)s @ %(asctime)-15s: %(message)s',
+            level = logging.INFO,
+        )
+        self._log = logging.getLogger(name = prefix)
 
         assert len(prefix) > 0
         self._prefix = prefix
@@ -78,6 +86,8 @@ class Cluster:
         datacenter: str = 'fsn1-dc14',
         nodes: int = 1,
     ):
+
+        self._log.info('Creating ...')
 
         assert self._scheduler is None
         assert len(self._workers) == 0
@@ -126,10 +136,14 @@ class Cluster:
             for item in cat.get_all():
                 if not item.name.startswith(self._prefix):
                     continue
+                self._log.info(f'Deleting {item.name:s} ...')
                 item.delete()
 
+        self._log.info('Deleting private key ...')
         if os.path.exists(self._fn_private):
             os.unlink(self._fn_private)
+
+        self._log.info('Deleting public key ...')
         if os.path.exists(self._fn_public):
             os.unlink(self._fn_public)
 
@@ -144,6 +158,8 @@ class Cluster:
 
 
     def _create_firewall(self):
+
+        self._log.info('Creating firewall ...')
 
         _ = self._client.firewalls.create(
             name = f'{self._prefix:s}-firewall',
@@ -164,12 +180,16 @@ class Cluster:
             ],
         )
 
+        self._log.info('Handle on firewall ...')
+
         self._firewall = self._client.firewalls.get_by_name(
             name = f'{self._prefix:s}-firewall',
         )
 
 
     def _create_network(self, ip_range: str):
+
+        self._log.info('Creating network ...')
 
         _ = self._client.networks.create(
             name = f'{self._prefix:s}-network',
@@ -180,6 +200,8 @@ class Cluster:
                 network_zone = 'eu-central',
             )],
         )
+
+        self._log.info('Handle on network ...')
 
         self._network = self._client.networks.get_by_name(
             name = f'{self._prefix:s}-network',
@@ -192,35 +214,54 @@ class Cluster:
         datacenter: str,
         image: str,
         ip: str,
-    ) -> Server:
+        wait: float = 0.25,
+    ) -> BoundServer:
 
-        response = self._client.servers.create(
-            name = f'{self._prefix:s}-node-{suffix:s}',
+        name = f'{self._prefix:s}-node-{suffix:s}'
+
+        self._log.info(f'Creating server {name:s} ...')
+
+        _ = self._client.servers.create(
+            name = name,
             server_type = ServerType(name = servertype),
             image = Image(name = image),
             datacenter = Datacenter(name = datacenter),
             ssh_keys = [self._ssh_key],
             firewalls = [self._firewall],
         )
-        server = response.server
+
+        self._log.info(f'Waiting for server {name:s} to run ...')
+
+        while True:
+            server = self._client.servers.get_by_name(name = name)
+            if server.status == Server.STATUS_RUNNING:
+                break
+            sleep(wait)
+
         server.attach_to_network(
             network = self._network,
             ip = ip,
         )
 
-        return self._client.servers.get_by_name(
-            name = f'{self._prefix:s}-node-{suffix:s}',
-        )
+        self._log.info(f'Attaching network to server {name:s} ...')
+
+        return self._client.servers.get_by_name(name = name)
 
 
     def _create_ssh_key(self):
 
+        self._log.info('Creating ssh key ...')
+
         self._ssh_keygen()
+
+        self._log.info('Uploading ssh key ...')
 
         _ = self._client.ssh_keys.create(
             name = f'{self._prefix:s}-key',
             public_key = self._public,
         )
+
+        self._log.info('Handle on ssh key ...')
 
         self._ssh_key = self._client.ssh_keys.get_by_name(
             name = f'{self._prefix:s}-key',
