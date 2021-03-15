@@ -22,3 +22,5 @@ specific language governing rights and limitations under the License.
 </LICENSE_BLOCK>
 
 """
+
+__version__ = '0.0.1'
