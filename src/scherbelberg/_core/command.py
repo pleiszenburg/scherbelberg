@@ -139,7 +139,7 @@ class Command(CommandABC):
         if host.name == "localhost":
             return self
 
-        return type(self)([
+        return type(self).from_list([
             "ssh",
             "-T",  # Disable pseudo-terminal allocation
             "-o",  # Option parameter
