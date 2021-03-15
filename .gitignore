@@ -1,4 +1,5 @@
 *.pyc
+*.pyo
 __*__/
 .ipynb_checkpoints/
 .virtual_documents/
