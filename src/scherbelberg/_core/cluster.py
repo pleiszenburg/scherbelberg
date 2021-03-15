@@ -43,12 +43,14 @@ from hcloud.server_types.domain import ServerType
 
 from typeguard import typechecked
 
+from .abc import ClusterABC
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 @typechecked
-class Cluster:
+class Cluster(ClusterABC):
     """
     Defines a cluster of nodes
     """
