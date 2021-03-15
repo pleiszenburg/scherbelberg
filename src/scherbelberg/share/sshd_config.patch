@@ -1,0 +1,30 @@
+--- sshd_config_old	2021-03-14 18:29:40.817932613 +0100
++++ sshd_config	2021-03-14 18:30:58.377896686 +0100
+@@ -31,7 +31,8 @@
+ # Authentication:
+ 
+ #LoginGraceTime 2m
+-PermitRootLogin yes
++PermitRootLogin no
++PermitRootLogin prohibit-password
+ #StrictModes yes
+ #MaxAuthTries 6
+ #MaxSessions 10
+@@ -55,7 +56,7 @@
+ #IgnoreRhosts yes
+ 
+ # To disable tunneled clear text passwords, change to no here!
+-#PasswordAuthentication yes
++PasswordAuthentication no
+ #PermitEmptyPasswords no
+ 
+ # Change to yes to enable challenge-response passwords (beware issues with
+@@ -83,7 +84,7 @@
+ # If you just want the PAM account and session checks to run without
+ # PAM authentication, then enable this but set PasswordAuthentication
+ # and ChallengeResponseAuthentication to 'no'.
+-UsePAM yes
++UsePAM no
+ 
+ #AllowAgentForwarding yes
+ #AllowTcpForwarding yes
