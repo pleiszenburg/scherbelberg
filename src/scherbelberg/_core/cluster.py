@@ -29,7 +29,6 @@ specific language governing rights and limitations under the License.
 
 import logging
 import os
-from subprocess import Popen
 from time import sleep
 
 from hcloud import Client
@@ -44,6 +43,7 @@ from hcloud.server_types.domain import ServerType
 from typeguard import typechecked
 
 from .abc import ClusterABC
+from .command import Command
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS
@@ -279,15 +279,19 @@ class Cluster(ClusterABC):
         if os.path.exists(self._fn_public):
             os.unlink(self._fn_public)
 
-        p = Popen([
+        out, err = Command.from_list([
             'ssh-keygen',
             '-f', self._fn_private, # path to file
             '-P', '', # no password
             '-t', 'rsa', # RSA
             '-b', '4096', # bits for RSA
             '-C', f'{self._prefix:s}-key', # comment
-        ])
-        p.wait()
+        ]).run()
+
+        if len(out[0].strip()) > 0:
+            self._log.info(out[0].strip())
+        if len(err[0].strip()) > 0:
+            self._log.error(err[0].strip())
 
         with open(self._fn_public, 'r') as f:
             self._public = f.read()
