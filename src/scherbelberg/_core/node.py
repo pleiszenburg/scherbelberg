@@ -49,7 +49,7 @@ class Node(NodeABC):
 
     def __init__(self, server: BoundServer, client: Client):
 
-        self._server = BoundServer
+        self._server = server
         self._client = client
 
         self._name = self._server.name
@@ -58,6 +58,12 @@ class Node(NodeABC):
     def update(self):
 
         self._server = self._client.servers.get_by_name(name = self._name)
+
+
+    @property
+    def public_ip4(self) -> str:
+
+        return self._server.public_net.ipv4.ip
 
 
     @classmethod
