@@ -90,6 +90,9 @@ class Cluster(ClusterABC):
         datacenter: str = 'fsn1-dc14',
         workers: int = 1,
     ):
+        """
+        Create new cluster
+        """
 
         self._log.info('Creating ...')
 
@@ -119,6 +122,32 @@ class Cluster(ClusterABC):
             )
             for node in range(workers)
         ]
+
+
+    def load(self):
+        """
+        Load existing cluster
+        """
+
+        assert self._scheduler is None
+        assert len(self._workers) == 0
+
+        self._log.info('Loading ssh key ...')
+
+        with open(self._fn_public, 'r') as f:
+            self._public = f.read()
+
+        self._log.info('Loading scheduler ...')
+
+        self._scheduler = self._client.servers.get_by_name(f'{self._prefix:s}-node-scheduler')
+
+        self._log.info('Loading workers ...')
+
+        self._workers.extend([
+            server
+            for server in self._client.servers.get_all()
+            if server.name.startswith(self._prefix) and '-node-worker' in server.name
+        ])
 
 
     def destroy(self):
