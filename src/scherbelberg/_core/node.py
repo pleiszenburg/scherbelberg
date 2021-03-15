@@ -7,7 +7,7 @@ HPC cluster deployment and management for the Hetzner Cloud
 
 https://github.com/pleiszenburg/scherbelberg
 
-    src/scherbelberg/_core/abc.py: Abstract base classes
+    src/scherbelberg/_core/node.py: Cluster nodes (servers)
 
     Copyright (C) 2021 Sebastian M. Ernst <ernst@pleiszenburg.de>
 
@@ -27,23 +27,23 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from abc import ABC
+from typeguard import typechecked
+
+from .abc import NodeABC
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# CLASSES
+# CLASS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-class ClusterABC(ABC):
-    pass
 
+@typechecked
+class Node(NodeABC):
+    """
+    Represents one node of the cluster, i.e. a server.
 
-class CommandABC(ABC):
-    pass
+    Mutable.
+    """
 
+    def __init__(self):
 
-class NodeABC(ABC):
-    pass
-
-
-class SSHConfigABC(ABC):
-    pass
+        pass
