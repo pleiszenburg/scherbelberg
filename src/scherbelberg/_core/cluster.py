@@ -52,7 +52,9 @@ from .abc import ClusterABC
 @typechecked
 class Cluster(ClusterABC):
     """
-    Defines a cluster of nodes
+    Defines a cluster of nodes.
+
+    Mutable.
     """
 
     def __init__(self, prefix: str = 'cluster', tokenvar: str = 'HETZNER',):
