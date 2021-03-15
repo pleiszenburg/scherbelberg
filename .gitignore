@@ -6,3 +6,5 @@ __*__/
 build/
 dist/
 *.egg-info/
+*.key
+*.key.pub
