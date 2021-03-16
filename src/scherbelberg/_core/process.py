@@ -50,7 +50,7 @@ class Process(ProcessABC):
     def __init__(self, procs = List[Popen]):
 
         self._procs = procs
-        self._running = True
+        self._communicated = True
 
 
     def __call__(self, returncode: bool = False) -> Union[
@@ -58,9 +58,9 @@ class Process(ProcessABC):
         Tuple[List[str], List[str]],
     ]:
 
-        if not self._running:
-            raise SystemError('process is done')
-        self._running = False
+        if not self._communicated:
+            raise SystemError('process communicated its result')
+        self._communicated = False
 
         output, errors, status = [], [], []
 
@@ -84,6 +84,15 @@ class Process(ProcessABC):
             raise exception
 
         return output, errors
+
+
+    @property
+    def running(self) -> bool:
+
+        return all((
+            proc.poll() is not None
+            for proc in self._procs
+        ))
 
 
     @staticmethod
