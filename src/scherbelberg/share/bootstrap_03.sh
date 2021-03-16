@@ -21,19 +21,15 @@
 
 # run as user
 
-# Python-Installer, alternative: Miniforge3-Linux-x86_64.sh
-INSTALLER=Mambaforge-Linux-x86_64.sh
 # Install location
 FORGE=$HOME/forge
-# Required packages
-PACKAGES=requirements_conda.txt
 # Environment
-ENVNAME=clusterenv
-# Name of screen
-SCREENNAME=clusterscreen
+ENVNAME=$(echo $1)env
 
-# Launch into screen if there is not one yet
-if [ -z "$STY" ]; then exec screen -dm -S $SCREENNAME /bin/bash "$0"; fi
+# Python-Installer, alternative: Miniforge3-Linux-x86_64.sh
+INSTALLER=Mambaforge-Linux-x86_64.sh
+# Required packages
+PACKAGES=$HOME/requirements_conda.txt
 
 # Load Conda-Forge-installer
 wget https://github.com/conda-forge/miniforge/releases/latest/download/$INSTALLER
@@ -43,6 +39,6 @@ chmod +x $INSTALLER
 ./$INSTALLER -b -p $FORGE
 rm $INSTALLER
 source $FORGE/bin/activate
-mamba create -y -n $ENVNAME --file=packages.txt python=3.8
+mamba create -y -n $ENVNAME --file=$PACKAGES python=3.8
 conda activate $ENVNAME
 echo "source $FORGE/bin/activate;conda activate $ENVNAME" >> .bashrc
