@@ -34,7 +34,8 @@ import shlex
 
 from typeguard import typechecked
 
-from .abc import CommandABC, SSHConfigABC
+from .abc import CommandABC, ProcessABC, SSHConfigABC
+from .process import Process
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS
@@ -73,21 +74,6 @@ class Command(CommandABC):
 
 
     @staticmethod
-    def _com_to_str(com: Union[str, bytes, None]) -> str:
-
-        if com is None:
-            return ""
-
-        if isinstance(com, bytes):
-            try:
-                return com.decode("utf-8")
-            except:
-                return repr(com)
-
-        return com
-
-
-    @staticmethod
     def _split_list(data: List, delimiter: str) -> List[List]:
 
         return [
@@ -99,11 +85,7 @@ class Command(CommandABC):
         ]
 
 
-    def run(
-        self, returncode: bool = False
-    ) -> Union[
-        Tuple[List[str], List[str], List[int], Exception], Tuple[List[str], List[str]]
-    ]:
+    def launch(self) -> ProcessABC:
 
         procs = []  # all processes, connected with pipes
 
@@ -118,28 +100,17 @@ class Command(CommandABC):
             )
             procs.append(proc)
 
-        output, errors, status = [], [], []
+        return Process(procs)
 
-        for proc in procs[::-1]:  # inverse order, last process first
 
-            out, err = proc.communicate()
-            output.append(self._com_to_str(out))
-            errors.append(self._com_to_str(err))
-            status.append(int(proc.returncode))
+    def run(
+        self, returncode: bool = False
+    ) -> Union[
+        Tuple[List[str], List[str], List[int], Exception],
+        Tuple[List[str], List[str]],
+    ]:
 
-        output.reverse()
-        errors.reverse()
-        status.reverse()
-
-        exception = SystemError("command failed", str(self), output, errors)
-
-        if returncode:
-            return output, errors, status, exception
-
-        if any((code != 0 for code in status)):  # some fragment failed:
-            raise exception
-
-        return output, errors
+        return self.launch()(returncode = returncode)
 
 
     def on_host(self, host: SSHConfigABC) -> CommandABC:
