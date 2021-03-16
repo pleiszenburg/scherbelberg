@@ -144,8 +144,11 @@ class Command(CommandABC):
             "-T",  # Disable pseudo-terminal allocation
             "-o",  # Option parameter
             "Compression=yes" if host.compression else "Compression=no",
+            "-o", "StrictHostKeyChecking=no", # TODO security
+            "-o", "UserKnownHostsFile=/dev/null", # TODO security
             "-p", f'{host.port:d}',
             "-c", host.cipher,
+            "-i", host.fn_private,
             f'{host.user:s}@{host.name:s}',
             str(self),
         ])
