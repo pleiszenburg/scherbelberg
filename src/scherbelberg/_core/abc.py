@@ -45,5 +45,9 @@ class NodeABC(ABC):
     pass
 
 
+class ProcessABC(ABC):
+    pass
+
+
 class SSHConfigABC(ABC):
     pass
