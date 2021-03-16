@@ -52,12 +52,16 @@ class Node(NodeABC):
         self._server = server
         self._client = client
 
-        self._name = self._server.name
-
 
     def update(self):
 
-        self._server = self._client.servers.get_by_name(name = self._name)
+        self._server = self._client.servers.get_by_name(name = self.name)
+
+
+    @property
+    def name(self) -> str:
+
+        return self._server.name
 
 
     @property
