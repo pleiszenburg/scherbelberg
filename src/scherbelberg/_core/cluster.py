@@ -133,6 +133,7 @@ class Cluster(ClusterABC):
 
         Node.bootstrap_nodes(
             self._scheduler, *self._workers,
+            prefix = self._prefix,
             wait = self._wait,
             log = self._log,
         )
