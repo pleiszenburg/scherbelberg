@@ -65,7 +65,7 @@ class Node(NodeABC):
         self._log = logging.getLogger(name = self.name)
 
 
-    def get_sshconfig(self, user: str = 'root') -> SSHConfigABC:
+    def get_sshconfig(self, user: str) -> SSHConfigABC:
 
         return SSHConfig(
             name = self.public_ip4,
@@ -167,7 +167,7 @@ class Node(NodeABC):
                         os.path.dirname(__file__), '..', 'share', fn,
                     )) for fn in ('bootstrap_01.sh', 'bootstrap_02.sh', 'sshd_config.patch')],
                     target = '~/',
-                    host = node.get_sshconfig(),
+                    host = node.get_sshconfig(user = 'root'),
                 ).launch()
                 for node in nodes
             ],
