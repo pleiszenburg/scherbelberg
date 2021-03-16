@@ -57,7 +57,12 @@ class Cluster(ClusterABC):
     Mutable.
     """
 
-    def __init__(self, prefix: str = 'cluster', tokenvar: str = 'HETZNER',):
+    def __init__(
+        self,
+        prefix: str = 'cluster',
+        tokenvar: str = 'HETZNER',
+        wait: float = 0.5,
+    ):
 
         self._client = Client(token = os.environ[tokenvar])
         logging.basicConfig(
@@ -68,6 +73,9 @@ class Cluster(ClusterABC):
 
         assert len(prefix) > 0
         self._prefix = prefix
+
+        assert wait > 0.0
+        self._wait = wait
 
         self._fn_private = os.path.join(os.getcwd(), f'{self._prefix:s}.key')
         self._fn_public = f'{self._fn_private:s}.pub'
@@ -123,7 +131,11 @@ class Cluster(ClusterABC):
             for node in range(workers)
         ]
 
-        Node.bootstrap_nodes(self._scheduler, *self._workers, log = self._log)
+        Node.bootstrap_nodes(
+            self._scheduler, *self._workers,
+            wait = self.wait,
+            log = self._log,
+        )
 
 
     def load(self):
@@ -258,7 +270,6 @@ class Cluster(ClusterABC):
         datacenter: str,
         image: str,
         ip: str,
-        wait: float = 0.25,
     ) -> NodeABC:
 
         name = f'{self._prefix:s}-node-{suffix:s}'
@@ -280,7 +291,7 @@ class Cluster(ClusterABC):
             server = self._client.servers.get_by_name(name = name)
             if server.status == Server.STATUS_RUNNING:
                 break
-            sleep(wait)
+            sleep(self._wait)
 
         server.attach_to_network(
             network = self._network,
