@@ -21,7 +21,6 @@
 
 # run as root
 
-# update and reboot
+# updates
 apt --yes -q update
 apt --yes --force-yes -q upgrade
-shutdown -r now
