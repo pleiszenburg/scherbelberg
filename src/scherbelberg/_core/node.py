@@ -88,7 +88,7 @@ class Node(NodeABC):
             self.public_ip4,
         ]).run(returncode = True)
 
-        return "Permission denied" in err[0] or "Host key verification failed" in err[0]
+        return "Host key verification failed" in err[0] # "Permission denied"?
 
 
     def update(self):
@@ -133,12 +133,15 @@ class Node(NodeABC):
         while True:
 
             nodes = [
-                None if (True if node is None else node.ping_ssh()) else node
+                None if (
+                    True if node is None else node.ping_ssh()
+                ) else node
                 for node in nodes
             ]
 
             down = len([item for item in nodes if item is not None])
             if down == 0:
+                sleep(wait) # one extra
                 log.info('Ssh is up on all nodes.')
                 return
 
@@ -191,6 +194,32 @@ class Node(NodeABC):
 
             if ssh_wait:
                 cls.wait_for_nodes_ssh(*nodes, wait = wait, log = log)
+
+        Process.wait_for(
+            comment = 'copy user files to nodes', log = log, wait = wait,
+            procs = [
+                Command.from_scp(
+                    *[os.path.abspath(os.path.join(
+                        os.path.dirname(__file__), '..', 'share', fn,
+                    )) for fn in ('bootstrap_03.sh', 'requirements_conda.txt', 'requirements_pypi.txt')],
+                    target = '~/',
+                    host = node.get_sshconfig(user = f'{prefix:s}user'),
+                ).launch()
+                for node in nodes
+            ],
+        )
+
+        Process.wait_for(
+            comment = 'run user bootstrap script on nodes', log = log, wait = wait,
+            procs = [
+                Command.from_list([
+                    "bash", "bootstrap_03.sh", prefix
+                ]).on_host(
+                    host = node.get_sshconfig(user = f'{prefix:s}user')
+                ).launch()
+                for node in nodes
+            ],
+        )
 
 
     @classmethod
