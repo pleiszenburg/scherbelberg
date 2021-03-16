@@ -73,6 +73,8 @@ class Node(NodeABC):
     @property
     def private_ip4(self) -> str:
 
+        assert len(self._server.private_net) == 1
+
         return self._server.private_net[0].ip
 
 
