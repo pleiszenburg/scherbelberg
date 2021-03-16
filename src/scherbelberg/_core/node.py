@@ -76,7 +76,7 @@ class Node(NodeABC):
 
     def ping_ssh(self) -> bool:
 
-        out, err, status, _ = Command.from_list([
+        _, err, _, _ = Command.from_list([
             "ssh",
             "-o", "BatchMode=yes",
             "-o", "ConnectTimeout=5",
