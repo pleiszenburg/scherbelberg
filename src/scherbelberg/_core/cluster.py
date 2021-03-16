@@ -61,7 +61,7 @@ class Cluster(ClusterABC):
 
         self._client = Client(token = os.environ[tokenvar])
         logging.basicConfig(
-            format = '%(name)s/%(levelname)s @ %(asctime)-15s: %(message)s',
+            format = '%(name)s %(levelname)s %(asctime)-15s: %(message)s',
             level = logging.INFO,
         )
         self._log = logging.getLogger(name = prefix)
@@ -123,6 +123,8 @@ class Cluster(ClusterABC):
             for node in range(workers)
         ]
 
+        Node.bootstrap_nodes(self._scheduler, *self._workers, log = self._log)
+
 
     def load(self):
         """
@@ -142,12 +144,17 @@ class Cluster(ClusterABC):
         self._scheduler = Node.from_name(
             name = f'{self._prefix:s}-node-scheduler',
             client = self._client,
+            fn_private = self._fn_private,
         )
 
         self._log.info('Loading workers ...')
 
         self._workers.extend([
-            Node(server = server, client = self._client)
+            Node(
+                server = server,
+                client = self._client,
+                fn_private = self._fn_private,
+            )
             for server in self._client.servers.get_all()
             if server.name.startswith(self._prefix) and '-node-worker' in server.name
         ])
@@ -282,7 +289,11 @@ class Cluster(ClusterABC):
 
         self._log.info(f'Attaching network to server {name:s} ...')
 
-        return Node.from_name(name = name, client = self._client)
+        return Node.from_name(
+            name = name,
+            client = self._client,
+            fn_private = self._fn_private,
+        )
 
 
     def _create_ssh_key(self):

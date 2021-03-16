@@ -27,6 +27,8 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+import logging
+
 from hcloud import Client
 from hcloud.servers.client import BoundServer
 
@@ -47,10 +49,15 @@ class Node(NodeABC):
     Mutable.
     """
 
-    def __init__(self, server: BoundServer, client: Client):
+    def __init__(self, server: BoundServer, client: Client, fn_private: str):
+
+        assert len(fn_private) > 0
 
         self._server = server
         self._client = client
+        self._fn_private = fn_private
+
+        self._log = logging.getLogger(name = self.name)
 
 
     def update(self):
@@ -79,9 +86,20 @@ class Node(NodeABC):
 
 
     @classmethod
-    def from_name(cls, name: str, client: Client) -> NodeABC:
+    def bootstrap_nodes(cls, *nodes: NodeABC, log: logging.Logger = None):
+
+        log.info('Bootstrapping nodes ...')
+
+        for node in nodes:
+
+            log.info(node.name)
+
+
+    @classmethod
+    def from_name(cls, name: str, client: Client, fn_private: str) -> NodeABC:
 
         return cls(
             server = client.servers.get_by_name(name = name),
             client = client,
+            fn_private = fn_private,
         )
