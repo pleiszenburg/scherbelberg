@@ -150,6 +150,7 @@ class Node(NodeABC):
     def bootstrap_nodes(
         cls,
         *nodes: NodeABC,
+        prefix: str,
         wait: float = None,
         log: logging.Logger = None,
     ):
@@ -159,46 +160,37 @@ class Node(NodeABC):
         cls.wait_for_nodes_ssh(*nodes, wait = wait, log = log)
 
         Process.wait_for(
-            comment = 'copy first bootstrap script to nodes',
+            comment = 'copy root files to nodes', log = log, wait = wait,
             procs = [
                 Command.from_scp(
-                    source = os.path.abspath(os.path.join(
-                        os.path.dirname(__file__), '..', 'share', 'bootstrap_01.sh',
-                        )),
-                    target = '/root/',
+                    *[os.path.abspath(os.path.join(
+                        os.path.dirname(__file__), '..', 'share', fn,
+                    )) for fn in ('bootstrap_01.sh', 'bootstrap_02.sh', 'sshd_config.patch')],
+                    target = '~/',
                     host = node.get_sshconfig(),
                 ).launch()
                 for node in nodes
             ],
-            log = log,
-            wait = wait,
         )
 
-        Process.wait_for(
-            comment = 'run first bootstrap script on nodes',
-            procs = [
-                Command.from_list([
-                    "bash", "/root/bootstrap_01.sh",
-                ]).on_host(host = node.get_sshconfig()).launch()
-                for node in nodes
-            ],
-            log = log,
-            wait = wait,
-        )
+        for comment, procs, user, ssh_wait in (
+            ('run first bootstrap script on nodes', ["bash", "bootstrap_01.sh"], 'root', False),
+            ('reboot nodes', ["shutdown", "-r", "now", "||", "true"], 'root', True),
+            ('run second bootstrap script on nodes', ["bash", "bootstrap_02.sh", prefix], 'root', True),
+        ):
 
-        Process.wait_for(
-            comment = 'reboot nodes',
-            procs = [
-                Command.from_list([
-                    "shutdown", "-r", "now", "||", "true"
-                ]).on_host(host = node.get_sshconfig()).launch()
-                for node in nodes
-            ],
-            log = log,
-            wait = wait,
-        )
+            Process.wait_for(
+                comment = comment, log = log, wait = wait,
+                procs = [
+                    Command.from_list(procs).on_host(
+                        host = node.get_sshconfig(user = user)
+                    ).launch()
+                    for node in nodes
+                ],
+            )
 
-        cls.wait_for_nodes_ssh(*nodes, wait = wait, log = log)
+            if ssh_wait:
+                cls.wait_for_nodes_ssh(*nodes, wait = wait, log = log)
 
 
     @classmethod
