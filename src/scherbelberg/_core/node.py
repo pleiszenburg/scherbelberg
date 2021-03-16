@@ -28,13 +28,18 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 import logging
+import os
+from time import sleep
 
 from hcloud import Client
 from hcloud.servers.client import BoundServer
 
 from typeguard import typechecked
 
-from .abc import NodeABC
+from .abc import NodeABC, SSHConfigABC
+from .command import Command
+from .process import Process
+from .sshconfig import SSHConfig
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS
@@ -58,6 +63,15 @@ class Node(NodeABC):
         self._fn_private = fn_private
 
         self._log = logging.getLogger(name = self.name)
+
+
+    def get_sshconfig(self, user: str = 'root') -> SSHConfigABC:
+
+        return SSHConfig(
+            name = self.public_ip4,
+            user = user,
+            fn_private = self._fn_private,
+        )
 
 
     def update(self):
@@ -86,13 +100,30 @@ class Node(NodeABC):
 
 
     @classmethod
-    def bootstrap_nodes(cls, *nodes: NodeABC, log: logging.Logger = None):
+    def bootstrap_nodes(
+        cls,
+        *nodes: NodeABC,
+        wait: float = None,
+        log: logging.Logger = None,
+    ):
 
-        log.info('Bootstrapping nodes ...')
+        assert wait > 0.0
 
-        for node in nodes:
-
-            log.info(node.name)
+        Process.wait_for(
+            comment = 'copy first bootstrap script to nodes',
+            procs = [
+                Command.from_scp(
+                    source = os.path.abspath(os.path.join(
+                        os.path.dirname(__file__), '..', 'share', 'bootstrap_01.sh',
+                        )),
+                    target = '/root/',
+                    host = node.get_sshconfig(),
+                ).launch()
+                for node in nodes
+            ],
+            log = log,
+            wait = wait,
+        )
 
 
     @classmethod
