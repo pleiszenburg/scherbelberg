@@ -168,6 +168,7 @@ class Cluster(ClusterABC):
         for cat in cats:
             for item in cat.get_all():
                 if not item.name.startswith(self._prefix):
+                    self._log.warn(f'NOT DELETING {item.name:s} ...')
                     continue
                 self._log.info(f'Deleting {item.name:s} ...')
                 item.delete()
