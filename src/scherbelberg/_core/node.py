@@ -29,7 +29,6 @@ specific language governing rights and limitations under the License.
 
 import logging
 import os
-from time import sleep
 
 from hcloud import Client
 from hcloud.servers.client import BoundServer
