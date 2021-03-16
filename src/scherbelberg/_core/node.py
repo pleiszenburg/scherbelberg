@@ -29,6 +29,7 @@ specific language governing rights and limitations under the License.
 
 import logging
 import os
+from time import sleep
 
 from hcloud import Client
 from hcloud.servers.client import BoundServer
@@ -73,6 +74,23 @@ class Node(NodeABC):
         )
 
 
+    def ping_ssh(self) -> bool:
+
+        out, err, status, _ = Command.from_list([
+            "ssh",
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=5",
+            "-o", "PubkeyAuthentication=no",
+            "-o", "PasswordAuthentication=no",
+            "-o", "KbdInteractiveAuthentication=no",
+            "-o", "ChallengeResponseAuthentication=no",
+            "-p", "22",
+            self.public_ip4,
+        ]).run(returncode = True)
+
+        return "Permission denied" in err[0] or "Host key verification failed" in err[0]
+
+
     def update(self):
 
         self._server = self._client.servers.get_by_name(name = self.name)
@@ -99,6 +117,36 @@ class Node(NodeABC):
 
 
     @classmethod
+    def wait_for_nodes_ssh(
+        cls,
+        *nodes: NodeABC,
+        wait: float = None,
+        log: logging.Logger = None,
+    ):
+
+        assert wait > 0.0
+
+        log.info('Waiting for ssh on nodes ...')
+
+        nodes = list(nodes)
+
+        while True:
+
+            nodes = [
+                None if (True if node is None else node.ping_ssh()) else node
+                for node in nodes
+            ]
+
+            down = len([item for item in nodes if item is not None])
+            if down == 0:
+                log.info('Ssh is up on all nodes.')
+                return
+
+            log.info(f'Continue waiting, ssh on {down:d} out of {len(nodes):d} nodes missing ...')
+            sleep(wait)
+
+
+    @classmethod
     def bootstrap_nodes(
         cls,
         *nodes: NodeABC,
@@ -107,6 +155,8 @@ class Node(NodeABC):
     ):
 
         assert wait > 0.0
+
+        cls.wait_for_nodes_ssh(*nodes, wait = wait, log = log)
 
         Process.wait_for(
             comment = 'copy first bootstrap script to nodes',
