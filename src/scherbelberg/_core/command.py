@@ -164,7 +164,7 @@ class Command(CommandABC):
 
 
     @classmethod
-    def from_scp(cls, source: str, target: str, host: SSHConfigABC) -> CommandABC:
+    def from_scp(cls, *source: str, target: str, host: SSHConfigABC) -> CommandABC:
 
         assert len(source) > 0
         assert len(target) > 0
@@ -176,6 +176,6 @@ class Command(CommandABC):
             "-P", f'{host.port:d}',
             "-c", host.cipher,
             "-i", host.fn_private,
-            source,
+            *source,
             f'{host.user:s}@{host.name:s}:{target:s}',
         ])
