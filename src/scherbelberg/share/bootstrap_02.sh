@@ -24,7 +24,7 @@
 USERNAME=$(echo $1)user
 
 # install required software
-apt --yes --force-yes -q install screen glances build-essential python3-venv python3-dev
+apt --yes --force-yes -q install screen glances build-essential python3-venv python3-dev > /dev/null
 
 # create new user
 adduser --disabled-password --gecos "" -q $USERNAME
