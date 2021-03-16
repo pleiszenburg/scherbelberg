@@ -66,6 +66,12 @@ class Node(NodeABC):
         return self._server.public_net.ipv4.ip
 
 
+    @property
+    def private_ip4(self) -> str:
+
+        return self._server.private_net[0].ip
+
+
     @classmethod
     def from_name(cls, name: str, client: Client) -> NodeABC:
 
