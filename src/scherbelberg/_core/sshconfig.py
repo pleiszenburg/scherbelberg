@@ -27,6 +27,8 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+from typing import Union
+
 from typeguard import typechecked
 
 from .abc import SSHConfigABC
@@ -48,6 +50,7 @@ class SSHConfig(SSHConfigABC):
         self,
         name: str,
         user: str,
+        fn_private: str,
         port: int = 22,
         compression: bool = True,
         cipher: str = "aes256-gcm@openssh.com",
@@ -55,14 +58,36 @@ class SSHConfig(SSHConfigABC):
 
         assert len(name) > 0
         assert len(user) > 0
+        assert len(fn_private) > 0
         assert port > 0
         assert len(cipher) > 0
 
         self._name = name
         self._user = user
+        self._fn_private = fn_private
         self._port = port
         self._compression = compression
         self._cipher = cipher
+
+
+    def new(
+        self,
+        name: Union[str, None],
+        user: Union[str, None],
+        fn_private: Union[str, None],
+        port: Union[int, None],
+        compression: Union[bool, None],
+        cipher: Union[str, None],
+    ) -> SSHConfigABC:
+
+        return type(self)(
+            name = self._name if name is None else name,
+            user = self._user if user is None else user,
+            fn_private = self._fn_private if fn_private is None else fn_private,
+            port = self._port if port is None else port,
+            compression = self._compression if compression is None else compression,
+            cipher = self._cipher if cipher is None else cipher,
+        )
 
 
     @property
@@ -75,6 +100,12 @@ class SSHConfig(SSHConfigABC):
     def user(self) -> str:
 
         return self._user
+
+
+    @property
+    def fn_private(self) -> str:
+
+        return self._fn_private
 
 
     @property
