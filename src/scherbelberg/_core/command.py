@@ -150,8 +150,7 @@ class Command(CommandABC):
         return type(self).from_list([
             "ssh",
             "-T",  # Disable pseudo-terminal allocation
-            "-o",  # Option parameter
-            "Compression=yes" if host.compression else "Compression=no",
+            "-o", "Compression=yes" if host.compression else "Compression=no",
             "-o", "StrictHostKeyChecking=no", # TODO security
             "-o", "UserKnownHostsFile=/dev/null", # TODO security
             "-p", f'{host.port:d}',
@@ -178,3 +177,22 @@ class Command(CommandABC):
     def from_list(cls, cmd: List[str]) -> CommandABC:
 
         return cls([cmd])
+
+
+    @classmethod
+    def from_scp(cls, source: str, target: str, host: SSHConfigABC) -> CommandABC:
+
+        assert len(source) > 0
+        assert len(target) > 0
+
+        return cls.from_list([
+            "scp",
+            "-o", "Compression=yes" if host.compression else "Compression=no",
+            "-o", "StrictHostKeyChecking=no", # TODO security
+            "-o", "UserKnownHostsFile=/dev/null", # TODO security
+            "-P", f'{host.port:d}',
+            "-c", host.cipher,
+            "-i", host.fn_private,
+            source,
+            f'{host.user:s}@{host.name:s}:{target:s}',
+        ])
