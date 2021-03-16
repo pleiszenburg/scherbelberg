@@ -21,7 +21,7 @@
 
 # run as root
 
-USERNAME=clusteruser
+USERNAME=$(echo $1)user
 
 # install required software
 apt --yes --force-yes -q install screen glances build-essential python3-venv python3-dev
@@ -30,14 +30,14 @@ apt --yes --force-yes -q install screen glances build-essential python3-venv pyt
 adduser --disabled-password --gecos "" -q $USERNAME
 
 # provide user with ssh key, remove from root account
-cp -a .ssh /home/$USERNAME/
+cp -a /root/.ssh /home/$USERNAME/
 chown $USERNAME:$USERNAME /home/$USERNAME/.ssh /home/$USERNAME/.ssh/*
-rm -r .ssh
+rm -r /root/.ssh
 
 # allow user to use sudo without password
 usermod -aG sudo $USERNAME
 echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 # disallow password and root logins via ssh
-patch /etc/ssh/sshd_config sshd_config.patch
+patch /etc/ssh/sshd_config /root/sshd_config.patch
 systemctl reload ssh
