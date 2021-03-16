@@ -100,7 +100,10 @@ class Command(CommandABC):
             )
             procs.append(proc)
 
-        return Process(procs)
+        return Process(
+            procs = procs,
+            command = self,
+            )
 
 
     def run(
