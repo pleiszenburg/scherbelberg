@@ -36,14 +36,14 @@ from hcloud.datacenters.domain import Datacenter
 from hcloud.firewalls.domain import FirewallRule
 from hcloud.images.domain import Image
 from hcloud.networks.domain import NetworkSubnet
-from hcloud.servers.client import BoundServer
 from hcloud.servers.domain import Server
 from hcloud.server_types.domain import ServerType
 
 from typeguard import typechecked
 
-from .abc import ClusterABC
+from .abc import ClusterABC, NodeABC
 from .command import Command
+from .node import Node
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS
@@ -139,12 +139,15 @@ class Cluster(ClusterABC):
 
         self._log.info('Loading scheduler ...')
 
-        self._scheduler = self._client.servers.get_by_name(f'{self._prefix:s}-node-scheduler')
+        self._scheduler = Node.from_name(
+            name = f'{self._prefix:s}-node-scheduler',
+            client = self._client,
+        )
 
         self._log.info('Loading workers ...')
 
         self._workers.extend([
-            server
+            Node(server = server, client = self._client)
             for server in self._client.servers.get_all()
             if server.name.startswith(self._prefix) and '-node-worker' in server.name
         ])
@@ -249,7 +252,7 @@ class Cluster(ClusterABC):
         image: str,
         ip: str,
         wait: float = 0.25,
-    ) -> BoundServer:
+    ) -> NodeABC:
 
         name = f'{self._prefix:s}-node-{suffix:s}'
 
@@ -279,7 +282,7 @@ class Cluster(ClusterABC):
 
         self._log.info(f'Attaching network to server {name:s} ...')
 
-        return self._client.servers.get_by_name(name = name)
+        return Node.from_name(name = name, client = self._client)
 
 
     def _create_ssh_key(self):
