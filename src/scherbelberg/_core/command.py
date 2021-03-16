@@ -51,21 +51,26 @@ class Command(CommandABC):
 
         self._cmd = [fragment.copy() for fragment in cmd]
 
+
     def __repr__(self) -> str:
 
         return "<Command>"
+
 
     def __str__(self) -> str:
 
         return " | ".join([shlex.join(fragment) for fragment in self._cmd])
 
+
     def __len__(self) -> int:
 
         return len(self._cmd)
 
+
     def __or__(self, other: CommandABC) -> CommandABC:  # pipe
 
         return type(self)(self.cmd + other.cmd)
+
 
     @staticmethod
     def _com_to_str(com: Union[str, bytes, None]) -> str:
@@ -81,6 +86,7 @@ class Command(CommandABC):
 
         return com
 
+
     @staticmethod
     def _split_list(data: List, delimiter: str) -> List[List]:
 
@@ -91,6 +97,7 @@ class Command(CommandABC):
             )
             if not is_delimiter
         ]
+
 
     def run(
         self, returncode: bool = False
@@ -134,6 +141,7 @@ class Command(CommandABC):
 
         return output, errors
 
+
     def on_host(self, host: SSHConfigABC) -> CommandABC:
 
         if host.name == "localhost":
@@ -153,15 +161,18 @@ class Command(CommandABC):
             str(self),
         ])
 
+
     @property
     def cmd(self) -> List[List[str]]:
 
         return [fragment.copy() for fragment in self._cmd]
 
+
     @classmethod
     def from_str(cls, cmd: str) -> CommandABC:
 
         return cls(cls._split_list(shlex.split(cmd), "|"))
+
 
     @classmethod
     def from_list(cls, cmd: List[str]) -> CommandABC:
