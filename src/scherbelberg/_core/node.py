@@ -174,6 +174,32 @@ class Node(NodeABC):
             wait = wait,
         )
 
+        Process.wait_for(
+            comment = 'run first bootstrap script on nodes',
+            procs = [
+                Command.from_list([
+                    "bash", "/root/bootstrap_01.sh",
+                ]).on_host(host = node.get_sshconfig()).launch()
+                for node in nodes
+            ],
+            log = log,
+            wait = wait,
+        )
+
+        Process.wait_for(
+            comment = 'reboot nodes',
+            procs = [
+                Command.from_list([
+                    "shutdown", "-r", "now", "||", "true"
+                ]).on_host(host = node.get_sshconfig()).launch()
+                for node in nodes
+            ],
+            log = log,
+            wait = wait,
+        )
+
+        cls.wait_for_nodes_ssh(*nodes, wait = wait, log = log)
+
 
     @classmethod
     def from_name(cls, name: str, client: Client, fn_private: str) -> NodeABC:
