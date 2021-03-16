@@ -22,5 +22,6 @@
 # run as root
 
 # updates
-apt --yes -q update
-apt --yes --force-yes -q upgrade
+echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+apt --yes -q update > /dev/null
+apt --yes --force-yes -q upgrade > /dev/null
