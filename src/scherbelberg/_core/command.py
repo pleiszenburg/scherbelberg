@@ -85,6 +85,17 @@ class Command(CommandABC):
         ]
 
 
+    @staticmethod
+    def _ssh_options() -> List[str]:
+
+        return [
+            "-o", "StrictHostKeyChecking=no", # TODO security
+            "-o", "UserKnownHostsFile=/dev/null", # TODO security
+            "-o", "BatchMode=yes",
+            "-o", "ConnectTimeout=5",
+        ]
+
+
     def launch(self) -> ProcessABC:
 
         procs = []  # all processes, connected with pipes
@@ -125,8 +136,7 @@ class Command(CommandABC):
             "ssh",
             "-T",  # Disable pseudo-terminal allocation
             "-o", "Compression=yes" if host.compression else "Compression=no",
-            "-o", "StrictHostKeyChecking=no", # TODO security
-            "-o", "UserKnownHostsFile=/dev/null", # TODO security
+            *self._ssh_options(),
             "-p", f'{host.port:d}',
             "-c", host.cipher,
             "-i", host.fn_private,
@@ -162,8 +172,7 @@ class Command(CommandABC):
         return cls.from_list([
             "scp",
             "-o", "Compression=yes" if host.compression else "Compression=no",
-            "-o", "StrictHostKeyChecking=no", # TODO security
-            "-o", "UserKnownHostsFile=/dev/null", # TODO security
+            *cls._ssh_options(),
             "-P", f'{host.port:d}',
             "-c", host.cipher,
             "-i", host.fn_private,
