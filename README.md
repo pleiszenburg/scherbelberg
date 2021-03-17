@@ -21,7 +21,9 @@ You must run a `conda` environment based entirely on [conda-forge](https://conda
 
 `pip install git+https://github.com/pleiszenburg/scherbelberg.git@master`
 
-`scherbelberg` will create equivalent `conda` environments on every cluster node. Although `scherbelberg` heavily relies on `ssh`, it will **NOT** alter your system's ssh configuration.
+`scherbelberg` will create equivalent `conda` environments on every cluster node. Although `scherbelberg` heavily relies on `ssh`, it will **NOT** alter your system's `ssh` configuration.
+
+For running any of the `scherbelberg` commands or routines, a [Hetzner API token](https://docs.hetzner.cloud/#getting-started) is required. `scherbelberg` by default expects it to be located in the `HETZNER` environment variable.
 
 ## CLI
 
