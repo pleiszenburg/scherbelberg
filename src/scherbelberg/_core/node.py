@@ -30,6 +30,7 @@ specific language governing rights and limitations under the License.
 import logging
 import os
 from time import sleep
+from typing import Dict
 
 from hcloud import Client
 from hcloud.servers.client import BoundServer
@@ -105,6 +106,12 @@ class Node(NodeABC):
     def name(self) -> str:
 
         return self._server.name
+
+
+    @property
+    def labels(self) -> Dict[str, str]:
+
+        return self._server.labels.copy()
 
 
     @property

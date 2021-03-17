@@ -30,7 +30,7 @@ specific language governing rights and limitations under the License.
 import logging
 import os
 from time import sleep
-from typing import List
+from typing import Any, Dict, List, Union
 
 from hcloud import Client
 from hcloud.datacenters.domain import Datacenter
@@ -101,7 +101,20 @@ class Cluster(ClusterABC):
 
     def __repr__(self) -> str:
 
-        return f'<cluster {"loaded" if self.loaded else "detached":s}>'
+        if not self.loaded:
+            return '<cluster detached>'
+
+        return f'<cluster scheduler={self._scheduler.public_ip4:s} ipc={self._dask_ipc:d} dash={self._dask_dash:d}>'
+
+
+    def get_client(self) -> Any:
+
+        if not self.loaded:
+            raise SystemError('cluster not loaded')
+
+        from dask.distributed import Client as DaskClient
+
+        return DaskClient(f'{self._scheduler.public_ip4:s}:{self._dask_ipc:d}')
 
 
     def create(
@@ -142,6 +155,10 @@ class Cluster(ClusterABC):
             datacenter = datacenter,
             image = image,
             ip = '10.0.1.200',
+            labels = {
+                "dask_ipc": str(self._dask_ipc),
+                "dask_dash": str(self._dask_dash),
+            }
         )
         self._workers = [
             self._create_node(
@@ -192,6 +209,9 @@ class Cluster(ClusterABC):
             client = self._client,
             fn_private = self._fn_private,
         )
+
+        self._dask_ipc = int(self._scheduler.labels["dask_ipc"])
+        self._dask_dash = int(self._scheduler.labels["dask_dash"])
 
         self._log.info('Loading workers ...')
 
@@ -325,6 +345,7 @@ class Cluster(ClusterABC):
         datacenter: str,
         image: str,
         ip: str,
+        labels: Union[Dict[str, str], None] = None,
     ) -> NodeABC:
 
         name = f'{self._prefix:s}-node-{suffix:s}'
@@ -338,6 +359,7 @@ class Cluster(ClusterABC):
             datacenter = Datacenter(name = datacenter),
             ssh_keys = [self._ssh_key],
             firewalls = [self._firewall],
+            labels = labels,
         )
 
         self._log.info(f'Waiting for server {name:s} to run ...')
