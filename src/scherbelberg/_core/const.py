@@ -27,6 +27,8 @@ specific language governing rights and limitations under the License.
 # CONST
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+WORKERS = 1
+
 DASK_IPC = 9753
 DASK_DASH = 9756
 
