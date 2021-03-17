@@ -51,6 +51,7 @@ def ls(prefix, tokenvar, wait):
     )
     cluster.load()
 
+    print(cluster)
     print(cluster.scheduler)
     for node in cluster.workers:
         print(node)
