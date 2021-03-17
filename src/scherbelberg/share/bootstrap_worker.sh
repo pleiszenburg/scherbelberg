@@ -25,4 +25,4 @@ SCHEDULER=$1
 PORT=$2
 DASHPORT=$3
 
-nohup dask-worker --dashboard-address $DASHPORT tcp://$SCHEDULER:$PORT > worker_out 2> worker_err < /dev/null &
+dask-worker --dashboard-address $DASHPORT tcp://$SCHEDULER:$PORT > worker_out 2> worker_err < /dev/null &

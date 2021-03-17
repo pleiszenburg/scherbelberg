@@ -23,4 +23,4 @@
 
 PORT=$1
 
-nohup dask-scheduler --port $PORT > scheduler_out 2> scheduler_err < /dev/null &
+dask-scheduler --port $PORT > scheduler_out 2> scheduler_err < /dev/null &
