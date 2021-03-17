@@ -118,13 +118,15 @@ class Command(CommandABC):
 
 
     def run(
-        self, returncode: bool = False
+        self,
+        returncode: bool = False,
+        timeout: Union[float, int, None] = None,
     ) -> Union[
         Tuple[List[str], List[str], List[int], Exception],
         Tuple[List[str], List[str]],
     ]:
 
-        return self.launch()(returncode = returncode)
+        return self.launch()(returncode = returncode, timeout = timeout)
 
 
     def on_host(self, host: SSHConfigABC) -> CommandABC:
