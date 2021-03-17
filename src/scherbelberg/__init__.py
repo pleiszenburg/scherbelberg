@@ -35,4 +35,6 @@ __version__ = '0.0.1'
 
 from ._core.cluster import Cluster
 from ._core.command import Command
+from ._core.node import Node
+from ._core.process import Process
 from ._core.sshconfig import SSHConfig
