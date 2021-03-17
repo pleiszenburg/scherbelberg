@@ -65,6 +65,11 @@ class Node(NodeABC):
         self._log = logging.getLogger(name = self.name)
 
 
+    def __repr__(self) -> str:
+
+        return f'<node name={self.name:s} public={self.public_ip4:s} private={self.private_ip4}>'
+
+
     def get_sshconfig(self, user: str) -> SSHConfigABC:
 
         return SSHConfig(
