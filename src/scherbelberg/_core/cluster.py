@@ -43,7 +43,11 @@ from hcloud.server_types.domain import ServerType
 from typeguard import typechecked
 
 from .abc import ClusterABC, NodeABC
-from .const import PREFIX, TOKENVAR, WAIT
+from .const import (
+    DASK_IPC, DASK_DASH,
+    PREFIX, TOKENVAR, WAIT,
+    WORKERS,
+)
 from .command import Command
 from .node import Node
 
@@ -84,6 +88,9 @@ class Cluster(ClusterABC):
 
         self._public = None
 
+        self._dask_ipc = None
+        self._dask_dash = None
+
         self._ssh_key = None
         self._network = None
         self._firewall = None
@@ -103,7 +110,9 @@ class Cluster(ClusterABC):
         worker: str = 'cx11',
         image: str = 'ubuntu-20.04',
         datacenter: str = 'fsn1-dc14',
-        workers: int = 1,
+        workers: int = WORKERS,
+        dask_ipc: int = DASK_IPC,
+        dask_dash: int = DASK_DASH,
     ):
         """
         Create new cluster
@@ -115,6 +124,13 @@ class Cluster(ClusterABC):
         assert len(self._workers) == 0
 
         assert 0 < workers <= 100
+
+        assert dask_ipc >= 2**10
+        assert dask_dash >= 2**10
+        assert dask_ipc != dask_dash
+
+        self._dask_ipc = dask_ipc
+        self._dask_dash = dask_dash
 
         self._create_ssh_key()
         self._create_network(ip_range = '10.0.1.0/24')
@@ -151,6 +167,8 @@ class Cluster(ClusterABC):
             prefix = self._prefix,
             wait = self._wait,
             log = self._log,
+            dask_ipc = self._dask_ipc,
+            dask_dash = self._dask_dash,
         )
 
 
@@ -221,6 +239,9 @@ class Cluster(ClusterABC):
 
         self._public = None
 
+        self._dask_ipc = None
+        self._dask_dash = None
+
         self._ssh_key = None
         self._firewall = None
         self._network = None
@@ -264,8 +285,8 @@ class Cluster(ClusterABC):
                 for protocol, port in (
                     ('tcp', '22'),
                     ('icmp', None),
-                    ('tcp', '9753'), # dask ipc
-                    ('tcp', '9754'), # dask dash
+                    ('tcp', str(self._dask_ipc)),
+                    ('tcp', str(self._dask_dash)),
                 )
             ],
         )
