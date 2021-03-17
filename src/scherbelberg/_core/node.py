@@ -29,6 +29,7 @@ specific language governing rights and limitations under the License.
 
 import logging
 import os
+from subprocess import TimeoutExpired
 from time import sleep
 from typing import Dict
 
@@ -80,21 +81,24 @@ class Node(NodeABC):
         )
 
 
-    def ping_ssh(self) -> bool:
+    def ping_ssh(self, user: str) -> bool:
 
-        _, err, _, _ = Command.from_list([
-            "ssh",
-            "-o", "BatchMode=yes",
-            "-o", "ConnectTimeout=5",
-            "-o", "PubkeyAuthentication=no",
-            "-o", "PasswordAuthentication=no",
-            "-o", "KbdInteractiveAuthentication=no",
-            "-o", "ChallengeResponseAuthentication=no",
-            "-p", "22",
-            self.public_ip4,
-        ]).run(returncode = True)
+        try:
 
-        return "Host key verification failed" in err[0] # "Permission denied"?
+            _, _, status, _ = Command.from_list(
+                ["exit"]
+            ).on_host(
+                host = self.get_sshconfig(user = user),
+            ).run(returncode = True, timeout = 5)
+
+        except TimeoutExpired:
+
+            return False
+
+        assert len(status) == 1
+        status = status[0]
+
+        return status == 0
 
 
     def update(self):
@@ -132,8 +136,9 @@ class Node(NodeABC):
     def wait_for_nodes_ssh(
         cls,
         *nodes: NodeABC,
-        wait: float = None,
-        log: logging.Logger = None,
+        wait: float,
+        log: logging.Logger,
+        user: str,
     ):
 
         assert wait > 0.0
@@ -146,7 +151,7 @@ class Node(NodeABC):
 
             nodes = [
                 None if (
-                    True if node is None else node.ping_ssh()
+                    True if node is None else node.ping_ssh(user = user)
                 ) else node
                 for node in nodes
             ]
@@ -172,7 +177,7 @@ class Node(NodeABC):
 
         assert wait > 0.0
 
-        cls.wait_for_nodes_ssh(*nodes, wait = wait, log = log)
+        cls.wait_for_nodes_ssh(*nodes, wait = wait, log = log, user = 'root')
 
         Process.wait_for(
             comment = 'copy root files to nodes', log = log, wait = wait,
@@ -188,10 +193,10 @@ class Node(NodeABC):
             ],
         )
 
-        for comment, procs, user, ssh_wait in (
-            ('run first bootstrap script on nodes', ["bash", "bootstrap_01.sh"], 'root', False),
-            ('reboot nodes', ["shutdown", "-r", "now", "||", "true"], 'root', True),
-            ('run second bootstrap script on nodes', ["bash", "bootstrap_02.sh", prefix], 'root', True),
+        for comment, procs, user, ssh_wait, ping_user in (
+            ('run first bootstrap script on nodes', ["bash", "bootstrap_01.sh"], 'root', False, None),
+            ('reboot nodes', ["shutdown", "-r", "now", "||", "true"], 'root', True, 'root'),
+            ('run second bootstrap script on nodes', ["bash", "bootstrap_02.sh", prefix], 'root', True, f'{prefix:s}user'),
         ):
 
             Process.wait_for(
@@ -205,7 +210,7 @@ class Node(NodeABC):
             )
 
             if ssh_wait:
-                cls.wait_for_nodes_ssh(*nodes, wait = wait, log = log)
+                cls.wait_for_nodes_ssh(*nodes, wait = wait, log = log, user = ping_user)
 
         Process.wait_for(
             comment = 'copy user files to nodes', log = log, wait = wait,
@@ -254,7 +259,7 @@ class Node(NodeABC):
 
         assert wait > 0.0
 
-        cls.wait_for_nodes_ssh(scheduler, wait = wait, log = log)
+        cls.wait_for_nodes_ssh(scheduler, wait = wait, log = log, user = f'{prefix:s}user')
 
         Process.wait_for(
             comment = 'start dask scheduler', log = log, wait = wait,
@@ -267,7 +272,7 @@ class Node(NodeABC):
             ],
         )
 
-        cls.wait_for_nodes_ssh(*workers, wait = wait, log = log)
+        cls.wait_for_nodes_ssh(*workers, wait = wait, log = log, user = f'{prefix:s}user')
         sleep(wait)
 
         Process.wait_for(
