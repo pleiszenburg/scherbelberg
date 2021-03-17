@@ -38,6 +38,13 @@ from .._core.cluster import Cluster
 
 
 @click.command(short_help = "destroy cluster")
-def destroy():
+@click.option('-p', '--prefix', default = "cluster", type = str, show_default = True)
+@click.option('-t', '--tokenvar', default = "HETZNER", type = str, show_default = True)
+@click.option('-a', '--wait', default = 0.5, type = float, show_default = True)
+def destroy(prefix, tokenvar, wait):
 
-    Cluster().destroy()
+    Cluster(
+        prefix = prefix,
+        tokenvar = tokenvar,
+        wait = wait,
+    ).destroy()
