@@ -38,8 +38,24 @@ from .._core.cluster import Cluster
 
 
 @click.command(short_help = "create cluster")
-# @click.argument("configfile", type = click.File("r", encoding="utf-8"))
-# @click.argument("side", default = "source", type = str)
-def create():
+@click.option('-p', '--prefix', default = "cluster", type = str, show_default = True)
+@click.option('-t', '--tokenvar', default = "HETZNER", type = str, show_default = True)
+@click.option('-a', '--wait', default = 0.5, type = float, show_default = True)
+@click.option('-s', '--scheduler', default = 'cx11', type = str, show_default = True)
+@click.option('-w', '--worker', default = 'cx11', type = str, show_default = True)
+@click.option('-i', '--image', default = 'ubuntu-20.04', type = str, show_default = True)
+@click.option('-d', '--datacenter', default = 'fsn1-dc14', type = str, show_default = True)
+@click.option('-n', '--workers', default = 1, type = int, show_default = True)
+def create(prefix, tokenvar, wait, scheduler, worker, image, datacenter, workers):
 
-    Cluster().create()
+    Cluster(
+        prefix = prefix,
+        tokenvar = tokenvar,
+        wait = wait,
+    ).create(
+        scheduler = scheduler,
+        worker = worker,
+        image = image,
+        datacenter = datacenter,
+        workers = workers,
+    )
