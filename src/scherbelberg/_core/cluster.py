@@ -91,6 +91,11 @@ class Cluster(ClusterABC):
         self._workers = []
 
 
+    def __repr__(self) -> str:
+
+        return f'<cluster {"loaded" if self.loaded else "detached":s}>'
+
+
     def create(
         self,
         scheduler: str = 'cx11',
@@ -221,6 +226,12 @@ class Cluster(ClusterABC):
 
         self._scheduler = None
         self._workers.clear()
+
+
+    @property
+    def loaded(self) -> bool:
+
+        return self._scheduler is not None
 
 
     @property
