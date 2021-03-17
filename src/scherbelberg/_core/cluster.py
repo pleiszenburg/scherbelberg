@@ -47,6 +47,9 @@ from .const import (
     DASK_IPC, DASK_DASH,
     PREFIX, TOKENVAR, WAIT,
     WORKERS,
+    HETZNER_INSTANCE_TINY,
+    HETZNER_IMAGE_UBUNTU,
+    HETZNER_DATACENTER,
 )
 from .command import Command
 from .node import Node
@@ -119,10 +122,10 @@ class Cluster(ClusterABC):
 
     def create(
         self,
-        scheduler: str = 'cx11',
-        worker: str = 'cx11',
-        image: str = 'ubuntu-20.04',
-        datacenter: str = 'fsn1-dc14',
+        scheduler: str = HETZNER_INSTANCE_TINY,
+        worker: str = HETZNER_INSTANCE_TINY,
+        image: str = HETZNER_IMAGE_UBUNTU,
+        datacenter: str = HETZNER_DATACENTER,
         workers: int = WORKERS,
         dask_ipc: int = DASK_IPC,
         dask_dash: int = DASK_DASH,

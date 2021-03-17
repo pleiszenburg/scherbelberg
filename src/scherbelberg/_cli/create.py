@@ -35,6 +35,9 @@ from .._core.const import (
     DASK_IPC, DASK_DASH,
     PREFIX, TOKENVAR, WAIT,
     WORKERS,
+    HETZNER_INSTANCE_TINY,
+    HETZNER_IMAGE_UBUNTU,
+    HETZNER_DATACENTER,
 )
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -46,10 +49,10 @@ from .._core.const import (
 @click.option('-p', '--prefix', default = PREFIX, type = str, show_default = True)
 @click.option('-t', '--tokenvar', default = TOKENVAR, type = str, show_default = True)
 @click.option('-a', '--wait', default = WAIT, type = float, show_default = True)
-@click.option('-s', '--scheduler', default = 'cx11', type = str, show_default = True)
-@click.option('-w', '--worker', default = 'cx11', type = str, show_default = True)
-@click.option('-i', '--image', default = 'ubuntu-20.04', type = str, show_default = True)
-@click.option('-d', '--datacenter', default = 'fsn1-dc14', type = str, show_default = True)
+@click.option('-s', '--scheduler', default = HETZNER_INSTANCE_TINY, type = str, show_default = True)
+@click.option('-w', '--worker', default = HETZNER_INSTANCE_TINY, type = str, show_default = True)
+@click.option('-i', '--image', default = HETZNER_IMAGE_UBUNTU, type = str, show_default = True)
+@click.option('-d', '--datacenter', default = HETZNER_DATACENTER, type = str, show_default = True)
 @click.option('-n', '--workers', default = WORKERS, type = int, show_default = True)
 @click.option('-c', '--dask_ipc', default = DASK_IPC, type = int, show_default = True)
 @click.option('-d', '--dask_dash', default = DASK_DASH, type = int, show_default = True)
