@@ -43,6 +43,7 @@ from hcloud.server_types.domain import ServerType
 from typeguard import typechecked
 
 from .abc import ClusterABC, NodeABC
+from .const import PREFIX, TOKENVAR, WAIT
 from .command import Command
 from .node import Node
 
@@ -60,9 +61,9 @@ class Cluster(ClusterABC):
 
     def __init__(
         self,
-        prefix: str = 'cluster',
-        tokenvar: str = 'HETZNER',
-        wait: float = 0.5,
+        prefix: str = PREFIX,
+        tokenvar: str = TOKENVAR,
+        wait: float = WAIT,
     ):
 
         self._client = Client(token = os.environ[tokenvar])

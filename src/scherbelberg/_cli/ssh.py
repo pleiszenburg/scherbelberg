@@ -33,6 +33,7 @@ import os
 import sys
 
 from .._core.cluster import Cluster
+from .._core.const import PREFIX, TOKENVAR, WAIT
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ROUTINES
@@ -40,9 +41,9 @@ from .._core.cluster import Cluster
 
 
 @click.command(short_help = "ssh into cluster member")
-@click.option('-p', '--prefix', default = "cluster", type = str, show_default = True)
-@click.option('-t', '--tokenvar', default = "HETZNER", type = str, show_default = True)
-@click.option('-a', '--wait', default = 0.5, type = float, show_default = True)
+@click.option('-p', '--prefix', default = PREFIX, type = str, show_default = True)
+@click.option('-t', '--tokenvar', default = TOKENVAR, type = str, show_default = True)
+@click.option('-a', '--wait', default = WAIT, type = float, show_default = True)
 @click.argument('hostname', nargs = 1, type = str)
 def ssh(prefix, tokenvar, wait, hostname):
 
