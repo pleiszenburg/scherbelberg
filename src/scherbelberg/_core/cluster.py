@@ -244,31 +244,17 @@ class Cluster(ClusterABC):
             rules = [
                 FirewallRule(
                     direction = 'in',
-                    protocol = 'tcp',
+                    protocol = protocol,
                     source_ips = ['0.0.0.0/0', '::/0'],
                     destination_ips = [],
-                    port = '22',
-                ),
-                FirewallRule(
-                    direction = 'in',
-                    protocol = 'icmp',
-                    source_ips = ['0.0.0.0/0', '::/0'],
-                    destination_ips = [],
-                ),
-                FirewallRule(
-                    direction = 'in',
-                    protocol = 'tcp',
-                    source_ips = ['0.0.0.0/0', '::/0'],
-                    destination_ips = [],
-                    port = '9753',
-                ),
-                FirewallRule(
-                    direction = 'in',
-                    protocol = 'tcp',
-                    source_ips = ['0.0.0.0/0', '::/0'],
-                    destination_ips = [],
-                    port = '9754',
-                ),
+                    port = port,
+                )
+                for protocol, port in (
+                    ('tcp', '22'),
+                    ('icmp', None),
+                    ('tcp', '9753'), # dask ipc
+                    ('tcp', '9754'), # dask dash
+                )
             ],
         )
 
