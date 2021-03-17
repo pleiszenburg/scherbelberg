@@ -138,6 +138,14 @@ class Cluster(ClusterABC):
             log = self._log,
         )
 
+        Node.bootstrap_dask(
+            *self._workers,
+            scheduler = self._scheduler,
+            prefix = self._prefix,
+            wait = self._wait,
+            log = self._log,
+        )
+
 
     def load(self):
         """
@@ -233,6 +241,20 @@ class Cluster(ClusterABC):
                     protocol = 'icmp',
                     source_ips = ['0.0.0.0/0', '::/0'],
                     destination_ips = [],
+                ),
+                FirewallRule(
+                    direction = 'in',
+                    protocol = 'tcp',
+                    source_ips = ['0.0.0.0/0', '::/0'],
+                    destination_ips = [],
+                    port = '9753',
+                ),
+                FirewallRule(
+                    direction = 'in',
+                    protocol = 'tcp',
+                    source_ips = ['0.0.0.0/0', '::/0'],
+                    destination_ips = [],
+                    port = '9754',
                 ),
             ],
         )
