@@ -74,6 +74,7 @@ def ssh(prefix, tokenvar, wait, hostname):
         "-p", f'{host.port:d}',
         "-c", host.cipher,
         "-i", host.fn_private,
+        "-q",
         f'{host.user:s}@{host.name:s}',
     ]
     os.execvpe(ssh[0], ssh, os.environ)
