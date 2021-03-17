@@ -61,12 +61,16 @@ class Process(ProcessABC):
         self._exception = None
 
 
-    def __call__(self, returncode: bool = False) -> Union[
+    def __call__(
+        self,
+        returncode: bool = False,
+        timeout: Union[float, int, None] = None,
+    ) -> Union[
         Tuple[List[str], List[str], List[int], Exception],
         Tuple[List[str], List[str]],
     ]:
 
-        self._complete()
+        self._complete(timeout = timeout)
 
         if returncode:
             return self._output, self._errors, self._status, self._exception
@@ -92,14 +96,17 @@ class Process(ProcessABC):
         return self._command
 
 
-    def _complete(self):
+    def _complete(
+        self,
+        timeout: Union[float, int, None] = None,
+    ):
 
         if self._completed:
             return
 
         for proc in self._procs[::-1]:  # inverse order, last process first
 
-            out, err = proc.communicate()
+            out, err = proc.communicate(timeout = timeout)
             self._output.append(self._com_to_str(out))
             self._errors.append(self._com_to_str(err))
             self._status.append(int(proc.returncode))
