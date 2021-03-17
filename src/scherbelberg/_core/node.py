@@ -159,8 +159,8 @@ class Node(NodeABC):
         cls,
         *nodes: NodeABC,
         prefix: str,
-        wait: float = None,
-        log: logging.Logger = None,
+        wait: float,
+        log: logging.Logger,
     ):
 
         assert wait > 0.0
@@ -239,8 +239,10 @@ class Node(NodeABC):
         *workers: NodeABC,
         scheduler: NodeABC,
         prefix: str,
-        wait: float = None,
-        log: logging.Logger = None,
+        wait: float,
+        log: logging.Logger,
+        dask_ipc: int,
+        dask_dash: int,
     ):
 
         assert wait > 0.0
@@ -251,7 +253,7 @@ class Node(NodeABC):
             comment = 'start dask scheduler', log = log, wait = wait,
             procs = [
                 Command.from_list(
-                ["bash", "-i", "bootstrap_scheduler.sh", "9753", "9754"]
+                ["bash", "-i", "bootstrap_scheduler.sh", str(dask_ipc), str(dask_dash)]
                 ).on_host(
                     host = scheduler.get_sshconfig(user = f'{prefix:s}user')
                 ).launch()
@@ -265,7 +267,7 @@ class Node(NodeABC):
             comment = 'start dask workers', log = log, wait = wait,
             procs = [
                 Command.from_list(
-                ["bash", "-i", "bootstrap_worker.sh", scheduler.private_ip4, "9753", "9754"]
+                ["bash", "-i", "bootstrap_worker.sh", scheduler.private_ip4, str(dask_ipc), str(dask_dash)]
                 ).on_host(
                     host = worker.get_sshconfig(user = f'{prefix:s}user')
                 ).launch()
