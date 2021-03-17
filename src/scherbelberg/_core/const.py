@@ -27,8 +27,8 @@ specific language governing rights and limitations under the License.
 # CONST
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-DASK_IPC = ""
-DASK_DASH = ""
+DASK_IPC = 9753
+DASK_DASH = 9756
 
 PREFIX = "cluster"
 TOKENVAR = "HETZNER"
