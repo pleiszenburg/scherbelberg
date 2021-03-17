@@ -30,6 +30,7 @@ specific language governing rights and limitations under the License.
 import logging
 import os
 from time import sleep
+from typing import List
 
 from hcloud import Client
 from hcloud.datacenters.domain import Datacenter
@@ -220,6 +221,18 @@ class Cluster(ClusterABC):
 
         self._scheduler = None
         self._workers.clear()
+
+
+    @property
+    def scheduler(self) -> NodeABC:
+
+        return self._scheduler
+
+
+    @property
+    def workers(self) -> List[NodeABC]:
+
+        return self._workers.copy()
 
 
     def _create_firewall(self):

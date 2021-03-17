@@ -29,7 +29,8 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 import click
-import sys
+
+from .._core.cluster import Cluster
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ROUTINES
@@ -39,4 +40,9 @@ import sys
 @click.command(short_help = "list cluster members")
 def ls():
 
-    sys.exit(0)
+    cluster = Cluster()
+    cluster.load()
+
+    print(cluster.scheduler)
+    for node in cluster.workers:
+        print(node)
