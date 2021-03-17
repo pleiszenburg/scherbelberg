@@ -29,7 +29,10 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 import click
+import os
 import sys
+
+from .._core.cluster import Cluster
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ROUTINES
@@ -37,6 +40,39 @@ import sys
 
 
 @click.command(short_help = "ssh into cluster member")
-def ssh():
+@click.option('-p', '--prefix', default = "cluster", type = str, show_default = True)
+@click.option('-t', '--tokenvar', default = "HETZNER", type = str, show_default = True)
+@click.option('-a', '--wait', default = 0.5, type = float, show_default = True)
+@click.argument('hostname', nargs = 1, type = str)
+def ssh(prefix, tokenvar, wait, hostname):
 
-    sys.exit(0)
+    cluster = Cluster(
+        prefix = prefix,
+        tokenvar = tokenvar,
+        wait = wait,
+    )
+    cluster.load()
+
+    nodes = {
+        node.name.split('-node-')[1]: node
+        for node in cluster.workers
+    }
+    nodes['scheduler'] = cluster.scheduler
+
+    if hostname not in nodes.keys():
+        print(f'"{hostname:s}" is unknown in cluster "{prefix:s}": ' + ', '.join(nodes.keys()))
+        sys.exit(1)
+
+    host = nodes[hostname].get_sshconfig(user = f'{prefix:s}user')
+    ssh = [
+        "ssh",
+        "-o", "StrictHostKeyChecking=no", # TODO security
+        "-o", "UserKnownHostsFile=/dev/null", # TODO security
+        "-o", "ConnectTimeout=5",
+        "-o", "Compression=yes" if host.compression else "Compression=no",
+        "-p", f'{host.port:d}',
+        "-c", host.cipher,
+        "-i", host.fn_private,
+        f'{host.user:s}@{host.name:s}',
+    ]
+    os.execvpe(ssh[0], ssh, os.environ)
