@@ -38,9 +38,16 @@ from .._core.cluster import Cluster
 
 
 @click.command(short_help = "list cluster members")
-def ls():
+@click.option('-p', '--prefix', default = "cluster", type = str, show_default = True)
+@click.option('-t', '--tokenvar', default = "HETZNER", type = str, show_default = True)
+@click.option('-w', '--wait', default = 0.5, type = str, show_default = True)
+def ls(prefix, tokenvar, wait):
 
-    cluster = Cluster()
+    cluster = Cluster(
+        prefix = prefix,
+        tokenvar = tokenvar,
+        wait = wait,
+    )
     cluster.load()
 
     print(cluster.scheduler)
