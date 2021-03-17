@@ -100,7 +100,7 @@ setup(
     install_requires=["click", "hcloud", "pyyaml", "typeguard",],
     extras_require=extras_require,
     zip_safe=False,
-    entry_points={}, # {"console_scripts": ["scherbelberg = scherbelberg.cli:cli",],},
+    entry_points={"console_scripts": ["scherbelberg = scherbelberg._cli:cli",],},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",
