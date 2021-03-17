@@ -22,5 +22,6 @@
 # run as user
 
 PORT=$1
+DASHPORT=$2
 
-dask-scheduler --port $PORT > scheduler_out 2> scheduler_err < /dev/null &
+dask-scheduler --port $PORT --dashboard-address $DASHPORT > scheduler_out 2> scheduler_err < /dev/null &

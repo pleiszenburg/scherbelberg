@@ -251,7 +251,7 @@ class Node(NodeABC):
             comment = 'start dask scheduler', log = log, wait = wait,
             procs = [
                 Command.from_list(
-                ["bash", "-i", "bootstrap_scheduler.sh", "9753"]
+                ["bash", "-i", "bootstrap_scheduler.sh", "9753", "9754"]
                 ).on_host(
                     host = scheduler.get_sshconfig(user = f'{prefix:s}user')
                 ).launch()
