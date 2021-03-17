@@ -31,7 +31,11 @@ specific language governing rights and limitations under the License.
 import click
 
 from .._core.cluster import Cluster
-from .._core.const import PREFIX, TOKENVAR, WAIT
+from .._core.const import (
+    DASK_IPC, DASK_DASH,
+    PREFIX, TOKENVAR, WAIT,
+    WORKERS,
+)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ROUTINES
@@ -46,8 +50,14 @@ from .._core.const import PREFIX, TOKENVAR, WAIT
 @click.option('-w', '--worker', default = 'cx11', type = str, show_default = True)
 @click.option('-i', '--image', default = 'ubuntu-20.04', type = str, show_default = True)
 @click.option('-d', '--datacenter', default = 'fsn1-dc14', type = str, show_default = True)
-@click.option('-n', '--workers', default = 1, type = int, show_default = True)
-def create(prefix, tokenvar, wait, scheduler, worker, image, datacenter, workers):
+@click.option('-n', '--workers', default = WORKERS, type = int, show_default = True)
+@click.option('-c', '--dask_ipc', default = DASK_IPC, type = int, show_default = True)
+@click.option('-d', '--dask_dash', default = DASK_DASH, type = int, show_default = True)
+def create(
+    prefix, tokenvar, wait,
+    scheduler, worker, image, datacenter, workers,
+    dask_ipc, dask_dash,
+):
 
     Cluster(
         prefix = prefix,
@@ -59,4 +69,6 @@ def create(prefix, tokenvar, wait, scheduler, worker, image, datacenter, workers
         image = image,
         datacenter = datacenter,
         workers = workers,
+        dask_ipc = dask_ipc,
+        dask_dash = dask_dash,
     )
