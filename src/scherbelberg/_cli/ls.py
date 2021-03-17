@@ -40,7 +40,7 @@ from .._core.cluster import Cluster
 @click.command(short_help = "list cluster members")
 @click.option('-p', '--prefix', default = "cluster", type = str, show_default = True)
 @click.option('-t', '--tokenvar', default = "HETZNER", type = str, show_default = True)
-@click.option('-w', '--wait', default = 0.5, type = str, show_default = True)
+@click.option('-a', '--wait', default = 0.5, type = float, show_default = True)
 def ls(prefix, tokenvar, wait):
 
     cluster = Cluster(
