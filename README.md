@@ -66,3 +66,9 @@ from scherbelberg import Cluster
 c = Cluster()
 c.load()
 ```
+
+Once the cluster has been created/loaded, one can simply request an initialized Dask client object:
+
+```python
+dask_client = c.get_client()
+```
