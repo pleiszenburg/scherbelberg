@@ -201,7 +201,13 @@ class Node(NodeABC):
                 Command.from_scp(
                     *[os.path.abspath(os.path.join(
                         os.path.dirname(__file__), '..', 'share', fn,
-                    )) for fn in ('bootstrap_03.sh', 'requirements_conda.txt', 'requirements_pypi.txt')],
+                    )) for fn in (
+                        'bootstrap_03.sh',
+                        'bootstrap_scheduler.sh',
+                        'bootstrap_worker.sh',
+                        'requirements_conda.txt',
+                        'requirements_pypi.txt',
+                    )],
                     target = '~/',
                     host = node.get_sshconfig(user = f'{prefix:s}user'),
                 ).launch()
@@ -218,6 +224,47 @@ class Node(NodeABC):
                     host = node.get_sshconfig(user = f'{prefix:s}user')
                 ).launch()
                 for node in nodes
+            ],
+        )
+
+
+    @classmethod
+    def bootstrap_dask(
+        cls,
+        *workers: NodeABC,
+        scheduler: NodeABC,
+        prefix: str,
+        wait: float = None,
+        log: logging.Logger = None,
+    ):
+
+        assert wait > 0.0
+
+        cls.wait_for_nodes_ssh(scheduler, wait = wait, log = log)
+
+        Process.wait_for(
+            comment = 'start dask scheduler', log = log, wait = wait,
+            procs = [
+                Command.from_list(
+                ["bash", "bootstrap_scheduler.sh", "9753"]
+                ).on_host(
+                    host = scheduler.get_sshconfig(user = f'{prefix:s}user')
+                ).launch()
+            ],
+        )
+
+        cls.wait_for_nodes_ssh(*workers, wait = wait, log = log)
+        sleep(wait)
+
+        Process.wait_for(
+            comment = 'start dask workers', log = log, wait = wait,
+            procs = [
+                Command.from_list(
+                ["bash", "bootstrap_worker.sh", scheduler.private_ip4, "9753", "9754"]
+                ).on_host(
+                    host = worker.get_sshconfig(user = f'{prefix:s}user')
+                ).launch()
+                for worker in workers
             ],
         )
 
