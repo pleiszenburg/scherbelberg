@@ -8,3 +8,5 @@ dist/
 *.egg-info/
 *.key
 *.key.pub
+notebooks/
+dask-worker-space/
