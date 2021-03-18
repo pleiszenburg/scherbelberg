@@ -38,4 +38,4 @@ DASK_DASH = 9756
 
 PREFIX = "cluster"
 TOKENVAR = "HETZNER"
-WAIT = 0.5
+WAIT = 1.0
