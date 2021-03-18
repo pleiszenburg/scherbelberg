@@ -101,6 +101,11 @@ class Node(NodeABC):
         return status == 0
 
 
+    def reboot(self):
+
+        self._server.reboot()
+
+
     def update(self):
 
         self._server = self._client.servers.get_by_name(name = self.name)
@@ -143,7 +148,7 @@ class Node(NodeABC):
 
         assert wait > 0.0
 
-        log.info('Waiting for ssh on nodes ...')
+        log.info('Waiting for SSH on nodes ...')
 
         nodes = list(nodes)
 
@@ -159,10 +164,10 @@ class Node(NodeABC):
             down = len([item for item in nodes if item is not None])
             if down == 0:
                 sleep(wait) # one extra
-                log.info('Ssh is up on all nodes.')
+                log.info('SSH is up on all nodes.')
                 return
 
-            log.info(f'Continue waiting, ssh on {down:d} out of {len(nodes):d} nodes missing ...')
+            log.info(f'Continue waiting, SSH on {down:d} out of {len(nodes):d} nodes missing ...')
             sleep(wait)
 
 
@@ -193,10 +198,9 @@ class Node(NodeABC):
             ],
         )
 
-        for comment, procs, user, ssh_wait, ping_user in (
-            ('run first bootstrap script on nodes', ["bash", "bootstrap_01.sh"], 'root', False, None),
-            ('reboot nodes', ["shutdown", "-r", "now", "||", "true"], 'root', True, 'root'),
-            ('run second bootstrap script on nodes', ["bash", "bootstrap_02.sh", prefix], 'root', True, f'{prefix:s}user'),
+        for comment, procs, user, ssh_user, reboot in (
+            ('run first bootstrap script on nodes', ["bash", "bootstrap_01.sh"], 'root', 'root', True),
+            ('run second bootstrap script on nodes', ["bash", "bootstrap_02.sh", prefix], 'root', f'{prefix:s}user', False),
         ):
 
             Process.wait_for(
@@ -209,8 +213,12 @@ class Node(NodeABC):
                 ],
             )
 
-            if ssh_wait:
-                cls.wait_for_nodes_ssh(*nodes, wait = wait, log = log, user = ping_user)
+            if reboot:
+                log.info('Rebooting nodes')
+                for node in nodes:
+                    node.reboot()
+
+            cls.wait_for_nodes_ssh(*nodes, wait = wait, log = log, user = ssh_user)
 
         Process.wait_for(
             comment = 'copy user files to nodes', log = log, wait = wait,
