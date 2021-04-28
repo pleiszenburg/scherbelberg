@@ -70,7 +70,9 @@ with open(os.path.join(SRC_DIR, "scherbelberg", "__init__.py"), "r", encoding="u
     __version__ = get_version(f.read())
 
 # Requirements
+base_require = ["click", "hcloud", "pyyaml", "typeguard",]
 extras_require = {
+    "base": base_require,
     "dev": ["black", "python-language-server[all]", "setuptools", "twine", "wheel",],
 }
 extras_require["all"] = list(
@@ -97,7 +99,7 @@ setup(
     include_package_data=True,
     python_requires=">=3.{MINOR:d}".format(MINOR=python_minor_min),
     setup_requires=[],
-    install_requires=["click", "hcloud", "pyyaml", "typeguard",],
+    install_requires=base_require,
     extras_require=extras_require,
     zip_safe=False,
     entry_points={"console_scripts": ["scherbelberg = scherbelberg._cli:cli",],},
