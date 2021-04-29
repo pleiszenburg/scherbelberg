@@ -7,7 +7,7 @@ HPC cluster deployment and management for the Hetzner Cloud
 
 https://github.com/pleiszenburg/scherbelberg
 
-    src/scherbelberg/_core/cluster_async.py: A cluster - async edition
+    src/scherbelberg/_core/cluster.py: A cluster
 
     Copyright (C) 2021 Sebastian M. Ernst <ernst@pleiszenburg.de>
 
