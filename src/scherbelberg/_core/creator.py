@@ -257,6 +257,8 @@ class Creator(CreatorABC):
             server = server,
             client = self._client,
             fn_private = self._fn_private,
+            prefix = self._prefix,
+            wait = self._wait,
         )
 
         await node.bootstrap(wait = self._wait)

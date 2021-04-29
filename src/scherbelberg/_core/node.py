@@ -55,13 +55,16 @@ class Node(NodeABC):
     Mutable.
     """
 
-    def __init__(self, server: BoundServer, client: Client, fn_private: str):
+    def __init__(self, server: BoundServer, client: Client, fn_private: str, prefix: str, wait: float):
 
         assert len(fn_private) > 0
+        assert wait > 0
 
         self._server = server
         self._client = client
         self._fn_private = fn_private
+        self._prefix = prefix
+        self._wait = wait
 
         self._log = getLogger(name = self.name)
 
@@ -110,9 +113,9 @@ class Node(NodeABC):
         self._server = self._client.servers.get_by_name(name = self.name)
 
 
-    async def bootstrap(self, wait: float, prefix: str):
+    async def bootstrap(self):
 
-        await self.wait_for_ssh(wait = wait, user = 'root')
+        await self.wait_for_ssh(user = 'root')
 
         self._log.info('Copying root files to node ...')
         await Command.from_scp(
@@ -134,13 +137,13 @@ class Node(NodeABC):
 
         self._log.info('Rebooting ...')
         await self.reboot()
-        await self.wait_for_ssh(wait = wait, user = 'root')
+        await self.wait_for_ssh(user = 'root')
 
         self._log.info('Runing second bootstrap script ...')
         await Command.from_list(["bash", "bootstrap_02.sh"]).on_host(
             host = await self.get_sshconfig(user = 'root')
         ).run()
-        await self.wait_for_ssh(wait = wait, user = f'{prefix:s}user')
+        await self.wait_for_ssh(user = f'{self._prefix:s}user')
 
         self._log.info('Copying user files to node ...')
         await Command.from_scp(
@@ -154,20 +157,20 @@ class Node(NodeABC):
                 'requirements_pypi.txt',
             )],
             target = '~/',
-            host = await self.get_sshconfig(user = f'{prefix:s}user'),
+            host = await self.get_sshconfig(user = f'{self._prefix:s}user'),
         ).run()
 
         self._log.info('Runing third (user) bootstrap script ...')
         await Command.from_list([
-            "bash", "bootstrap_03.sh", prefix
+            "bash", "bootstrap_03.sh", self._prefix,
         ]).on_host(
-            host = await self.get_sshconfig(user = f'{prefix:s}user')
+            host = await self.get_sshconfig(user = f'{self._prefix:s}user')
         ).run()
 
         self._log.info('Bootstrapping done.')
 
 
-    async def wait_for_ssh(self, wait: float, user: str):
+    async def wait_for_ssh(self, user: str):
 
         self._log.info('Waiting for SSH, user "%s" ...', user)
 
@@ -175,7 +178,7 @@ class Node(NodeABC):
             ssh_up = await self.ping_ssh(user)
             if ssh_up:
                 break
-            await sleep(wait)
+            await sleep(self._wait)
             self._log.info('Continuing to wait for SSH, user "%s" ...', user)
 
         self._log.info('SSH is up.')
@@ -214,10 +217,12 @@ class Node(NodeABC):
 
 
     @classmethod
-    async def from_name(cls, name: str, client: Client, fn_private: str) -> NodeABC:
+    async def from_name(cls, name: str, client: Client, fn_private: str, prefix: str, wait: float) -> NodeABC:
 
         return cls(
             server = client.servers.get_by_name(name = name),
             client = client,
             fn_private = fn_private,
+            prefix = prefix,
+            wait = wait,
         )
