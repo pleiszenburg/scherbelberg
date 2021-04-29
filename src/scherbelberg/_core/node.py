@@ -91,7 +91,7 @@ class Node(NodeABC):
                 ["exit"]
             ).on_host(
                 host = await self.get_sshconfig(user = user),
-            ).run(returncode = True, timeout = 5)
+            ).run(returncode = True, timeout = 5, wait = self._wait)
 
         except TimeoutExpired:
 
@@ -128,12 +128,12 @@ class Node(NodeABC):
             )],
             target = '~/',
             host = await self.get_sshconfig(user = 'root'),
-        ).run()
+        ).run(wait = self._wait)
 
         self._log.info('Runing first bootstrap script ...')
         await Command.from_list(["bash", "bootstrap_01.sh"]).on_host(
             host = await self.get_sshconfig(user = 'root')
-        ).run()
+        ).run(wait = self._wait)
 
         self._log.info('Rebooting ...')
         await self.reboot()
@@ -142,7 +142,7 @@ class Node(NodeABC):
         self._log.info('Runing second bootstrap script ...')
         await Command.from_list(["bash", "bootstrap_02.sh"]).on_host(
             host = await self.get_sshconfig(user = 'root')
-        ).run()
+        ).run(wait = self._wait)
         await self.wait_for_ssh(user = f'{self._prefix:s}user')
 
         self._log.info('Copying user files to node ...')
@@ -158,14 +158,14 @@ class Node(NodeABC):
             )],
             target = '~/',
             host = await self.get_sshconfig(user = f'{self._prefix:s}user'),
-        ).run()
+        ).run(wait = self._wait)
 
         self._log.info('Runing third (user) bootstrap script ...')
         await Command.from_list([
             "bash", "bootstrap_03.sh", self._prefix,
         ]).on_host(
             host = await self.get_sshconfig(user = f'{self._prefix:s}user')
-        ).run()
+        ).run(wait = self._wait)
 
         self._log.info('Bootstrapping done.')
 
