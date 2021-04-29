@@ -40,7 +40,6 @@ from typeguard import typechecked
 
 from .abc import NodeABC, SSHConfigABC
 from .command import Command
-from .process import Process
 from .sshconfig import SSHConfig
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
