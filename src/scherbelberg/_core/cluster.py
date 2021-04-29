@@ -227,12 +227,43 @@ class Cluster(ClusterABC):
         log.info('Creating cloud client ...')
         client = Client(token = os.environ[tokenvar])
 
-        # TODO
+        log.info('Getting handle on scheduler ...')
+        scheduler = Node.from_name(
+            name = f'{prefix:s}-node-scheduler',
+            client = client,
+            fn_private = cls._fn_private(prefix),
+        )
+
+        log.info('Getting handles on workers ...')
+        workers = [
+            Node(
+                server = server,
+                client = client,
+                fn_private = cls._fn_private(prefix),
+            )
+            for server in client.servers.get_all()
+            if server.name.startswith(prefix) and '-node-worker' in server.name
+        ]
+
+        log.info('Getting handle on firewall ...')
+        firewall = client.firewalls.get_by_name(
+            name = f'{prefix:s}-firewall',
+        )
+
+        log.info('Getting handle on network ...')
+        network = client.networks.get_by_name(
+            name = f'{prefix:s}-network',
+        )
 
         log.info('Successfully attached to existing cluster.')
         return cls(
             client = client,
-
+            scheduler = scheduler,
+            workers = workers,
+            network = network,
+            firewall = firewall,
+            dask_ipc = scheduler.labels["dask_ipc"],
+            dask_dash = scheduler.labels["dask_dash"],
             prefix = prefix,
             wait = wait,
             log = log,
