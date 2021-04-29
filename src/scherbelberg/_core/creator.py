@@ -261,7 +261,7 @@ class Creator(CreatorABC):
             wait = self._wait,
         )
 
-        await node.bootstrap(wait = self._wait)
+        await node.bootstrap() # TODO param?
 
         return node
 
