@@ -72,7 +72,7 @@ class Node(NodeABC):
         return f'<node name={self.name:s} public={self.public_ip4:s} private={self.private_ip4}>'
 
 
-    def get_sshconfig(self, user: str) -> SSHConfigABC:
+    async def get_sshconfig(self, user: str) -> SSHConfigABC:
 
         return SSHConfig(
             name = self.public_ip4,
@@ -81,7 +81,7 @@ class Node(NodeABC):
         )
 
 
-    def ping_ssh(self, user: str) -> bool:
+    async def ping_ssh(self, user: str) -> bool:
 
         try:
 
@@ -101,24 +101,85 @@ class Node(NodeABC):
         return status == 0
 
 
-    def reboot(self):
+    async def reboot(self):
 
         self._server.reboot()
 
 
-    def update(self):
+    async def update(self):
 
         self._server = self._client.servers.get_by_name(name = self.name)
 
 
-    async def bootstrap(self, wait: float):
+    async def bootstrap(self, wait: float, prefix: str):
 
-        pass # TODO
+        await self.wait_for_ssh(wait = wait, user = 'root')
+
+        self._log.info('Copying root files to node ...')
+        await Command.from_scp(
+            *[os.path.abspath(os.path.join(
+                os.path.dirname(__file__), '..', 'share', fn,
+            )) for fn in (
+                'bootstrap_01.sh',
+                'bootstrap_02.sh',
+                'sshd_config.patch',
+            )],
+            target = '~/',
+            host = await self.get_sshconfig(user = 'root'),
+        ).run()
+
+        self._log.info('Runing first bootstrap script ...')
+        await Command.from_list(["bash", "bootstrap_01.sh"]).on_host(
+            host = await self.get_sshconfig(user = 'root')
+        ).run()
+
+        self._log.info('Rebooting ...')
+        await self.reboot()
+        await self.wait_for_ssh(wait = wait, user = 'root')
+
+        self._log.info('Runing second bootstrap script ...')
+        await Command.from_list(["bash", "bootstrap_02.sh"]).on_host(
+            host = await self.get_sshconfig(user = 'root')
+        ).run()
+        await self.wait_for_ssh(wait = wait, user = f'{prefix:s}user')
+
+        self._log.info('Copying user files to node ...')
+        await Command.from_scp(
+            *[os.path.abspath(os.path.join(
+                os.path.dirname(__file__), '..', 'share', fn,
+            )) for fn in (
+                'bootstrap_03.sh',
+                'bootstrap_scheduler.sh',
+                'bootstrap_worker.sh',
+                'requirements_conda.txt',
+                'requirements_pypi.txt',
+            )],
+            target = '~/',
+            host = await self.get_sshconfig(user = f'{prefix:s}user'),
+        ).run()
+
+        self._log.info('Runing third (user) bootstrap script ...')
+        await Command.from_list([
+            "bash", "bootstrap_03.sh", prefix
+        ]).on_host(
+            host = await self.get_sshconfig(user = f'{prefix:s}user')
+        ).run()
+
+        self._log.info('Bootstrapping done.')
 
 
     async def wait_for_ssh(self, wait: float, user: str):
 
-        pass # TODO
+        self._log.info('Waiting for SSH, user "%s" ...', user)
+
+        while True:
+            ssh_up = await self.ping_ssh(user)
+            if ssh_up:
+                break
+            await sleep(wait)
+            self._log.info('Continuing to wait for SSH, user "%s" ...', user)
+
+        self._log.info('SSH is up.')
 
 
     @property
