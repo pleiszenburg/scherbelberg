@@ -27,14 +27,17 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+from asyncio import sleep
 import itertools
 from subprocess import Popen, PIPE
 from typing import List, Tuple, Union
 import shlex
+from time import time
 
 from typeguard import typechecked
 
-from .abc import CommandABC, ProcessABC, SSHConfigABC
+from .abc import CommandABC, SSHConfigABC
+from .const import WAIT
 from .process import Process
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -96,7 +99,15 @@ class Command(CommandABC):
         ]
 
 
-    def launch(self) -> ProcessABC:
+    async def run(
+        self,
+        returncode: bool = False,
+        timeout: Union[float, int, None] = None,
+        wait: float = WAIT,
+    ) -> Union[
+        Tuple[List[str], List[str], List[int], Exception],
+        Tuple[List[str], List[str]],
+    ]:
 
         procs = []  # all processes, connected with pipes
 
@@ -111,22 +122,21 @@ class Command(CommandABC):
             )
             procs.append(proc)
 
-        return Process(
+        process = Process(
             procs = procs,
             command = self,
             )
 
+        start = time()
+        while process.running:
+            await sleep(wait)
+            if timeout is not None and (time() - start) >= timeout:
+                break
 
-    def run(
-        self,
-        returncode: bool = False,
-        timeout: Union[float, int, None] = None,
-    ) -> Union[
-        Tuple[List[str], List[str], List[int], Exception],
-        Tuple[List[str], List[str]],
-    ]:
-
-        return self.launch()(returncode = returncode, timeout = timeout)
+        return await process.communicate(
+            returncode = returncode,
+            timeout = 0.1 if timeout is not None else None,
+        )
 
 
     def on_host(self, host: SSHConfigABC) -> CommandABC:
