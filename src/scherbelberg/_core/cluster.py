@@ -27,21 +27,13 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from asyncio import gather, sleep
 from logging import getLogger, Logger
 import os
-from typing import Any, Dict, List, Union
+from typing import Any, List, Union
 
 from hcloud import Client
-from hcloud.datacenters.domain import Datacenter
 from hcloud.firewalls.client import BoundFirewall
-from hcloud.firewalls.domain import FirewallRule
-from hcloud.images.domain import Image
 from hcloud.networks.client import BoundNetwork
-from hcloud.networks.domain import NetworkSubnet
-from hcloud.servers.domain import Server
-from hcloud.server_types.domain import ServerType
-from hcloud.ssh_keys.client import BoundSSHKey
 
 from typeguard import typechecked
 
@@ -52,12 +44,8 @@ from .const import (
     PREFIX,
     TOKENVAR,
     WAIT,
-    WORKERS,
-    HETZNER_INSTANCE_TINY,
-    HETZNER_IMAGE_UBUNTU,
-    HETZNER_DATACENTER,
 )
-from .command import Command
+from .creator import Creator
 from .node import Node
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -111,7 +99,7 @@ class Cluster(ClusterABC):
         return f'<Cluster prefix="{self._prefix:s}" alive={str(self.alive):s} workers={len(self._workers):d} ipc={self._dask_ipc:d} dash={self._dask_dash:d}>'
 
 
-    def get_client(self) -> Any:
+    async def get_client(self) -> Any:
         """
         Creates and returns a DaskClient object for the cluster
         """
@@ -177,204 +165,43 @@ class Cluster(ClusterABC):
 
 
     @classmethod
-    async def _create_firewall(
-        cls,
-        prefix: str,
-        client: Client,
-        dask_ipc: int,
-        dask_dash: int,
-    ) -> BoundFirewall:
-
-        _ = client.firewalls.create(
-            name = f'{prefix:s}-firewall',
-            rules = [
-                FirewallRule(
-                    direction = 'in',
-                    protocol = protocol,
-                    source_ips = ['0.0.0.0/0', '::/0'],
-                    destination_ips = [],
-                    port = port,
-                )
-                for protocol, port in (
-                    ('tcp', '22'),
-                    ('icmp', None),
-                    ('tcp', f'{dask_ipc:d}'),
-                    ('tcp', f'{dask_dash:d}'),
-                )
-            ],
-        )
-
-        return client.firewalls.get_by_name(
-            name = f'{prefix:s}-firewall',
-        )
-
-
-    @classmethod
-    async def _create_network(
-        cls,
-        prefix: str,
-        client: Client,
-        ip_range: str,
-    ) -> BoundNetwork:
-
-        _ = client.networks.create(
-            name = f'{prefix:s}-network',
-            ip_range = ip_range,
-            subnets = [NetworkSubnet(
-                ip_range = ip_range,
-                type = 'cloud',
-                network_zone = 'eu-central',
-            )],
-        )
-
-        return client.networks.get_by_name(
-            name = f'{prefix:s}-network',
-        )
-
-
-    @classmethod
-    async def _create_node(
-        cls,
-        prefix: str,
-        client: Client,
-        network: BoundNetwork,
-        firewall: BoundFirewall,
-        ssh_key: BoundSSHKey,
-        wait: float,
-        suffix: str,
-        servertype: str,
-        datacenter: str,
-        image: str,
-        ip: str,
-        labels: Union[Dict[str, str], None] = None,
-    ) -> NodeABC:
-
-        name = f'{prefix:s}-node-{suffix:s}'
-
-        _ = client.servers.create(
-            name = name,
-            server_type = ServerType(name = servertype),
-            image = Image(name = image),
-            datacenter = Datacenter(name = datacenter),
-            ssh_keys = ssh_key,
-            firewalls = [firewall],
-            labels = labels,
-        )
-
-        while True:
-            server = client.servers.get_by_name(name = name)
-            if server.status == Server.STATUS_RUNNING:
-                break
-            await sleep(wait)
-
-        server.attach_to_network(
-            network = network,
-            ip = ip,
-        )
-
-        node = await Node.from_name(
-            name = name,
-            client = client,
-            fn_private = cls._fn_private(prefix),
-        )
-
-        # TODO bootstrap
-
-        return node
-
-
-    @classmethod
-    async def _create_ssh_key(
-        cls,
-        prefix: str,
-        client: Client,
-    ) -> BoundSSHKey:
-
-        if os.path.exists(cls._fn_private(prefix)):
-            raise SystemError('ssh private key file already exists')
-        if os.path.exists(cls._fn_public(prefix)):
-            raise SystemError('ssh public key file already exists')
-
-        _, _ = await Command.from_list([
-            'ssh-keygen',
-            '-f', cls._fn_private(prefix), # path to file
-            '-P', '', # no password
-            '-t', 'rsa', # RSA
-            '-b', '4096', # bits for RSA
-            '-C', f'{prefix:s}-key', # comment
-        ]).run()
-
-        with open(cls._fn_public(prefix), 'r', encoding = 'utf-8') as f:
-            public = f.read()
-
-        _ = client.ssh_keys.create(
-            name = f'{prefix:s}-key',
-            public_key = public,
-        )
-
-        return client.ssh_keys.get_by_name(
-            name = f'{prefix:s}-key',
-        )
-
-
-    @classmethod
     async def from_new(
         cls,
         prefix: str = PREFIX,
         tokenvar: str = TOKENVAR,
         wait: float = WAIT,
-        scheduler: str = HETZNER_INSTANCE_TINY,
-        worker: str = HETZNER_INSTANCE_TINY,
-        image: str = HETZNER_IMAGE_UBUNTU,
-        datacenter: str = HETZNER_DATACENTER,
-        workers: int = WORKERS,
         dask_ipc: int = DASK_IPC,
         dask_dash: int = DASK_DASH,
         log: Union[Logger, None] = None,
+        **kwargs,
     ) -> ClusterABC:
         """
         Creates a new cluster
         """
-
-        assert workers > 0
-
-        assert dask_ipc >= 2**10
-        assert dask_dash >= 2**10
-        assert dask_ipc != dask_dash
 
         log = getLogger(name = prefix) if log is None else log
 
         log.info('Creating cloud client ...')
         client = Client(token = os.environ[tokenvar])
 
-        log.info('Creating ssh key ...')
-        ssh_key = await cls._create_ssh_key(prefix, client)
-
-        log.info('Creating network ...')
-        network = await cls._create_network(prefix, client, ip_range = '10.0.1.0/24')
-
-        log.info('Creating firewall ...')
-        firewall = await cls._create_firewall(prefix, client, dask_ipc, dask_dash)
-
-        log.info('Creating nodes ...')
-        nodes = await gather(
-            self._create_node(),
-            *[
-                self._create_node()
-                for idx in range(workers)
-            ]
+        creator = await Creator.from_async(
+            client = client,
+            prefix = prefix,
+            fn_public = cls._fn_public(prefix),
+            fn_private = cls._fn_private(prefix),
+            wait = wait,
+            dask_ipc = dask_ipc,
+            dask_dash = dask_dash,
+            log = log,
+            **kwargs,
         )
-        scheduler, workers = nodes[0], nodes[1:]
 
-        # TODO bootstrap
-
-        log.info('Successfully created new cluster.')
         return cls(
             client = client,
-            scheduler = scheduler,
-            workers = workers,
-            network = network,
-            firewall = firewall,
+            scheduler = creator.scheduler,
+            workers = creator.workers,
+            network = creator.network,
+            firewall = creator.firewall,
             dask_ipc = dask_ipc,
             dask_dash = dask_dash,
             prefix = prefix,
