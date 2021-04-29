@@ -41,6 +41,10 @@ class CommandABC(ABC):
     pass
 
 
+class CreatorABC(ABC):
+    pass
+
+
 class NodeABC(ABC):
     pass
 
