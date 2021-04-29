@@ -56,6 +56,7 @@ from .const import (
     HETZNER_IMAGE_UBUNTU,
     HETZNER_DATACENTER,
 )
+from .node import Node
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS
@@ -252,13 +253,13 @@ class Creator(CreatorABC):
 
         self._log.info('Bootstrapping node %s ...', name)
 
-        node = await Node.from_name(
-            name = name,
+        node = await Node.from_async(
+            server = server,
             client = self._client,
             fn_private = self._fn_private,
         )
 
-        # TODO bootstrap
+        await node.bootstrap(wait = self._wait)
 
         return node
 
