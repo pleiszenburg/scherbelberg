@@ -183,6 +183,8 @@ class Creator(CreatorABC):
             ],
         )
 
+        self._log.info('Getting handle on firewall ...')
+
         return self._client.firewalls.get_by_name(
             name = f'{self._prefix:s}-firewall',
         )
