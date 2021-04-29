@@ -90,7 +90,7 @@ class Node(NodeABC):
             _, _, status, _ = await Command.from_list(
                 ["exit"]
             ).on_host(
-                host = self.get_sshconfig(user = user),
+                host = await self.get_sshconfig(user = user),
             ).run(returncode = True, timeout = 5)
 
         except TimeoutExpired:
