@@ -282,7 +282,7 @@ class Creator(CreatorABC):
             '-t', 'rsa', # RSA
             '-b', '4096', # bits for RSA
             '-C', f'{self._prefix:s}-key', # comment
-        ]).run()
+        ]).run(wait = self._wait)
 
         self._log.info('Uploading ssh key ...')
 
