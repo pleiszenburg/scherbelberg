@@ -120,12 +120,36 @@ class Cluster(ClusterABC):
         if not self.alive:
             raise SystemError('cluster is dead')
 
+        cats = [
+            getattr(self._client, name)
+            for name in (
+                'servers',
+                'networks',
+                'ssh_keys',
+                'firewalls',
+            )
+        ]
+
+        for cat in cats:
+            for item in cat.get_all():
+                if not item.name.startswith(self._prefix):
+                    self._log.warning('Not deleting %s ...', item.name)
+                    continue
+                self._log.info('Deleting %s ...', item.name)
+                item.delete()
+
+        self._client = None
+        self._scheduler = None
+        self._workers = None
+        self._network = None
+        self._firewall = None
+
         if os.path.exists(self._fn_private(self._prefix)):
             os.unlink(self._fn_private(self._prefix))
         if os.path.exists(self._fn_public(self._prefix)):
             os.unlink(self._fn_public(self._prefix))
 
-        # TODO
+        self._log.info('Cluster %s destroyed.', self._prefix)
 
 
     @property
@@ -137,11 +161,17 @@ class Cluster(ClusterABC):
     @property
     def scheduler(self) -> NodeABC:
 
+        if not self.alive:
+            raise SystemError('cluster is dead')
+
         return self._scheduler
 
 
     @property
     def workers(self) -> List[NodeABC]:
+
+        if not self.alive:
+            raise SystemError('cluster is dead')
 
         return self._workers.copy()
 
