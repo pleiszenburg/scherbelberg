@@ -27,9 +27,7 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from logging import Logger
 from subprocess import Popen
-from time import sleep
 from typing import List, Tuple, Union
 
 from typeguard import typechecked
@@ -61,7 +59,7 @@ class Process(ProcessABC):
         self._exception = None
 
 
-    def __call__(
+    def communicate(
         self,
         returncode: bool = False,
         timeout: Union[float, int, None] = None,
@@ -84,16 +82,10 @@ class Process(ProcessABC):
     @property
     def running(self) -> bool:
 
-        return all((
+        return any((
             proc.poll() is not None
             for proc in self._procs
         ))
-
-
-    @property
-    def command(self) -> CommandABC:
-
-        return self._command
 
 
     def _complete(
@@ -130,58 +122,7 @@ class Process(ProcessABC):
         if isinstance(com, bytes):
             try:
                 return com.decode("utf-8")
-            except:
+            except UnicodeDecodeError:
                 return repr(com)
 
         return com
-
-
-    @staticmethod
-    def wait_for(
-        comment: str,
-        procs: List[ProcessABC],
-        log: Logger,
-        wait: float,
-        assert_sucess: bool = True,
-    ):
-
-        assert wait > 0.0
-
-        log.info(f'Waiting for: {comment:s} ...')
-
-        while True:
-            running = len([proc for proc in procs if proc.running])
-            if running == 0:
-                break
-            log.info(f'{running:d} out of {len(procs):d} are still running ...')
-            sleep(wait)
-
-        log.info(f'Processes exited: {comment:s}')
-
-        if not assert_sucess:
-            log.info(f'Did not assess success of processes: {comment:s}')
-            return
-
-        if all((
-            all((code == 0 for code in proc(returncode = True)[2]))
-            for proc in procs
-        )):
-            log.info(f'Processes were successful: {comment:s}')
-            return
-
-        log.error(f'At least one process failed: {comment:s}')
-
-        for proc in procs:
-            if all((code == 0 for code in proc(returncode = True)[2])):
-                continue
-            log.error(f'Command failed: {str(proc.command):s}')
-            for idx, out, err, status, in zip(range(len(proc.command)), *proc(returncode = True)[:3]):
-                if status == 0:
-                    continue
-                log.error(f'Command fragment {idx:d} failed. Output:')
-                if len(out.strip()) > 0:
-                    log.error(out.strip())
-                if len(err.strip()) > 0:
-                    log.error(err.strip())
-
-        raise SystemError('A process did not exit with code 0.')
