@@ -7,7 +7,7 @@ HPC cluster deployment and management for the Hetzner Cloud
 
 https://github.com/pleiszenburg/scherbelberg
 
-    src/scherbelberg/_cli/ls.py: List cluster members
+    src/scherbelberg/_core/log.py: Logging
 
     Copyright (C) 2021 Sebastian M. Ernst <ernst@pleiszenburg.de>
 
@@ -23,51 +23,19 @@ specific language governing rights and limitations under the License.
 
 """
 
-
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from asyncio import run
-
-import click
-
-from .._core.cluster import Cluster
-from .._core.const import PREFIX, TOKENVAR, WAIT
-from .._core.log import configure_log
+from logging import basicConfig, INFO
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ROUTINES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+def configure_log():
 
-async def _main(prefix, tokenvar, wait):
-
-    cluster = await Cluster.from_existing(
-        prefix = prefix,
-        tokenvar = tokenvar,
-        wait = wait,
+    basicConfig(
+        format = '%(name)s %(levelname)s %(asctime)-15s: %(message)s',
+        level = INFO,
     )
-
-    print(cluster)
-
-    for worker in cluster.workers:
-        print(worker)
-    print(cluster.scheduler)
-
-    print('')
-    for worker in cluster.workers:
-        print(f'\t{worker.name:s} dash: http://{worker.public_ip4}:{cluster.dask_dash:d}/')
-    print('')
-    print(f'\t{cluster.scheduler.name:s} dash: http://{cluster.scheduler.public_ip4}:{cluster.dask_dash:d}/')
-    print('')
-
-@click.command(short_help = "list cluster members")
-@click.option('-p', '--prefix', default = PREFIX, type = str, show_default = True)
-@click.option('-t', '--tokenvar', default = TOKENVAR, type = str, show_default = True)
-@click.option('-a', '--wait', default = WAIT, type = float, show_default = True)
-def ls(prefix, tokenvar, wait):
-
-    configure_log()
-
-    run(_main(prefix, tokenvar, wait))

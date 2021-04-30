@@ -27,31 +27,25 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-import logging
+from logging import getLogger, Logger
 import os
-from time import sleep
-from typing import Any, Dict, List, Union
+from typing import Any, List, Union
 
 from hcloud import Client
-from hcloud.datacenters.domain import Datacenter
-from hcloud.firewalls.domain import FirewallRule
-from hcloud.images.domain import Image
-from hcloud.networks.domain import NetworkSubnet
-from hcloud.servers.domain import Server
-from hcloud.server_types.domain import ServerType
+from hcloud.firewalls.client import BoundFirewall
+from hcloud.networks.client import BoundNetwork
 
 from typeguard import typechecked
 
 from .abc import ClusterABC, NodeABC
 from .const import (
-    DASK_IPC, DASK_DASH,
-    PREFIX, TOKENVAR, WAIT,
-    WORKERS,
-    HETZNER_INSTANCE_TINY,
-    HETZNER_IMAGE_UBUNTU,
-    HETZNER_DATACENTER,
+    DASK_IPC,
+    DASK_DASH,
+    PREFIX,
+    TOKENVAR,
+    WAIT,
 )
-from .command import Command
+from .creator import Creator
 from .node import Node
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -68,171 +62,63 @@ class Cluster(ClusterABC):
 
     def __init__(
         self,
+        client: Client,
+        scheduler: NodeABC,
+        workers: List[NodeABC],
+        network: BoundNetwork,
+        firewall: BoundFirewall,
+        dask_ipc: int = DASK_IPC,
+        dask_dash: int = DASK_DASH,
         prefix: str = PREFIX,
-        tokenvar: str = TOKENVAR,
         wait: float = WAIT,
+        log: Union[Logger, None] = None,
     ):
 
-        self._client = Client(token = os.environ[tokenvar])
-        logging.basicConfig(
-            format = '%(name)s %(levelname)s %(asctime)-15s: %(message)s',
-            level = logging.INFO,
-        )
-        self._log = logging.getLogger(name = prefix)
+        assert len(workers) > 0
 
-        assert len(prefix) > 0
+        assert dask_ipc >= 2**10
+        assert dask_dash >= 2**10
+        assert dask_ipc != dask_dash
+
+        self._client = client
+        self._scheduler = scheduler
+        self._workers = workers
+        self._network = network
+        self._firewall = firewall
+
+        self._dask_ipc = dask_ipc # port
+        self._dask_dash = dask_dash # port
+
         self._prefix = prefix
-
-        assert wait > 0.0
         self._wait = wait
-
-        self._fn_private = os.path.join(os.getcwd(), f'{self._prefix:s}.key')
-        self._fn_public = f'{self._fn_private:s}.pub'
-
-        self._public = None
-
-        self._dask_ipc = None
-        self._dask_dash = None
-
-        self._ssh_key = None
-        self._network = None
-        self._firewall = None
-
-        self._scheduler = None
-        self._workers = []
+        self._log = getLogger(name = prefix) if log is None else log
 
 
     def __repr__(self) -> str:
 
-        if not self.loaded:
-            return '<cluster detached>'
-
-        return f'<cluster scheduler={self._scheduler.public_ip4:s} ipc={self._dask_ipc:d} dash={self._dask_dash:d}>'
+        return f'<Cluster prefix="{self._prefix:s}" alive={str(self.alive):s} workers={len(self._workers):d} ipc={self._dask_ipc:d} dash={self._dask_dash:d}>'
 
 
-    def get_client(self) -> Any:
+    async def get_client(self) -> Any:
+        """
+        Creates and returns a DaskClient object for the cluster
+        """
 
-        if not self.loaded:
-            raise SystemError('cluster not loaded')
+        if not self.alive:
+            raise SystemError('cluster is dead')
 
         from dask.distributed import Client as DaskClient
 
         return DaskClient(f'{self._scheduler.public_ip4:s}:{self._dask_ipc:d}')
 
 
-    def create(
-        self,
-        scheduler: str = HETZNER_INSTANCE_TINY,
-        worker: str = HETZNER_INSTANCE_TINY,
-        image: str = HETZNER_IMAGE_UBUNTU,
-        datacenter: str = HETZNER_DATACENTER,
-        workers: int = WORKERS,
-        dask_ipc: int = DASK_IPC,
-        dask_dash: int = DASK_DASH,
-    ):
+    async def destroy(self):
         """
-        Create new cluster
+        Destroys a living cluster
         """
 
-        self._log.info('Creating ...')
-
-        assert self._scheduler is None
-        assert len(self._workers) == 0
-
-        assert 0 < workers <= 100
-
-        assert dask_ipc >= 2**10
-        assert dask_dash >= 2**10
-        assert dask_ipc != dask_dash
-
-        self._dask_ipc = dask_ipc
-        self._dask_dash = dask_dash
-
-        self._create_ssh_key()
-        self._create_network(ip_range = '10.0.1.0/24')
-        self._create_firewall()
-
-        self._scheduler = self._create_node(
-            suffix = 'scheduler',
-            servertype = scheduler,
-            datacenter = datacenter,
-            image = image,
-            ip = '10.0.1.200',
-            labels = {
-                "dask_ipc": str(self._dask_ipc),
-                "dask_dash": str(self._dask_dash),
-            }
-        )
-        self._workers = [
-            self._create_node(
-                suffix = f'worker{node:03d}',
-                servertype = worker,
-                datacenter = datacenter,
-                image = image,
-                ip = f'10.0.1.{100+node:d}',
-            )
-            for node in range(workers)
-        ]
-
-        Node.bootstrap_nodes(
-            self._scheduler, *self._workers,
-            prefix = self._prefix,
-            wait = self._wait,
-            log = self._log,
-        )
-
-        Node.bootstrap_dask(
-            *self._workers,
-            scheduler = self._scheduler,
-            prefix = self._prefix,
-            wait = self._wait,
-            log = self._log,
-            dask_ipc = self._dask_ipc,
-            dask_dash = self._dask_dash,
-        )
-
-
-    def load(self):
-        """
-        Load existing cluster
-        """
-
-        assert self._scheduler is None
-        assert len(self._workers) == 0
-
-        self._log.info('Loading ssh key ...')
-
-        with open(self._fn_public, 'r') as f:
-            self._public = f.read()
-
-        self._log.info('Loading scheduler ...')
-
-        self._scheduler = Node.from_name(
-            name = f'{self._prefix:s}-node-scheduler',
-            client = self._client,
-            fn_private = self._fn_private,
-        )
-
-        self._dask_ipc = int(self._scheduler.labels["dask_ipc"])
-        self._dask_dash = int(self._scheduler.labels["dask_dash"])
-
-        self._log.info('Loading workers ...')
-
-        self._workers.extend([
-            Node(
-                server = server,
-                client = self._client,
-                fn_private = self._fn_private,
-            )
-            for server in self._client.servers.get_all()
-            if server.name.startswith(self._prefix) and '-node-worker' in server.name
-        ])
-
-
-    def destroy(self):
-        """
-        Destroy the entire cluster and all of its components
-        """
+        if not self.alive:
+            raise SystemError('cluster is dead')
 
         cats = [
             getattr(self._client, name)
@@ -247,40 +133,48 @@ class Cluster(ClusterABC):
         for cat in cats:
             for item in cat.get_all():
                 if not item.name.startswith(self._prefix):
-                    self._log.warn(f'NOT DELETING {item.name:s} ...')
+                    self._log.warning('Not deleting %s ...', item.name)
                     continue
-                self._log.info(f'Deleting {item.name:s} ...')
+                self._log.info('Deleting %s ...', item.name)
                 item.delete()
 
-        self._log.info('Deleting private key ...')
-        if os.path.exists(self._fn_private):
-            os.unlink(self._fn_private)
-
-        self._log.info('Deleting public key ...')
-        if os.path.exists(self._fn_public):
-            os.unlink(self._fn_public)
-
-        self._public = None
-
-        self._dask_ipc = None
-        self._dask_dash = None
-
-        self._ssh_key = None
-        self._firewall = None
-        self._network = None
-
+        self._client = None
         self._scheduler = None
-        self._workers.clear()
+        self._workers = None
+        self._network = None
+        self._firewall = None
+
+        if os.path.exists(self._fn_private(self._prefix)):
+            os.unlink(self._fn_private(self._prefix))
+        if os.path.exists(self._fn_public(self._prefix)):
+            os.unlink(self._fn_public(self._prefix))
+
+        self._log.info('Cluster %s destroyed.', self._prefix)
 
 
     @property
-    def loaded(self) -> bool:
+    def alive(self) -> bool:
 
         return self._scheduler is not None
 
 
     @property
+    def dask_ipc(self) -> int:
+
+        return self._dask_ipc
+
+
+    @property
+    def dask_dash(self) -> int:
+
+        return self._dask_dash
+
+
+    @property
     def scheduler(self) -> NodeABC:
+
+        if not self.alive:
+            raise SystemError('cluster is dead')
 
         return self._scheduler
 
@@ -288,145 +182,137 @@ class Cluster(ClusterABC):
     @property
     def workers(self) -> List[NodeABC]:
 
+        if not self.alive:
+            raise SystemError('cluster is dead')
+
         return self._workers.copy()
 
 
-    def _create_firewall(self):
+    @classmethod
+    def _fn_private(cls, prefix: str) -> str:
+        """
+        Path to private key file
+        """
 
-        self._log.info('Creating firewall ...')
+        return os.path.join(os.getcwd(), f'{prefix:s}.key')
 
-        _ = self._client.firewalls.create(
-            name = f'{self._prefix:s}-firewall',
-            rules = [
-                FirewallRule(
-                    direction = 'in',
-                    protocol = protocol,
-                    source_ips = ['0.0.0.0/0', '::/0'],
-                    destination_ips = [],
-                    port = port,
-                )
-                for protocol, port in (
-                    ('tcp', '22'),
-                    ('icmp', None),
-                    ('tcp', str(self._dask_ipc)),
-                    ('tcp', str(self._dask_dash)),
-                )
-            ],
+
+    @classmethod
+    def _fn_public(cls, prefix: str) -> str:
+        """
+        Path to public key file
+        """
+
+        return f'{cls._fn_private(prefix):s}.pub'
+
+
+    @classmethod
+    async def from_new(
+        cls,
+        prefix: str = PREFIX,
+        tokenvar: str = TOKENVAR,
+        wait: float = WAIT,
+        dask_ipc: int = DASK_IPC,
+        dask_dash: int = DASK_DASH,
+        log: Union[Logger, None] = None,
+        **kwargs,
+    ) -> ClusterABC:
+        """
+        Creates a new cluster
+        """
+
+        log = getLogger(name = prefix) if log is None else log
+
+        log.info('Creating cloud client ...')
+        client = Client(token = os.environ[tokenvar])
+
+        creator = await Creator.from_async(
+            client = client,
+            prefix = prefix,
+            fn_public = cls._fn_public(prefix),
+            fn_private = cls._fn_private(prefix),
+            wait = wait,
+            dask_ipc = dask_ipc,
+            dask_dash = dask_dash,
+            log = log,
+            **kwargs,
         )
 
-        self._log.info('Handle on firewall ...')
-
-        self._firewall = self._client.firewalls.get_by_name(
-            name = f'{self._prefix:s}-firewall',
-        )
-
-
-    def _create_network(self, ip_range: str):
-
-        self._log.info('Creating network ...')
-
-        _ = self._client.networks.create(
-            name = f'{self._prefix:s}-network',
-            ip_range = ip_range,
-            subnets = [NetworkSubnet(
-                ip_range = ip_range,
-                type = 'cloud',
-                network_zone = 'eu-central',
-            )],
-        )
-
-        self._log.info('Handle on network ...')
-
-        self._network = self._client.networks.get_by_name(
-            name = f'{self._prefix:s}-network',
-        )
-
-
-    def _create_node(self,
-        suffix: str,
-        servertype: str,
-        datacenter: str,
-        image: str,
-        ip: str,
-        labels: Union[Dict[str, str], None] = None,
-    ) -> NodeABC:
-
-        name = f'{self._prefix:s}-node-{suffix:s}'
-
-        self._log.info(f'Creating server {name:s} ...')
-
-        _ = self._client.servers.create(
-            name = name,
-            server_type = ServerType(name = servertype),
-            image = Image(name = image),
-            datacenter = Datacenter(name = datacenter),
-            ssh_keys = [self._ssh_key],
-            firewalls = [self._firewall],
-            labels = labels,
-        )
-
-        self._log.info(f'Waiting for server {name:s} to run ...')
-
-        while True:
-            server = self._client.servers.get_by_name(name = name)
-            if server.status == Server.STATUS_RUNNING:
-                break
-            sleep(self._wait)
-
-        server.attach_to_network(
-            network = self._network,
-            ip = ip,
-        )
-
-        self._log.info(f'Attaching network to server {name:s} ...')
-
-        return Node.from_name(
-            name = name,
-            client = self._client,
-            fn_private = self._fn_private,
+        return cls(
+            client = client,
+            scheduler = creator.scheduler,
+            workers = creator.workers,
+            network = creator.network,
+            firewall = creator.firewall,
+            dask_ipc = dask_ipc,
+            dask_dash = dask_dash,
+            prefix = prefix,
+            wait = wait,
+            log = log,
         )
 
 
-    def _create_ssh_key(self):
+    @classmethod
+    async def from_existing(
+        cls,
+        prefix: str = PREFIX,
+        tokenvar: str = TOKENVAR,
+        wait: float = WAIT,
+        log: Union[Logger, None] = None,
+    ) -> ClusterABC:
+        """
+        Attaches to existing cluster
+        """
 
-        self._log.info('Creating ssh key ...')
+        log = getLogger(name = prefix) if log is None else log
 
-        self._ssh_keygen()
+        log.info('Creating cloud client ...')
+        client = Client(token = os.environ[tokenvar])
 
-        self._log.info('Uploading ssh key ...')
-
-        _ = self._client.ssh_keys.create(
-            name = f'{self._prefix:s}-key',
-            public_key = self._public,
+        log.info('Getting handle on scheduler ...')
+        scheduler = await Node.from_name(
+            name = f'{prefix:s}-node-scheduler',
+            client = client,
+            fn_private = cls._fn_private(prefix),
+            prefix = prefix,
+            wait = wait,
+            log = log,
         )
 
-        self._log.info('Handle on ssh key ...')
+        log.info('Getting handles on workers ...')
+        workers = [
+            Node(
+                server = server,
+                client = client,
+                fn_private = cls._fn_private(prefix),
+                prefix = prefix,
+                wait = wait,
+                log = log,
+            )
+            for server in client.servers.get_all()
+            if server.name.startswith(prefix) and '-node-worker' in server.name
+        ]
 
-        self._ssh_key = self._client.ssh_keys.get_by_name(
-            name = f'{self._prefix:s}-key',
+        log.info('Getting handle on firewall ...')
+        firewall = client.firewalls.get_by_name(
+            name = f'{prefix:s}-firewall',
         )
 
+        log.info('Getting handle on network ...')
+        network = client.networks.get_by_name(
+            name = f'{prefix:s}-network',
+        )
 
-    def _ssh_keygen(self):
-
-        if os.path.exists(self._fn_private):
-            os.unlink(self._fn_private)
-        if os.path.exists(self._fn_public):
-            os.unlink(self._fn_public)
-
-        out, err = Command.from_list([
-            'ssh-keygen',
-            '-f', self._fn_private, # path to file
-            '-P', '', # no password
-            '-t', 'rsa', # RSA
-            '-b', '4096', # bits for RSA
-            '-C', f'{self._prefix:s}-key', # comment
-        ]).run()
-
-        if len(out[0].strip()) > 0:
-            self._log.info(out[0].strip())
-        if len(err[0].strip()) > 0:
-            self._log.error(err[0].strip())
-
-        with open(self._fn_public, 'r') as f:
-            self._public = f.read()
+        log.info('Successfully attached to existing cluster.')
+        return cls(
+            client = client,
+            scheduler = scheduler,
+            workers = workers,
+            network = network,
+            firewall = firewall,
+            dask_ipc = int(scheduler.labels["dask_ipc"]),
+            dask_dash = int(scheduler.labels["dask_dash"]),
+            prefix = prefix,
+            wait = wait,
+            log = log,
+        )
