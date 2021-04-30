@@ -30,7 +30,7 @@ specific language governing rights and limitations under the License.
 from asyncio import gather, sleep
 from logging import getLogger, Logger
 import os
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 from typeguard import typechecked
 
@@ -149,25 +149,25 @@ class Creator(CreatorABC):
 
 
     @property
-    def scheduler(self) -> None:
+    def scheduler(self) -> NodeABC:
 
         return self._scheduler
 
 
     @property
-    def workers(self) -> None:
+    def workers(self) -> List[NodeABC]:
 
         return self._workers.copy()
 
 
     @property
-    def network(self) -> None:
+    def network(self) -> BoundNetwork:
 
         return self._network
 
 
     @property
-    def firewall(self) -> None:
+    def firewall(self) -> BoundFirewall:
 
         return self._firewall
 
