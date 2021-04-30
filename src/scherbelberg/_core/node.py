@@ -176,16 +176,16 @@ class Node(NodeABC):
 
     async def wait_for_ssh(self, user: str):
 
-        self._log.info(self._l('Waiting for SSH, user "%s" ...'), user)
+        self._log.info(self._l('[%s] Waiting for SSH ...'), user)
 
         while True:
             ssh_up = await self.ping_ssh(user)
             if ssh_up:
                 break
             await sleep(self._wait)
-            self._log.info(self._l('Continuing to wait for SSH, user "%s" ...'), user)
+            self._log.info(self._l('[%s] Continuing to wait for SSH ...'), user)
 
-        self._log.info(self._l('SSH is up, user %s.'), user)
+        self._log.info(self._l('[%s] SSH up.'), user)
 
 
     @property
