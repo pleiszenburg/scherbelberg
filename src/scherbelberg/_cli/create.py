@@ -29,6 +29,7 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from asyncio import run
+
 import click
 
 from .._core.cluster import Cluster
@@ -40,6 +41,7 @@ from .._core.const import (
     HETZNER_IMAGE_UBUNTU,
     HETZNER_DATACENTER,
 )
+from .._core.log import configure_log
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ROUTINES
@@ -62,6 +64,8 @@ def create(
     scheduler, worker, image, datacenter, workers,
     dask_ipc, dask_dash,
 ):
+
+    configure_log()
 
     run(Cluster.from_new(
         prefix = prefix,
