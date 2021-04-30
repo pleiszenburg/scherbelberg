@@ -27,7 +27,7 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from asyncio import gather, sleep
+from asyncio import create_task, gather, sleep
 from logging import getLogger, Logger
 import os
 from typing import Dict, List, Union
@@ -118,32 +118,40 @@ class Creator(CreatorABC):
 
         self._log.info('Creating nodes ...')
 
-        nodes = await gather(
-            self._create_node(
-                suffix = 'scheduler',
-                servertype = scheduler,
+        scheduler_task = create_task(self._create_node(
+            suffix = 'scheduler',
+            servertype = scheduler,
+            datacenter = datacenter,
+            image = image,
+            ip = '10.0.1.200',
+            labels = {
+                "dask_ipc": str(dask_ipc),
+                "dask_dash": str(dask_dash),
+            }
+        ))
+
+        worker_tasks = [
+            create_task(self._create_node(
+                suffix = f'worker{node:03d}',
+                servertype = worker,
                 datacenter = datacenter,
                 image = image,
-                ip = '10.0.1.200',
-                labels = {
-                    "dask_ipc": str(dask_ipc),
-                    "dask_dash": str(dask_dash),
-                }
-            ),
-            *[
-                self._create_node(
-                    suffix = f'worker{node:03d}',
-                    servertype = worker,
-                    datacenter = datacenter,
-                    image = image,
-                    ip = f'10.0.1.{100+node:d}',
-                )
-                for node in range(workers)
-            ]
-        )
-        self._scheduler, self._workers = nodes[0], nodes[1:]
+                ip = f'10.0.1.{100+node:d}',
+            ))
+            for node in range(workers)
+        ]
 
-        # TODO bootstrap
+        self._scheduler = await scheduler_task
+        await self._scheduler.start_scheduler(dask_ipc = dask_ipc, dask_dash = dask_dash)
+
+        self._workers = [await task for task in worker_tasks]
+        await gather(*[
+            worker.start_worker(
+                dask_ipc = dask_ipc, dask_dash = dask_dash,
+                scheduler_ip4 = self._scheduler.public_ip4,
+            )
+            for worker in self._workers
+        ])
 
         self._log.info('Successfully created new cluster.')
 
