@@ -28,31 +28,27 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+from asyncio import run
+
 import click
 import os
 import sys
 
 from .._core.cluster import Cluster
 from .._core.const import PREFIX, TOKENVAR, WAIT
+from .._core.log import configure_log
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ROUTINES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+async def _main(prefix, tokenvar, wait, hostname):
 
-@click.command(short_help = "ssh into cluster member")
-@click.option('-p', '--prefix', default = PREFIX, type = str, show_default = True)
-@click.option('-t', '--tokenvar', default = TOKENVAR, type = str, show_default = True)
-@click.option('-a', '--wait', default = WAIT, type = float, show_default = True)
-@click.argument('hostname', nargs = 1, type = str)
-def ssh(prefix, tokenvar, wait, hostname):
-
-    cluster = Cluster(
+    cluster = await Cluster.from_existing(
         prefix = prefix,
         tokenvar = tokenvar,
         wait = wait,
     )
-    cluster.load()
 
     nodes = {
         node.name.split('-node-')[1]: node
@@ -64,8 +60,8 @@ def ssh(prefix, tokenvar, wait, hostname):
         print(f'"{hostname:s}" is unknown in cluster "{prefix:s}": ' + ', '.join(nodes.keys()))
         sys.exit(1)
 
-    host = nodes[hostname].get_sshconfig(user = f'{prefix:s}user')
-    ssh = [
+    host = await nodes[hostname].get_sshconfig(user = f'{prefix:s}user')
+    cmd = [
         "ssh",
         "-o", "StrictHostKeyChecking=no", # TODO security
         "-o", "UserKnownHostsFile=/dev/null", # TODO security
@@ -77,4 +73,16 @@ def ssh(prefix, tokenvar, wait, hostname):
         "-q",
         f'{host.user:s}@{host.name:s}',
     ]
-    os.execvpe(ssh[0], ssh, os.environ)
+    os.execvpe(cmd[0], cmd, os.environ)
+
+
+@click.command(short_help = "ssh into cluster member")
+@click.option('-p', '--prefix', default = PREFIX, type = str, show_default = True)
+@click.option('-t', '--tokenvar', default = TOKENVAR, type = str, show_default = True)
+@click.option('-a', '--wait', default = WAIT, type = float, show_default = True)
+@click.argument('hostname', nargs = 1, type = str)
+def ssh(prefix, tokenvar, wait, hostname):
+
+    configure_log()
+
+    run(_main(prefix, tokenvar, wait, hostname))
