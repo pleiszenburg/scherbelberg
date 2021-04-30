@@ -159,6 +159,18 @@ class Cluster(ClusterABC):
 
 
     @property
+    def dask_ipc(self) -> int:
+
+        return self._dask_ipc
+
+
+    @property
+    def dask_dash(self) -> int:
+
+        return self._dask_dash
+
+
+    @property
     def scheduler(self) -> NodeABC:
 
         if not self.alive:

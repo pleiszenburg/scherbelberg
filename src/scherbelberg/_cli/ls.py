@@ -51,6 +51,7 @@ async def _main(prefix, tokenvar, wait):
 
     print(cluster)
     print(cluster.scheduler)
+    print(f'\n\t{cluster.scheduler.name:s} dash: http://{cluster.scheduler.public_ip4}:{cluster.dask_dash:d}/\n')
     for node in cluster.workers:
         print(node)
 
