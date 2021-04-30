@@ -242,7 +242,7 @@ class Creator(CreatorABC):
             server_type = ServerType(name = servertype),
             image = Image(name = image),
             datacenter = Datacenter(name = datacenter),
-            ssh_keys = self._ssh_key,
+            ssh_keys = [self._ssh_key],
             firewalls = [self._firewall],
             labels = labels,
         )
