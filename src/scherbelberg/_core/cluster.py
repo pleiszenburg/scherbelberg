@@ -258,7 +258,7 @@ class Cluster(ClusterABC):
         client = Client(token = os.environ[tokenvar])
 
         log.info('Getting handle on scheduler ...')
-        scheduler = Node.from_name(
+        scheduler = await Node.from_name(
             name = f'{prefix:s}-node-scheduler',
             client = client,
             fn_private = cls._fn_private(prefix),
@@ -296,8 +296,8 @@ class Cluster(ClusterABC):
             workers = workers,
             network = network,
             firewall = firewall,
-            dask_ipc = scheduler.labels["dask_ipc"],
-            dask_dash = scheduler.labels["dask_dash"],
+            dask_ipc = int(scheduler.labels["dask_ipc"]),
+            dask_dash = int(scheduler.labels["dask_dash"]),
             prefix = prefix,
             wait = wait,
             log = log,
