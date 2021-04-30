@@ -32,13 +32,12 @@ INSTALLER=Mambaforge-Linux-x86_64.sh
 PACKAGES=$HOME/requirements_conda.txt
 
 # Load Conda-Forge-installer
-wget https://github.com/conda-forge/miniforge/releases/latest/download/$INSTALLER
+wget -q https://github.com/conda-forge/miniforge/releases/latest/download/$INSTALLER
 chmod +x $INSTALLER
 
 # Install Conda-Forge, create and activate environment
 ./$INSTALLER -b -p $FORGE
 rm $INSTALLER
 source $FORGE/bin/activate
-mamba create -y -n $ENVNAME --file=$PACKAGES python=3.8 > /dev/null 2> /dev/null
-conda activate $ENVNAME
+mamba create -q -y -n $ENVNAME --file=$PACKAGES python=3.8 < /dev/null > /dev/null 2> /dev/null
 echo "source $FORGE/bin/activate;conda activate $ENVNAME" >> .bashrc
