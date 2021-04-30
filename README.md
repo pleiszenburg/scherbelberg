@@ -48,27 +48,36 @@ Commands:
 
 ## API
 
-A cluster can basically be created and destroyed:
+`scherbelberg` uses `asyncio`. A cluster can basically be created and destroyed, with or without `asyncio`:
 
 ```python
+from asyncio import run
 from scherbelberg import Cluster
 
-c = Cluster()
-c.create()
-c.destroy()
+c = await Cluster.from_new(**kwargs)
+# or
+c = run(Cluster.from_new(**kwargs))
+
+await c.destroy()
+# or
+run(c.destroy())
 ```
 
 Access to an earlier established cluster can also be gained:
 
 ```python
+from asyncio import run
 from scherbelberg import Cluster
 
-c = Cluster()
-c.load()
+c = await Cluster.from_existing(**kwargs)
+# or
+c = run(Cluster.from_existing(**kwargs))
 ```
 
-Once the cluster has been created/loaded, one can simply request an initialized Dask client object:
+Once the cluster has been created or gained access to, one can simply request an initialized Dask client object:
 
 ```python
-dask_client = c.get_client()
+dask_client = await c.get_client()
+# or
+dask_client = run(c.get_client())
 ```
