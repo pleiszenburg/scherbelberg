@@ -30,7 +30,6 @@ specific language governing rights and limitations under the License.
 from asyncio import sleep
 from logging import getLogger
 import os
-from subprocess import TimeoutExpired
 from typing import Dict
 
 from hcloud import Client
@@ -85,17 +84,11 @@ class Node(NodeABC):
 
     async def ping_ssh(self, user: str) -> bool:
 
-        try:
-
-            _, _, status, _ = await Command.from_list(
-                ["exit"]
-            ).on_host(
-                host = await self.get_sshconfig(user = user),
-            ).run(returncode = True, timeout = 5, wait = self._wait)
-
-        except TimeoutExpired:
-
-            return False
+        _, _, status, _ = await Command.from_list(
+            ["exit"]
+        ).on_host(
+            host = await self.get_sshconfig(user = user),
+        ).run(returncode = True, timeout = 5, wait = self._wait)
 
         assert len(status) == 1
         status = status[0]

@@ -27,7 +27,7 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from subprocess import Popen
+from subprocess import Popen, TimeoutExpired
 from typing import List, Tuple, Union
 
 from typeguard import typechecked
@@ -98,7 +98,12 @@ class Process(ProcessABC):
 
         for proc in self._procs[::-1]:  # inverse order, last process first
 
-            out, err = proc.communicate(timeout = timeout)
+            try:
+                out, err = proc.communicate(timeout = timeout)
+            except TimeoutExpired:
+                proc.kill()
+                out, err = proc.communicate()
+
             self._output.append(self._com_to_str(out))
             self._errors.append(self._com_to_str(err))
             self._status.append(int(proc.returncode))
