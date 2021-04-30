@@ -50,11 +50,17 @@ async def _main(prefix, tokenvar, wait):
     )
 
     print(cluster)
-    print(cluster.scheduler)
-    print(f'\n\t{cluster.scheduler.name:s} dash: http://{cluster.scheduler.public_ip4}:{cluster.dask_dash:d}/\n')
-    for node in cluster.workers:
-        print(node)
 
+    for worker in cluster.workers:
+        print(worker)
+    print(cluster.scheduler)
+
+    print('')
+    for worker in cluster.workers:
+        print(f'\t{worker.name:s} dash: http://{worker.public_ip4}:{cluster.dask_dash:d}/')
+    print('')
+    print(f'\t{cluster.scheduler.name:s} dash: http://{cluster.scheduler.public_ip4}:{cluster.dask_dash:d}/')
+    print('')
 
 @click.command(short_help = "list cluster members")
 @click.option('-p', '--prefix', default = PREFIX, type = str, show_default = True)
