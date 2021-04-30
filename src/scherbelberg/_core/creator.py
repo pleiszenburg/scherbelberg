@@ -77,21 +77,10 @@ class Creator(CreatorABC):
         fn_public: str,
         fn_private: str,
         wait: float = WAIT,
-        dask_ipc: int = DASK_IPC,
-        dask_dash: int = DASK_DASH,
-        scheduler: str = HETZNER_INSTANCE_TINY,
-        worker: str = HETZNER_INSTANCE_TINY,
-        image: str = HETZNER_IMAGE_UBUNTU,
-        datacenter: str = HETZNER_DATACENTER,
-        workers: int = WORKERS,
         log: Union[Logger, None] = None,
     ):
 
-        assert workers > 0
-
-        assert dask_ipc >= 2**10
-        assert dask_dash >= 2**10
-        assert dask_ipc != dask_dash
+        self._log = getLogger(name = prefix) if log is None else log
 
         self._client = client
         self._prefix = prefix
@@ -99,7 +88,29 @@ class Creator(CreatorABC):
         self._fn_private = fn_private
         self._wait = wait
 
-        self._log = getLogger(name = prefix) if log is None else log
+        self._ssh_key = None
+        self._firewall = None
+        self._network = None
+        self._scheduler = None
+        self._workers = None
+
+
+    async def create(
+        self,
+        dask_ipc: int = DASK_IPC,
+        dask_dash: int = DASK_DASH,
+        scheduler: str = HETZNER_INSTANCE_TINY,
+        worker: str = HETZNER_INSTANCE_TINY,
+        image: str = HETZNER_IMAGE_UBUNTU,
+        datacenter: str = HETZNER_DATACENTER,
+        workers: int = WORKERS,
+    ):
+
+        assert workers > 0
+
+        assert dask_ipc >= 2**10
+        assert dask_dash >= 2**10
+        assert dask_ipc != dask_dash
 
         self._ssh_key = await self._create_ssh_key()
         self._network = await self._create_network(ip_range = '10.0.1.0/24')
@@ -302,6 +313,40 @@ class Creator(CreatorABC):
 
 
     @classmethod
-    async def from_async(cls, **kwargs) -> CreatorABC:
+    async def from_async(
+        cls,
+        client: Client,
+        prefix: str,
+        fn_public: str,
+        fn_private: str,
+        wait: float = WAIT,
+        log: Union[Logger, None] = None,
+        dask_ipc: int = DASK_IPC,
+        dask_dash: int = DASK_DASH,
+        scheduler: str = HETZNER_INSTANCE_TINY,
+        worker: str = HETZNER_INSTANCE_TINY,
+        image: str = HETZNER_IMAGE_UBUNTU,
+        datacenter: str = HETZNER_DATACENTER,
+        workers: int = WORKERS,
+    ) -> CreatorABC:
 
-        return cls(**kwargs)
+        obj = cls(
+            client = client,
+            prefix = prefix,
+            fn_public = fn_public,
+            fn_private = fn_private,
+            wait = wait,
+            log = log,
+        )
+
+        await obj.create(
+            dask_ipc = dask_ipc,
+            dask_dash = dask_dash,
+            scheduler = scheduler,
+            worker = worker,
+            image = image,
+            datacenter = datacenter,
+            workers = workers,
+        )
+
+        return obj
