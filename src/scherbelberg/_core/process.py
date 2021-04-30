@@ -83,7 +83,7 @@ class Process(ProcessABC):
     def running(self) -> bool:
 
         return any((
-            proc.poll() is not None
+            proc.poll() is None
             for proc in self._procs
         ))
 
