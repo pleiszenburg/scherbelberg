@@ -28,14 +28,27 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+from asyncio import run
+
 import click
 
 from .._core.cluster import Cluster
 from .._core.const import PREFIX, TOKENVAR, WAIT
+from .._core.log import configure_log
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ROUTINES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+async def _main(prefix, tokenvar, wait):
+
+    cluster = await Cluster.from_existing(
+        prefix = prefix,
+        tokenvar = tokenvar,
+        wait = wait,
+    )
+    await cluster.destroy()
 
 
 @click.command(short_help = "destroy cluster")
@@ -44,8 +57,6 @@ from .._core.const import PREFIX, TOKENVAR, WAIT
 @click.option('-a', '--wait', default = WAIT, type = float, show_default = True)
 def destroy(prefix, tokenvar, wait):
 
-    Cluster(
-        prefix = prefix,
-        tokenvar = tokenvar,
-        wait = wait,
-    ).destroy()
+    configure_log()
+
+    run(_main(prefix, tokenvar, wait))
