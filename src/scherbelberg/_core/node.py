@@ -140,7 +140,7 @@ class Node(NodeABC):
         await self.wait_for_ssh(user = 'root')
 
         self._log.info('Runing second bootstrap script ...')
-        await Command.from_list(["bash", "bootstrap_02.sh"]).on_host(
+        await Command.from_list(["bash", "bootstrap_02.sh", self._prefix]).on_host(
             host = await self.get_sshconfig(user = 'root')
         ).run(wait = self._wait)
         await self.wait_for_ssh(user = f'{self._prefix:s}user')
