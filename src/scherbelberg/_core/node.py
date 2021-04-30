@@ -174,6 +174,28 @@ class Node(NodeABC):
         self._log.info(self._l('Bootstrapping done.'))
 
 
+    async def start_scheduler(self, dask_ipc: int, dask_dash: int):
+
+        await self.wait_for_ssh(user = f'{self._prefix:s}user')
+
+        await Command.from_list(
+            ["bash", "-i", "bootstrap_scheduler.sh", f'{dask_ipc:d}', f'{dask_dash:d}']
+        ).on_host(
+            host = await self.get_sshconfig(user = f'{self._prefix:s}user')
+        ).run(wait = self._wait)
+
+
+    async def start_worker(self, dask_ipc: int, dask_dash: int):
+
+        await self.wait_for_ssh(user = f'{self._prefix:s}user')
+
+        await Command.from_list(
+            ["bash", "-i", "bootstrap_worker.sh", self.private_ip4, f'{dask_ipc:d}', f'{dask_dash:d}']
+        ).on_host(
+            host = await self.get_sshconfig(user = f'{self._prefix:s}user')
+        ).run(wait = self._wait)
+
+
     async def wait_for_ssh(self, user: str):
 
         self._log.info(self._l('[%s] Waiting for SSH ...'), user)
