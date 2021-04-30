@@ -161,9 +161,7 @@ class Node(NodeABC):
         ).run(wait = self._wait)
 
         self._log.info('Runing third (user) bootstrap script ...')
-        await Command.from_list([
-            "bash", "bootstrap_03.sh", self._prefix,
-        ]).on_host(
+        await Command.from_list(["bash", "bootstrap_03.sh", self._prefix]).on_host(
             host = await self.get_sshconfig(user = f'{self._prefix:s}user')
         ).run(wait = self._wait)
 
@@ -181,7 +179,7 @@ class Node(NodeABC):
             await sleep(self._wait)
             self._log.info('Continuing to wait for SSH, user "%s" ...', user)
 
-        self._log.info('SSH is up.')
+        self._log.info('SSH is up, user %s.', user)
 
 
     @property
