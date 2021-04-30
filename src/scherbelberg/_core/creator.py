@@ -270,6 +270,7 @@ class Creator(CreatorABC):
             fn_private = self._fn_private,
             prefix = self._prefix,
             wait = self._wait,
+            log = self._log,
         )
 
         await node.bootstrap() # TODO param?

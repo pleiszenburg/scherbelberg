@@ -264,6 +264,7 @@ class Cluster(ClusterABC):
             fn_private = cls._fn_private(prefix),
             prefix = prefix,
             wait = wait,
+            log = log,
         )
 
         log.info('Getting handles on workers ...')
@@ -274,6 +275,7 @@ class Cluster(ClusterABC):
                 fn_private = cls._fn_private(prefix),
                 prefix = prefix,
                 wait = wait,
+                log = log,
             )
             for server in client.servers.get_all()
             if server.name.startswith(prefix) and '-node-worker' in server.name

@@ -28,9 +28,9 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from asyncio import sleep
-from logging import getLogger
+from logging import getLogger, Logger
 import os
-from typing import Dict
+from typing import Dict, Union
 
 from hcloud import Client
 from hcloud.servers.client import BoundServer
@@ -54,7 +54,17 @@ class Node(NodeABC):
     Mutable.
     """
 
-    def __init__(self, server: BoundServer, client: Client, fn_private: str, prefix: str, wait: float):
+    def __init__(
+        self,
+        server: BoundServer,
+        client: Client,
+        fn_private: str,
+        prefix: str,
+        wait: float,
+        log: Union[Logger, None] = None,
+    ):
+
+        self._log = getLogger(name = prefix) if log is None else log
 
         assert len(fn_private) > 0
         assert wait > 0
@@ -65,12 +75,15 @@ class Node(NodeABC):
         self._prefix = prefix
         self._wait = wait
 
-        self._log = getLogger(name = self.name)
-
 
     def __repr__(self) -> str:
 
         return f'<node name={self.name:s} public={self.public_ip4:s} private={self.private_ip4}>'
+
+
+    def _l(self, msg: str) -> str:
+
+        return f'[{self.suffix:s}] {msg:s}'
 
 
     async def get_sshconfig(self, user: str) -> SSHConfigABC:
@@ -110,7 +123,7 @@ class Node(NodeABC):
 
         await self.wait_for_ssh(user = 'root')
 
-        self._log.info('Copying root files to node ...')
+        self._log.info(self._l('Copying root files to node ...'))
         await Command.from_scp(
             *[os.path.abspath(os.path.join(
                 os.path.dirname(__file__), '..', 'share', fn,
@@ -123,22 +136,22 @@ class Node(NodeABC):
             host = await self.get_sshconfig(user = 'root'),
         ).run(wait = self._wait)
 
-        self._log.info('Runing first bootstrap script ...')
+        self._log.info(self._l('Runing first bootstrap script ...'))
         await Command.from_list(["bash", "bootstrap_01.sh"]).on_host(
             host = await self.get_sshconfig(user = 'root')
         ).run(wait = self._wait)
 
-        self._log.info('Rebooting ...')
+        self._log.info(self._l('Rebooting ...'))
         await self.reboot()
         await self.wait_for_ssh(user = 'root')
 
-        self._log.info('Runing second bootstrap script ...')
+        self._log.info(self._l('Runing second bootstrap script ...'))
         await Command.from_list(["bash", "bootstrap_02.sh", self._prefix]).on_host(
             host = await self.get_sshconfig(user = 'root')
         ).run(wait = self._wait)
         await self.wait_for_ssh(user = f'{self._prefix:s}user')
 
-        self._log.info('Copying user files to node ...')
+        self._log.info(self._l('Copying user files to node ...'))
         await Command.from_scp(
             *[os.path.abspath(os.path.join(
                 os.path.dirname(__file__), '..', 'share', fn,
@@ -153,26 +166,26 @@ class Node(NodeABC):
             host = await self.get_sshconfig(user = f'{self._prefix:s}user'),
         ).run(wait = self._wait)
 
-        self._log.info('Runing third (user) bootstrap script ...')
+        self._log.info(self._l('Runing third (user) bootstrap script ...'))
         await Command.from_list(["bash", "bootstrap_03.sh", self._prefix]).on_host(
             host = await self.get_sshconfig(user = f'{self._prefix:s}user')
         ).run(wait = self._wait)
 
-        self._log.info('Bootstrapping done.')
+        self._log.info(self._l('Bootstrapping done.'))
 
 
     async def wait_for_ssh(self, user: str):
 
-        self._log.info('Waiting for SSH, user "%s" ...', user)
+        self._log.info(self._l('Waiting for SSH, user "%s" ...'), user)
 
         while True:
             ssh_up = await self.ping_ssh(user)
             if ssh_up:
                 break
             await sleep(self._wait)
-            self._log.info('Continuing to wait for SSH, user "%s" ...', user)
+            self._log.info(self._l('Continuing to wait for SSH, user "%s" ...'), user)
 
-        self._log.info('SSH is up, user %s.', user)
+        self._log.info(self._l('SSH is up, user %s.'), user)
 
 
     @property
@@ -201,6 +214,12 @@ class Node(NodeABC):
         return self._server.private_net[0].ip
 
 
+    @property
+    def suffix(self) -> str:
+
+        return self.name.split('-node-')[1]
+
+
     @classmethod
     async def from_async(cls, **kwargs) -> NodeABC:
 
@@ -208,7 +227,15 @@ class Node(NodeABC):
 
 
     @classmethod
-    async def from_name(cls, name: str, client: Client, fn_private: str, prefix: str, wait: float) -> NodeABC:
+    async def from_name(
+        cls,
+        name: str,
+        client: Client,
+        fn_private: str,
+        prefix: str,
+        wait: float,
+        log: Union[Logger, None] = None,
+    ) -> NodeABC:
 
         return cls(
             server = client.servers.get_by_name(name = name),
@@ -216,4 +243,5 @@ class Node(NodeABC):
             fn_private = fn_private,
             prefix = prefix,
             wait = wait,
+            log = log,
         )
