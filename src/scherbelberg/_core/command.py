@@ -133,7 +133,7 @@ class Command(CommandABC):
             if timeout is not None and (time() - start) >= timeout:
                 break
 
-        return await process.communicate(
+        return process.communicate(
             returncode = returncode,
             timeout = 0.1 if timeout is not None else None,
         )
