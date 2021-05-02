@@ -184,6 +184,12 @@ class Command(CommandABC):
         assert len(source) > 0
         assert len(target) > 0
 
+        if platform.startswith('win'): # Windows scp path fix
+            source = [
+                path.replace('\\\\', '/').replace('\\', '/')
+                for path in source
+            ]
+
         return cls.from_list([
             "scp",
             "-o", "Compression=yes" if host.compression else "Compression=no",
