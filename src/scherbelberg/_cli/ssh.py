@@ -60,11 +60,13 @@ async def _main(prefix, tokenvar, wait, hostname):
         print(f'"{hostname:s}" is unknown in cluster "{prefix:s}": ' + ', '.join(nodes.keys()))
         sys.exit(1)
 
+    dev_null = './nul' if sys.platform.startswith('win') else '/dev/null'
+
     host = await nodes[hostname].get_sshconfig(user = f'{prefix:s}user')
     cmd = [
         "ssh",
         "-o", "StrictHostKeyChecking=no", # TODO security
-        "-o", "UserKnownHostsFile=/dev/null", # TODO security
+        "-o", f"UserKnownHostsFile={dev_null:s}", # TODO security
         "-o", "ConnectTimeout=5",
         "-o", "Compression=yes" if host.compression else "Compression=no",
         "-p", f'{host.port:d}',
