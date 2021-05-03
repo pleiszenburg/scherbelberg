@@ -8,7 +8,7 @@ Next to impressive projects like [Fugaku](https://en.wikipedia.org/wiki/Fugaku_(
 
 ## Installation
 
-This package has been tested on Linux. It is likely to work on other Unix-like systems. It is unlikely to work on Windows.
+This package has been tested on Linux and Windows 10. It is likely to work on most Unix-like systems.
 
 Prerequisites:
 
@@ -45,6 +45,8 @@ Commands:
   ls       list cluster members
   ssh      ssh into cluster member
 ```
+
+At the moment, the ssh sub-command is broken on Windows.
 
 ## API
 
