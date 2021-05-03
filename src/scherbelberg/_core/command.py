@@ -92,7 +92,7 @@ class Command(CommandABC):
     @staticmethod
     def _ssh_options() -> List[str]:
 
-        dev_null = './nul' if platform.startswith('win') else '/dev/null'
+        dev_null = '\\\\.\\NUL' if platform.startswith('win') else '/dev/null'
 
         return [
             "-o", "StrictHostKeyChecking=no", # TODO security
