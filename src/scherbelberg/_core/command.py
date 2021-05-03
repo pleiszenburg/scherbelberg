@@ -32,6 +32,7 @@ import itertools
 from subprocess import Popen, PIPE
 from typing import List, Tuple, Union
 import shlex
+from sys import platform
 from time import time
 
 from typeguard import typechecked
@@ -91,9 +92,11 @@ class Command(CommandABC):
     @staticmethod
     def _ssh_options() -> List[str]:
 
+        dev_null = '\\\\.\\NUL' if platform.startswith('win') else '/dev/null'
+
         return [
             "-o", "StrictHostKeyChecking=no", # TODO security
-            "-o", "UserKnownHostsFile=/dev/null", # TODO security
+            "-o", f"UserKnownHostsFile={dev_null:s}", # TODO security
             "-o", "BatchMode=yes",
             "-o", "ConnectTimeout=5",
         ]
@@ -180,6 +183,12 @@ class Command(CommandABC):
 
         assert len(source) > 0
         assert len(target) > 0
+
+        if platform.startswith('win'): # Windows scp path fix
+            source = [
+                path.replace('\\\\', '/').replace('\\', '/')
+                for path in source
+            ]
 
         return cls.from_list([
             "scp",
