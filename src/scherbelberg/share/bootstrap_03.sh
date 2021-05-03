@@ -36,7 +36,7 @@ wget -q https://github.com/conda-forge/miniforge/releases/latest/download/$INSTA
 chmod +x $INSTALLER
 
 # Install Conda-Forge, create and activate environment
-./$INSTALLER -b -p $FORGE
+./$INSTALLER -b -p $FORGE < /dev/null > /dev/null 2> /dev/null
 rm $INSTALLER
 source $FORGE/bin/activate
 mamba create -q -y -n $ENVNAME --file=$PACKAGES python=3.8 < /dev/null > /dev/null 2> /dev/null
