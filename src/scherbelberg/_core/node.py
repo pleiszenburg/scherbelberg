@@ -185,6 +185,8 @@ class Node(NodeABC):
         assert dask_ipc >= 2**10
         assert dask_dash >= 2**10
 
+        assert dask_ipc != dask_dash
+
         await self.wait_for_ssh(user = f'{self._prefix:s}user')
 
         self._log.info(self._l('Staring dask scheduler ...'))
@@ -198,17 +200,20 @@ class Node(NodeABC):
         self._log.info(self._l('Dask scheduler started.'))
 
 
-    async def start_worker(self, dask_ipc: int, dask_dash: int, scheduler_ip4: str):
+    async def start_worker(self, dask_ipc: int, dask_dash: int, dask_nanny: int, scheduler_ip4: str):
 
         assert dask_ipc >= 2**10
         assert dask_dash >= 2**10
+        assert dask_nanny >= 2**10
+
+        assert len({dask_ipc, dask_dash, dask_nanny}) == 3
 
         await self.wait_for_ssh(user = f'{self._prefix:s}user')
 
         self._log.info(self._l('Staring dask worker ...'))
 
         await Command.from_list(
-            ["bash", "-i", "bootstrap_worker.sh", scheduler_ip4, f'{dask_ipc:d}', f'{dask_dash:d}', self._prefix]
+            ["bash", "-i", "bootstrap_worker.sh", scheduler_ip4, f'{dask_ipc:d}', f'{dask_dash:d}', f'{dask_nanny:d}', self._prefix]
         ).on_host(
             host = await self.get_sshconfig(user = f'{self._prefix:s}user')
         ).run(wait = self._wait)

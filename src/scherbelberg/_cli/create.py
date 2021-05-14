@@ -34,7 +34,7 @@ import click
 
 from .._core.cluster import Cluster
 from .._core.const import (
-    DASK_IPC, DASK_DASH,
+    DASK_IPC, DASK_DASH, DASK_NANNY,
     PREFIX, TOKENVAR, WAIT,
     WORKERS,
     HETZNER_INSTANCE_TINY,
@@ -59,10 +59,11 @@ from .._core.log import configure_log
 @click.option('-n', '--workers', default = WORKERS, type = int, show_default = True)
 @click.option('-c', '--dask_ipc', default = DASK_IPC, type = int, show_default = True)
 @click.option('-d', '--dask_dash', default = DASK_DASH, type = int, show_default = True)
+@click.option('-e', '--dask_nanny', default = DASK_NANNY, type = int, show_default = True)
 def create(
     prefix, tokenvar, wait,
     scheduler, worker, image, datacenter, workers,
-    dask_ipc, dask_dash,
+    dask_ipc, dask_dash, dask_nanny,
 ):
 
     configure_log()
@@ -78,4 +79,5 @@ def create(
         workers = workers,
         dask_ipc = dask_ipc,
         dask_dash = dask_dash,
+        dask_nanny = dask_nanny,
     ))
