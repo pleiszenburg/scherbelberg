@@ -57,6 +57,7 @@ from .const import (
     HETZNER_DATACENTER,
 )
 from .node import Node
+from .ssl import create_ca, create_signed_cert, write_certs
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS
@@ -112,6 +113,7 @@ class Creator(CreatorABC):
         assert dask_dash >= 2**10
         assert dask_ipc != dask_dash
 
+        await self._create_certs()
         self._ssh_key = await self._create_ssh_key()
         self._network = await self._create_network(ip_range = '10.0.1.0/24')
         self._firewall = await self._create_firewall(dask_ipc, dask_dash)
@@ -318,6 +320,26 @@ class Creator(CreatorABC):
 
         return self._client.ssh_keys.get_by_name(
             name = f'{self._prefix:s}-key',
+        )
+
+
+    @typechecked
+    async def _create_certs(self) -> None:
+
+        self._log.info('Creating ssl certificates ...')
+
+        ca_key, ca_cert = await create_ca(
+            prefix = self._prefix,
+        )
+        await write_certs(
+            ca_key, ca_cert, name = f'{self._prefix:s}_ca',
+        )
+
+        ca_key, ca_cert = await create_signed_cert(
+            ca_key = ca_key, ca_cert = ca_cert, prefix = self._prefix,
+        )
+        await write_certs(
+            ca_key, ca_cert, name = f'{self._prefix:s}_node',
         )
 
 
