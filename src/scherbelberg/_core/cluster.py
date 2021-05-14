@@ -149,6 +149,11 @@ class Cluster(ClusterABC):
         if os.path.exists(self._fn_public(self._prefix)):
             os.unlink(self._fn_public(self._prefix))
 
+        for suffix in ('ca.key', 'ca.crt', 'node.key', 'node.crt'):
+            fn = os.path.join(os.getcwd(), f'{self._prefix:s}_{suffix:s}')
+            if os.path.exists(fn):
+                os.unlink(fn)
+
         self._log.info('Cluster %s destroyed.', self._prefix)
 
 
