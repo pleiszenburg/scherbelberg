@@ -162,6 +162,12 @@ class Node(NodeABC):
                 'requirements_conda.txt',
                 'requirements_pypi.txt',
             )],
+            *[os.path.abspath(os.path.join(os.getcwd(), f'{self._prefix:s}_{suffix:s}'))
+            for suffix in (
+                'ca.crt',
+                'node.key',
+                'node.crt',
+            )],
             target = '~/',
             host = await self.get_sshconfig(user = f'{self._prefix:s}user'),
         ).run(wait = self._wait)
@@ -184,7 +190,7 @@ class Node(NodeABC):
         self._log.info(self._l('Staring dask scheduler ...'))
 
         await Command.from_list(
-            ["bash", "-i", "bootstrap_scheduler.sh", f'{dask_ipc:d}', f'{dask_dash:d}']
+            ["bash", "-i", "bootstrap_scheduler.sh", f'{dask_ipc:d}', f'{dask_dash:d}', self._prefix]
         ).on_host(
             host = await self.get_sshconfig(user = f'{self._prefix:s}user')
         ).run(wait = self._wait)
@@ -202,7 +208,7 @@ class Node(NodeABC):
         self._log.info(self._l('Staring dask worker ...'))
 
         await Command.from_list(
-            ["bash", "-i", "bootstrap_worker.sh", scheduler_ip4, f'{dask_ipc:d}', f'{dask_dash:d}']
+            ["bash", "-i", "bootstrap_worker.sh", scheduler_ip4, f'{dask_ipc:d}', f'{dask_dash:d}', self._prefix]
         ).on_host(
             host = await self.get_sshconfig(user = f'{self._prefix:s}user')
         ).run(wait = self._wait)
