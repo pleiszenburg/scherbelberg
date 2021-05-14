@@ -108,8 +108,19 @@ class Cluster(ClusterABC):
             raise SystemError('cluster is dead')
 
         from dask.distributed import Client as DaskClient
+        from distributed.security import Security
 
-        return DaskClient(f'{self._scheduler.public_ip4:s}:{self._dask_ipc:d}')
+        security = Security(
+            tls_ca_file = f'{self._prefix:s}_ca.crt',
+            tls_client_cert = f'{self._prefix:s}_node.crt',
+            tls_client_key = f'{self._prefix:s}_node.key',
+            require_encryption = True,
+        )
+
+        return DaskClient(
+            f'tls://{self._scheduler.public_ip4:s}:{self._dask_ipc:d}',
+            security = security,
+        )
 
 
     async def destroy(self):
