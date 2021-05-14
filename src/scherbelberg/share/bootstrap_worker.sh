@@ -24,5 +24,12 @@
 SCHEDULER=$1
 PORT=$2
 DASHPORT=$3
+PREFIX=$4
 
-dask-worker --dashboard-address $DASHPORT tcp://$SCHEDULER:$PORT > worker_out 2> worker_err < /dev/null &
+dask-worker \
+    --protocol tls \
+    --tls-ca-file ${PREFIX}_ca.crt \
+    --tls-cert ${PREFIX}_node.crt --tls-key ${PREFIX}_node.key \
+    --dashboard-address $DASHPORT --nanny-port $PORT \
+    tls://$SCHEDULER:$PORT \
+    > worker_out 2> worker_err < /dev/null &
