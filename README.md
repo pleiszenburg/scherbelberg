@@ -81,5 +81,5 @@ Once the cluster has been created or gained access to, one can simply request an
 ```python
 dask_client = await c.get_client()
 # or
-dask_client = run(c.get_client())
+dask_client = run(c.get_client(asynchronous = False))
 ```
