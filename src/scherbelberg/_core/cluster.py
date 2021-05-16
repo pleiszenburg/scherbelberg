@@ -104,7 +104,7 @@ class Cluster(ClusterABC):
         return f'<Cluster prefix="{self._prefix:s}" alive={str(self.alive):s} workers={len(self._workers):d} ipc={self._dask_ipc:d} dash={self._dask_dash:d} nanny={self._dask_nanny:d}>'
 
 
-    async def get_client(self) -> Any:
+    async def get_client(self, asynchronous = True) -> Any:
         """
         Creates and returns a DaskClient object for the cluster
         """
@@ -125,6 +125,7 @@ class Cluster(ClusterABC):
         return DaskClient(
             f'tls://{self._scheduler.public_ip4:s}:{self._dask_ipc:d}',
             security = security,
+            asynchronous = asynchronous,
         )
 
 
