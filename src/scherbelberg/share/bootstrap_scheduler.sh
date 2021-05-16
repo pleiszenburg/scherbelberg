@@ -23,5 +23,11 @@
 
 PORT=$1
 DASHPORT=$2
+PREFIX=$3
 
-dask-scheduler --port $PORT --dashboard-address $DASHPORT > scheduler_out 2> scheduler_err < /dev/null &
+dask-scheduler \
+    --protocol tls \
+    --tls-ca-file ${PREFIX}_ca.crt \
+    --tls-cert ${PREFIX}_node.crt --tls-key ${PREFIX}_node.key \
+    --port $PORT --dashboard-address $DASHPORT \
+    > scheduler_out 2> scheduler_err < /dev/null &

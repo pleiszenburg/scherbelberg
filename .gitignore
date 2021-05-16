@@ -8,5 +8,6 @@ dist/
 *.egg-info/
 *.key
 *.key.pub
+*.crt
 notebooks/
 dask-worker-space/

@@ -41,6 +41,7 @@ from .abc import ClusterABC, NodeABC
 from .const import (
     DASK_IPC,
     DASK_DASH,
+    DASK_NANNY,
     PREFIX,
     TOKENVAR,
     WAIT,
@@ -69,6 +70,7 @@ class Cluster(ClusterABC):
         firewall: BoundFirewall,
         dask_ipc: int = DASK_IPC,
         dask_dash: int = DASK_DASH,
+        dask_nanny: int = DASK_NANNY,
         prefix: str = PREFIX,
         wait: float = WAIT,
         log: Union[Logger, None] = None,
@@ -78,7 +80,9 @@ class Cluster(ClusterABC):
 
         assert dask_ipc >= 2**10
         assert dask_dash >= 2**10
-        assert dask_ipc != dask_dash
+        assert dask_nanny >= 2**10
+
+        assert len({dask_ipc, dask_dash, dask_nanny}) == 3
 
         self._client = client
         self._scheduler = scheduler
@@ -88,6 +92,7 @@ class Cluster(ClusterABC):
 
         self._dask_ipc = dask_ipc # port
         self._dask_dash = dask_dash # port
+        self._dask_nanny = dask_nanny # port
 
         self._prefix = prefix
         self._wait = wait
@@ -96,10 +101,10 @@ class Cluster(ClusterABC):
 
     def __repr__(self) -> str:
 
-        return f'<Cluster prefix="{self._prefix:s}" alive={str(self.alive):s} workers={len(self._workers):d} ipc={self._dask_ipc:d} dash={self._dask_dash:d}>'
+        return f'<Cluster prefix="{self._prefix:s}" alive={str(self.alive):s} workers={len(self._workers):d} ipc={self._dask_ipc:d} dash={self._dask_dash:d} nanny={self._dask_nanny:d}>'
 
 
-    async def get_client(self) -> Any:
+    async def get_client(self, asynchronous = True) -> Any:
         """
         Creates and returns a DaskClient object for the cluster
         """
@@ -108,8 +113,20 @@ class Cluster(ClusterABC):
             raise SystemError('cluster is dead')
 
         from dask.distributed import Client as DaskClient
+        from distributed.security import Security
 
-        return DaskClient(f'{self._scheduler.public_ip4:s}:{self._dask_ipc:d}')
+        security = Security(
+            tls_ca_file = f'{self._prefix:s}_ca.crt',
+            tls_client_cert = f'{self._prefix:s}_node.crt',
+            tls_client_key = f'{self._prefix:s}_node.key',
+            require_encryption = True,
+        )
+
+        return DaskClient(
+            f'tls://{self._scheduler.public_ip4:s}:{self._dask_ipc:d}',
+            security = security,
+            asynchronous = asynchronous,
+        )
 
 
     async def destroy(self):
@@ -149,6 +166,11 @@ class Cluster(ClusterABC):
         if os.path.exists(self._fn_public(self._prefix)):
             os.unlink(self._fn_public(self._prefix))
 
+        for suffix in ('ca.key', 'ca.crt', 'node.key', 'node.crt'):
+            fn = os.path.join(os.getcwd(), f'{self._prefix:s}_{suffix:s}')
+            if os.path.exists(fn):
+                os.unlink(fn)
+
         self._log.info('Cluster %s destroyed.', self._prefix)
 
 
@@ -168,6 +190,12 @@ class Cluster(ClusterABC):
     def dask_dash(self) -> int:
 
         return self._dask_dash
+
+
+    @property
+    def dask_nanny(self) -> int:
+
+        return self._dask_nanny
 
 
     @property
@@ -214,6 +242,7 @@ class Cluster(ClusterABC):
         wait: float = WAIT,
         dask_ipc: int = DASK_IPC,
         dask_dash: int = DASK_DASH,
+        dask_nanny: int = DASK_NANNY,
         log: Union[Logger, None] = None,
         **kwargs,
     ) -> ClusterABC:
@@ -234,6 +263,7 @@ class Cluster(ClusterABC):
             wait = wait,
             dask_ipc = dask_ipc,
             dask_dash = dask_dash,
+            dask_nanny = dask_nanny,
             log = log,
             **kwargs,
         )
@@ -246,6 +276,7 @@ class Cluster(ClusterABC):
             firewall = creator.firewall,
             dask_ipc = dask_ipc,
             dask_dash = dask_dash,
+            dask_nanny = dask_nanny,
             prefix = prefix,
             wait = wait,
             log = log,
@@ -312,6 +343,7 @@ class Cluster(ClusterABC):
             firewall = firewall,
             dask_ipc = int(scheduler.labels["dask_ipc"]),
             dask_dash = int(scheduler.labels["dask_dash"]),
+            dask_nanny = int(scheduler.labels["dask_nanny"]),
             prefix = prefix,
             wait = wait,
             log = log,

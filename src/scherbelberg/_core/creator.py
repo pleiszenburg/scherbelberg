@@ -50,6 +50,7 @@ from .command import Command
 from .const import (
     DASK_IPC,
     DASK_DASH,
+    DASK_NANNY,
     WAIT,
     WORKERS,
     HETZNER_INSTANCE_TINY,
@@ -57,6 +58,7 @@ from .const import (
     HETZNER_DATACENTER,
 )
 from .node import Node
+from .ssl import create_ca, create_signed_cert, write_certs
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS
@@ -99,6 +101,7 @@ class Creator(CreatorABC):
         self,
         dask_ipc: int = DASK_IPC,
         dask_dash: int = DASK_DASH,
+        dask_nanny: int = DASK_NANNY,
         scheduler: str = HETZNER_INSTANCE_TINY,
         worker: str = HETZNER_INSTANCE_TINY,
         image: str = HETZNER_IMAGE_UBUNTU,
@@ -110,11 +113,14 @@ class Creator(CreatorABC):
 
         assert dask_ipc >= 2**10
         assert dask_dash >= 2**10
-        assert dask_ipc != dask_dash
+        assert dask_nanny >= 2**10
 
+        assert len({dask_ipc, dask_dash, dask_nanny}) == 3
+
+        await self._create_certs()
         self._ssh_key = await self._create_ssh_key()
         self._network = await self._create_network(ip_range = '10.0.1.0/24')
-        self._firewall = await self._create_firewall(dask_ipc, dask_dash)
+        self._firewall = await self._create_firewall(dask_ipc, dask_dash, dask_nanny)
 
         self._log.info('Creating nodes ...')
 
@@ -127,6 +133,7 @@ class Creator(CreatorABC):
             labels = {
                 "dask_ipc": str(dask_ipc),
                 "dask_dash": str(dask_dash),
+                "dask_nanny": str(dask_nanny),
             }
         ))
 
@@ -147,7 +154,7 @@ class Creator(CreatorABC):
         self._workers = [await task for task in worker_tasks]
         await gather(*[
             worker.start_worker(
-                dask_ipc = dask_ipc, dask_dash = dask_dash,
+                dask_ipc = dask_ipc, dask_dash = dask_dash, dask_nanny = dask_nanny,
                 scheduler_ip4 = self._scheduler.public_ip4,
             )
             for worker in self._workers
@@ -180,7 +187,12 @@ class Creator(CreatorABC):
         return self._firewall
 
 
-    async def _create_firewall(self, dask_ipc: int, dask_dash: int) -> BoundFirewall:
+    async def _create_firewall(
+        self,
+        dask_ipc: int,
+        dask_dash: int,
+        dask_nanny: int,
+    ) -> BoundFirewall:
 
         self._log.info('Creating firewall ...')
 
@@ -199,6 +211,7 @@ class Creator(CreatorABC):
                     ('icmp', None),
                     ('tcp', f'{dask_ipc:d}'),
                     ('tcp', f'{dask_dash:d}'),
+                    ('tcp', f'{dask_nanny:d}'),
                 )
             ],
         )
@@ -321,6 +334,26 @@ class Creator(CreatorABC):
         )
 
 
+    @typechecked
+    async def _create_certs(self) -> None:
+
+        self._log.info('Creating ssl certificates ...')
+
+        ca_key, ca_cert = await create_ca(
+            prefix = self._prefix,
+        )
+        await write_certs(
+            ca_key, ca_cert, name = f'{self._prefix:s}_ca',
+        )
+
+        ca_key, ca_cert = await create_signed_cert(
+            ca_key = ca_key, ca_cert = ca_cert, prefix = self._prefix,
+        )
+        await write_certs(
+            ca_key, ca_cert, name = f'{self._prefix:s}_node',
+        )
+
+
     @classmethod
     async def from_async(
         cls,
@@ -332,6 +365,7 @@ class Creator(CreatorABC):
         log: Union[Logger, None] = None,
         dask_ipc: int = DASK_IPC,
         dask_dash: int = DASK_DASH,
+        dask_nanny: int = DASK_NANNY,
         scheduler: str = HETZNER_INSTANCE_TINY,
         worker: str = HETZNER_INSTANCE_TINY,
         image: str = HETZNER_IMAGE_UBUNTU,
@@ -351,6 +385,7 @@ class Creator(CreatorABC):
         await obj.create(
             dask_ipc = dask_ipc,
             dask_dash = dask_dash,
+            dask_nanny = dask_nanny,
             scheduler = scheduler,
             worker = worker,
             image = image,
