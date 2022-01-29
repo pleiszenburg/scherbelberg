@@ -39,5 +39,5 @@ chmod +x $INSTALLER
 ./$INSTALLER -b -p $FORGE < /dev/null > /dev/null 2> /dev/null
 rm $INSTALLER
 source $FORGE/bin/activate
-mamba create -q -y -n $ENVNAME --file=$PACKAGES python=3.8 < /dev/null > /dev/null 2> /dev/null
+mamba create -q -y -n $ENVNAME --file=$PACKAGES python=3.9 < /dev/null > /dev/null 2> /dev/null
 echo "source $FORGE/bin/activate;conda activate $ENVNAME" >> .bashrc
