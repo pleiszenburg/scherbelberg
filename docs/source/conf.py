@@ -1,3 +1,28 @@
+# -*- coding: utf-8 -*-
+
+"""
+
+SCHERBELBERG
+HPC cluster deployment and management for the Hetzner Cloud
+
+https://github.com/pleiszenburg/scherbelberg
+
+    docs/source/conf.py: Docs configuration
+
+    Copyright (C) 2021-2022 Sebastian M. Ernst <ernst@pleiszenburg.de>
+
+<LICENSE_BLOCK>
+The contents of this file are subject to the BSD 3-Clause License
+("License"). You may not use this file except in
+compliance with the License. You may obtain a copy of the License at
+https://github.com/pleiszenburg/scherbelberg/blob/master/LICENSE
+Software distributed under the License is distributed on an "AS IS" basis,
+WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for the
+specific language governing rights and limitations under the License.
+</LICENSE_BLOCK>
+
+"""
+
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -9,20 +34,24 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-# import os
-# import sys
+
+import os
+import sys
+
 # sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+from docs.source.version import get_version
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'scherbelberg'
-copyright = '2022, Sebastian M. Ernst'
 author = 'Sebastian M. Ernst'
+copyright = f'2021-2022 {author:s}'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+release = get_version()
 
 
 # -- General configuration ---------------------------------------------------
