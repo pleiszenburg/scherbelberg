@@ -16,7 +16,11 @@ About ``scherbelberg``
 Synopsis
 --------
 
-*scherbelberg* provides both a :ref:`command line interface (CLI) <cli>` and a :ref:`Python application programming interface (API) <api>` for deploying and managing small `Dask`_-based HPC `clusters`_ in the `Hetzner cloud`_. Development status alpha, stability acceptable, :ref:`security <security>` also acceptable but implementation needs a review.
+*scherbelberg* provides both a :ref:`command line interface (CLI) <cli>` and a :ref:`Python application programming interface (API) <api>` for deploying and managing small `Dask`_-based HPC `clusters`_ in the `Hetzner cloud`_.
+
+.. warning::
+
+    Development status alpha, stability acceptable, :ref:`security <security>` also acceptable but implementation needs a review.
 
 .. _Hetzner cloud: https://www.hetzner.com/cloud
 .. _Dask: https://dask.org/
@@ -47,7 +51,9 @@ While Dask is wonderful for automating large, parallel, distributed computations
 
 One of the really appealing features of Dask is that it enables users to exploit huge quantities of cloud compute resources really efficiently. Cloud compute instances can usually be rented on a per-hour basis, making them an interesting target for sizable, short-lived, on-demand clusters. For cloud deployments like this, there is the Dask-related `cloud provider package`_, which surprisingly does not solve the entire problem of deployment. At the time of *scherbelberg*'s creation, it was both rather inflexible and lacking support for the Hetzner cloud. Companies like `Coiled`_, which is also the primary developer of Dask, have filled this niche with polished, proprietary web-front-end services (and equally polished APIs) for creating clusters on clouds, which effectively makes them resellers of cloud resources. In the good spirit of open source and tight R&D budgets, *scherbelberg* aims at eliminating the resellers from the equation.
 
-Beyond that, the idea is to be able to build tools quickly and easily on top of *scherbelberg*. The `nahleberg`_ project aims at using *scherbelberg* to load computations from within `QGIS`_ off to on-demand Dask cluster from within QGIS' GUI - without the user having to write a single line of code.
+.. note::
+
+    The idea is to be able to build tools quickly and easily on top of *scherbelberg*. The `nahleberg`_ project aims at using *scherbelberg* to load computations from within `QGIS`_ off to on-demand Dask cluster from within QGIS' GUI - without the user having to write a single line of code.
 
 .. _cloud provider package: https://cloudprovider.dask.org/en/latest/
 .. _slurm: https://slurm.schedmd.com/documentation.html
@@ -60,7 +66,15 @@ Beyond that, the idea is to be able to build tools quickly and easily on top of 
 Implementation
 --------------
 
-*scherbelberg* creates clusters on the Hetzner cloud quickly and completely from scratch without any prerequisites on the cloud's side. No pre-configured operating system, virtual machine or docker images are required. *scherbelberg* simply connects to the Hetzner cloud via its `REST API`_, creates the required number and kind of compute instances based on the latest `Ubuntu LTS`_ release, networks as well as secures the compute instances and deploys `mambaforge`_ onto them. Depending on the size of the cluster, creating an entire cluster from scratch with a single command or single API call requires anywhere from two to ten minutes. Destroying a cluster is done in under ten seconds. In many ways, *scherbelberg* is a quick and dirty bare-bones solution. It heavily relies on ``ssh`` and the systems' shell. It does not use any higher-end tools for mass-administration of computers such as `Chef`_ or `Ansible`_. *scherbelberg*'s' primary objective is to provide a stack of Dask, `conda-forge`_ and Ubuntu as simple and cleanly as possible. *scherbelberg* is written as an asynchronous package using `asyncio`_.
+*scherbelberg* creates clusters on the Hetzner cloud quickly and completely from scratch without any prerequisites on the cloud's side. No pre-configured operating system, virtual machine or docker images are required. *scherbelberg* simply connects to the Hetzner cloud via its `REST API`_, creates the required number and kind of compute instances based on the latest `Ubuntu LTS`_ release, networks as well as secures the compute instances and deploys `mambaforge`_ onto them. Depending on the size of the cluster, creating an entire cluster from scratch with a single command or single API call requires anywhere from two to ten minutes. Destroying a cluster is done in under ten seconds. In many ways, *scherbelberg* is a quick and dirty bare-bones solution. It heavily relies on ``ssh`` and the systems' shell. It does not use any higher-end tools for mass-administration of computers such as `Chef`_ or `Ansible`_.
+
+.. note::
+
+    *scherbelberg*'s' primary objective is to provide a stack of Dask, `conda-forge`_ and Ubuntu as simple and cleanly as possible.
+
+.. note::
+
+    *scherbelberg* is designed as an **asynchronous** package using `asyncio`_.
 
 .. _mambaforge: https://github.com/conda-forge/miniforge#mambaforge
 .. _REST API: https://docs.hetzner.cloud/
