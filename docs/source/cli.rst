@@ -5,4 +5,6 @@
 CLI
 ===
 
-XXX
+.. click:: scherbelberg._cli:cli
+  :prog: scherbelberg
+  :show-nested:

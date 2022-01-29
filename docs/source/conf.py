@@ -62,6 +62,7 @@ release = get_version()
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    'sphinx_click',
     'sphinx_autodoc_typehints',
     'sphinx_rtd_theme',
     'myst_parser',
