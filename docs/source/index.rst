@@ -60,7 +60,6 @@ User's guide
    :caption: Advanced
 
    security
-   bugs
    changes
    faq
    support
