@@ -7,6 +7,8 @@ Getting Help
 
 There are multiple ways of getting help.
 
+.. _bugs:
+
 Reporting Bugs & Issues
 -----------------------
 
