@@ -308,6 +308,8 @@ class Cluster(ClusterABC):
             datacenter : Target data center.
             workers : Number of workers in cluster.
             log : Allows to pass custom logger objects. Defaults to scherbelberg's own default logger.
+        Returns:
+            Cluster object represeting an alive cluster.
         """
 
         log = getLogger(name = prefix) if log is None else log
@@ -357,6 +359,14 @@ class Cluster(ClusterABC):
     ) -> ClusterABC:
         """
         Attaches to existing cluster
+
+        Args:
+            prefix : Name of cluster, used as a prefix in names of every component.
+            tokenvar : Name of the environment variable holding the cloud API login token.
+            wait : Timeout in seconds before actions are repeated or exceptions are raised.
+            log : Allows to pass custom logger objects. Defaults to scherbelberg's own default logger.
+        Returns:
+            Cluster object represeting an alive cluster.
         """
 
         log = getLogger(name = prefix) if log is None else log
