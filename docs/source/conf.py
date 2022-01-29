@@ -87,3 +87,17 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# Values to pass into the template engine's context for all pages.
+html_context = {
+    'sidebar_external_links_caption': 'Links',
+    'sidebar_external_links': [
+        # ('<i class="fa fa-rss fa-fw"></i> Blog', 'https://www.000'),
+        ('<i class="fa fa-github fa-fw"></i> Source Code', 'https://github.com/pleiszenburg/scherbelberg'),
+        ('<i class="fa fa-bug fa-fw"></i> Issue Tracker', 'https://github.com/pleiszenburg/scherbelberg/issues'),
+        # ('<i class="fa fa-envelope fa-fw"></i> Mailing List', 'https://groups.io/g/scherbelberg-dev'),
+        # ('<i class="fa fa-comments fa-fw"></i> Chat', 'https://matrix.to/#/#scherbelberg:matrix.org'),
+        # ('<i class="fa fa-file-text fa-fw"></i> Citation', 'https://doi.org/000'),
+        ('<i class="fa fa-info-circle fa-fw"></i> pleiszenburg.de', 'http://www.pleiszenburg.de/'),
+    ],
+}
