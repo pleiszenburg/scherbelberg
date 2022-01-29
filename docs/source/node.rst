@@ -7,7 +7,6 @@ The :class:`scherbelberg.Node` class describes one node, i.e. server, within the
 
 .. _Dask CLI: https://docs.dask.org/en/stable/deploying-cli.html
 
-
 The ``Node`` Class
 ------------------
 
