@@ -136,7 +136,7 @@ class Node(NodeABC):
             host = await self.get_sshconfig(user = 'root'),
         ).run(wait = self._wait)
 
-        self._log.info(self._l('Runing first bootstrap script ...'))
+        self._log.info(self._l('Running first bootstrap script ...'))
         await Command.from_list(["bash", "bootstrap_01.sh"]).on_host(
             host = await self.get_sshconfig(user = 'root')
         ).run(wait = self._wait)
@@ -145,7 +145,7 @@ class Node(NodeABC):
         await self.reboot()
         await self.wait_for_ssh(user = 'root')
 
-        self._log.info(self._l('Runing second bootstrap script ...'))
+        self._log.info(self._l('Running second bootstrap script ...'))
         await Command.from_list(["bash", "bootstrap_02.sh", self._prefix]).on_host(
             host = await self.get_sshconfig(user = 'root')
         ).run(wait = self._wait)
@@ -172,7 +172,7 @@ class Node(NodeABC):
             host = await self.get_sshconfig(user = f'{self._prefix:s}user'),
         ).run(wait = self._wait)
 
-        self._log.info(self._l('Runing third (user) bootstrap script ...'))
+        self._log.info(self._l('Running third (user) bootstrap script ...'))
         await Command.from_list(["bash", "bootstrap_03.sh", self._prefix]).on_host(
             host = await self.get_sshconfig(user = f'{self._prefix:s}user')
         ).run(wait = self._wait)
