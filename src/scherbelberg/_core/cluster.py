@@ -56,9 +56,21 @@ from .node import Node
 @typechecked
 class Cluster(ClusterABC):
     """
-    Defines a cluster of nodes.
+    Defines a cluster of nodes. Mutable.
+    Use the asynchronous ``from_*`` classmethods to instantiate objects of this class.
 
-    Mutable.
+    Args:
+        client : A cloud-API client object.
+        scheduler : A node running the Dask scheduler.
+        workers : A list of nodes running Dask workers.
+        network : A cloud-API network object.
+        firewall : A cloud-API firewall object.
+        dask_ipc : Port used for Dask's interprocess communication.
+        dask_dash : Port used for Dask's dashboard.
+        dask_nanny : Port used for Dask's nanny.
+        prefix : Name of cluster, used as a prefix in names of every component.
+        wait : Timeout in seconds before actions are repeated or exceptions are raised.
+        log : Allows to pass custom logger objects. Defaults to scherbelberg's own default logger.
     """
 
     def __init__(
