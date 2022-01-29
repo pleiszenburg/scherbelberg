@@ -101,3 +101,9 @@ html_context = {
         ('<i class="fa fa-info-circle fa-fw"></i> pleiszenburg.de', 'http://www.pleiszenburg.de/'),
     ],
 }
+
+always_document_param_types = True # sphinx_autodoc_typehints
+
+napoleon_include_special_with_doc = True # napoleon
+# napoleon_use_param = True
+# napoleon_type_aliases = True
