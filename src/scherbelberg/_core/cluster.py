@@ -45,6 +45,10 @@ from .const import (
     PREFIX,
     TOKENVAR,
     WAIT,
+    HETZNER_DATACENTER,
+    HETZNER_IMAGE_UBUNTU,
+    HETZNER_INSTANCE_TINY,
+    WORKERS,
 )
 from .creator import Creator
 from .node import Node
@@ -112,13 +116,21 @@ class Cluster(ClusterABC):
 
 
     def __repr__(self) -> str:
+        """
+        Interactive string representation
+        """
 
         return f'<Cluster prefix="{self._prefix:s}" alive={str(self.alive):s} workers={len(self._workers):d} ipc={self._dask_ipc:d} dash={self._dask_dash:d} nanny={self._dask_nanny:d}>'
 
 
-    async def get_client(self, asynchronous = True) -> Any:
+    async def get_client(self, asynchronous: bool = True) -> Any:
         """
-        Creates and returns a DaskClient object for the cluster
+        Creates and returns a client.
+
+        Args:
+            asynchronous : Specifies if the ``Client`` object runs in asynchronous mode.
+        Returns:
+            ``dask.distributed.Client`` object attached to the cluster.
         """
 
         if not self.alive:
@@ -188,30 +200,45 @@ class Cluster(ClusterABC):
 
     @property
     def alive(self) -> bool:
+        """
+        Is cluster alive?
+        """
 
         return self._scheduler is not None
 
 
     @property
     def dask_ipc(self) -> int:
+        """
+        Port used for Dask's interprocess communication
+        """
 
         return self._dask_ipc
 
 
     @property
     def dask_dash(self) -> int:
+        """
+        Port used for Dask's dashboard
+        """
 
         return self._dask_dash
 
 
     @property
     def dask_nanny(self) -> int:
+        """
+        Port used for Dask's nanny
+        """
 
         return self._dask_nanny
 
 
     @property
     def scheduler(self) -> NodeABC:
+        """
+        A node running the Dask scheduler
+        """
 
         if not self.alive:
             raise SystemError('cluster is dead')
@@ -221,6 +248,9 @@ class Cluster(ClusterABC):
 
     @property
     def workers(self) -> List[NodeABC]:
+        """
+        A list of nodes running Dask workers
+        """
 
         if not self.alive:
             raise SystemError('cluster is dead')
@@ -255,11 +285,29 @@ class Cluster(ClusterABC):
         dask_ipc: int = DASK_IPC,
         dask_dash: int = DASK_DASH,
         dask_nanny: int = DASK_NANNY,
+        scheduler: str = HETZNER_INSTANCE_TINY,
+        worker: str = HETZNER_INSTANCE_TINY,
+        image: str = HETZNER_IMAGE_UBUNTU,
+        datacenter: str = HETZNER_DATACENTER,
+        workers: int = WORKERS,
         log: Union[Logger, None] = None,
-        **kwargs,
     ) -> ClusterABC:
         """
         Creates a new cluster
+
+        Args:
+            prefix : Name of cluster, used as a prefix in names of every component.
+            tokenvar : Name of the environment variable holding the cloud API login token.
+            wait : Timeout in seconds before actions are repeated or exceptions are raised.
+            dask_ipc : Port used for Dask's interprocess communication.
+            dask_dash : Port used for Dask's dashboard.
+            dask_nanny : Port used for Dask's nanny.
+            scheduler : Compute instance type used for Dask scheduler.
+            worker : Compute instance type used for Dask workers.
+            image : Operating system image.
+            datacenter : Target data center.
+            workers : Number of workers in cluster.
+            log : Allows to pass custom logger objects. Defaults to scherbelberg's own default logger.
         """
 
         log = getLogger(name = prefix) if log is None else log
@@ -276,8 +324,12 @@ class Cluster(ClusterABC):
             dask_ipc = dask_ipc,
             dask_dash = dask_dash,
             dask_nanny = dask_nanny,
+            scheduler = scheduler,
+            worker = worker,
+            image = image,
+            datacenter = datacenter,
+            workers = workers,
             log = log,
-            **kwargs,
         )
 
         return cls(
