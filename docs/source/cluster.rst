@@ -1,7 +1,7 @@
 .. _cluster:
 
-Clusters
-========
+Cluster
+=======
 
 :class:`scherbelberg.Cluster` objects define Dask clusters. The class can be used to create new clusters but also to attach to existing ones. It generates matching `Dask Client`_ objects.
 
