@@ -14,3 +14,4 @@ The application programming interface (API) is one of two modes of usage, next t
    cluster
    command
    process
+   node
