@@ -73,7 +73,7 @@ with open(os.path.join(SRC_DIR, "scherbelberg", "__init__.py"), "r", encoding="u
 base_require = ["click", "hcloud", "pyyaml", "typeguard",]
 extras_require = {
     "base": base_require,
-    "dev": ["black", "python-language-server[all]", "setuptools", "sphinx", "sphinx_rtd_theme", "twine", "wheel",],
+    "dev": ["black", "myst-parser", "python-language-server[all]", "setuptools", "sphinx", "sphinx_rtd_theme", "sphinx-autodoc-typehints", "twine", "wheel",],
 }
 extras_require["all"] = list(
     {rq for target in extras_require.keys() for rq in extras_require[target]}
