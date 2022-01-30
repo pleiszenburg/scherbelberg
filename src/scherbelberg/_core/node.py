@@ -49,9 +49,15 @@ from .sshconfig import SSHConfig
 @typechecked
 class Node(NodeABC):
     """
-    Represents one node of the cluster, i.e. a server.
+    Represents one node of the cluster, i.e. a server. Mutable.
 
-    Mutable.
+    Args:
+        server : A cloud API server object.
+        client : A cloud API client object.
+        fn_private : Location of private SSH key.
+        prefix : Name of cluster, used as a prefix in names of every component.
+        wait : Timeout in seconds before actions are repeated or exceptions are raised.
+        log : Allows to pass custom logger objects. Defaults to scherbelberg's own default logger.
     """
 
     def __init__(
@@ -77,6 +83,9 @@ class Node(NodeABC):
 
 
     def __repr__(self) -> str:
+        """
+        Interactive string representation
+        """
 
         return f'<node name={self.name:s} public={self.public_ip4:s} private={self.private_ip4}>'
 
@@ -87,6 +96,14 @@ class Node(NodeABC):
 
 
     async def get_sshconfig(self, user: str) -> SSHConfigABC:
+        """
+        Generates SSH configuration for commands that are supposed to be executed on this node.
+
+        Args:
+            user : Remote user name.
+        Returns:
+            SSH configuration.
+        """
 
         return SSHConfig(
             name = self.public_ip4,
@@ -96,6 +113,15 @@ class Node(NodeABC):
 
 
     async def ping_ssh(self, user: str) -> bool:
+        """
+        Checks if node can be contacted via SSH by executing an ``exit`` command on it.
+        Performs exactly one single try. Does not raise any type of exception.
+
+        Args:
+            user : Remote user name.
+        Returns:
+            Success (or the lack thereof).
+        """
 
         _, _, status, _ = await Command.from_list(
             ["exit"]
@@ -110,16 +136,30 @@ class Node(NodeABC):
 
 
     async def reboot(self):
+        """
+        Triggers a server reboot.
+        """
 
         self._server.reboot()
 
 
     async def update(self):
+        """
+        Updates the internal cloud API server object by requesting new information about the node from the cloud API.
+        """
 
         self._server = self._client.servers.get_by_name(name = self.name)
 
 
     async def bootstrap(self):
+        """
+        Bootstraps scherbelberg's basic infrastructure on the node, i.e.
+
+        - System updates
+        - Secure user & SSH configuration
+        - TLS/SSL certificate
+        - Conda-forge base install via mamba-forge
+        """
 
         await self.wait_for_ssh(user = 'root')
 
@@ -181,6 +221,13 @@ class Node(NodeABC):
 
 
     async def start_scheduler(self, dask_ipc: int, dask_dash: int):
+        """
+        Starts Dask scheduler on node.
+
+        Args:
+            dask_ipc : Port used for Dask's interprocess communication.
+            dask_dash : Port used for Dask's dashboard.
+        """
 
         assert dask_ipc >= 2**10
         assert dask_dash >= 2**10
@@ -201,6 +248,15 @@ class Node(NodeABC):
 
 
     async def start_worker(self, dask_ipc: int, dask_dash: int, dask_nanny: int, scheduler_ip4: str):
+        """
+        Starts Dask scheduler on node.
+
+        Args:
+            dask_ipc : Port used for Dask's interprocess communication.
+            dask_dash : Port used for Dask's dashboard.
+            dask_nanny : Port used for Dask's nanny.
+            scheduler_ip4 : IPv4 address of scheduler node.
+        """
 
         assert dask_ipc >= 2**10
         assert dask_dash >= 2**10
@@ -222,6 +278,12 @@ class Node(NodeABC):
 
 
     async def wait_for_ssh(self, user: str):
+        """
+        Keeps pinging the server on SSH via :meth:`scherbelberg.Node.ping_ssh` until success in ``wait`` second intervals.
+
+        Args:
+            user : Remote user name.
+        """
 
         self._log.info(self._l('[%s] Waiting for SSH ...'), user)
 
@@ -237,24 +299,36 @@ class Node(NodeABC):
 
     @property
     def name(self) -> str:
+        """
+        Full name of node / server
+        """
 
         return self._server.name
 
 
     @property
     def labels(self) -> Dict[str, str]:
+        """
+        Labels of node / server
+        """
 
         return self._server.labels.copy()
 
 
     @property
     def public_ip4(self) -> str:
+        """
+        Public IPv4 address of node / server
+        """
 
         return self._server.public_net.ipv4.ip
 
 
     @property
     def private_ip4(self) -> str:
+        """
+        Private IPv4 address of node / server
+        """
 
         assert len(self._server.private_net) == 1
 
@@ -263,12 +337,21 @@ class Node(NodeABC):
 
     @property
     def suffix(self) -> str:
+        """
+        Suffix portion of name of node / server
+        """
 
         return self.name.split('-node-')[1]
 
 
     @classmethod
     async def from_async(cls, **kwargs) -> NodeABC:
+        """
+        Constructs objects from this class asynchronously
+
+        Returns:
+            New node object
+        """
 
         return cls(**kwargs)
 
@@ -283,6 +366,19 @@ class Node(NodeABC):
         wait: float,
         log: Union[Logger, None] = None,
     ) -> NodeABC:
+        """
+        Creates :class:`scherbelberg.Node` object by connecting to an existing server.
+
+        Args:
+            name : Full name of node / server.
+            client : Cloud API client object.
+            fn_private : Location of private SSH key.
+            prefix : Name of cluster, used as a prefix in names of every component.
+            wait : Timeout in seconds before actions are repeated or exceptions are raised.
+            log : Allows to pass custom logger objects. Defaults to scherbelberg's own default logger.
+        Returns:
+            New node object
+        """
 
         return cls(
             server = client.servers.get_by_name(name = name),
