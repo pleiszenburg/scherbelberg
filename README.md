@@ -6,7 +6,7 @@
 
 <!-- [![build_master](https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml/badge.svg?branch=master "Build Status: master / release")](https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml) -->
 [![docs_master](https://readthedocs.org/projects/scherbelberg/badge/?version=latest&style=flat-square "Documentation Status: master / release")](https://scherbelberg.readthedocs.io/en/latest/)
-[![license](https://img.shields.io/pypi/l/scherbelberg.svg?style=flat-square "GNU Lesser General Public License v2.1")](https://github.com/pleiszenburg/scherbelberg/blob/master/LICENSE)
+[![license](https://img.shields.io/pypi/l/scherbelberg.svg?style=flat-square "BSD")](https://github.com/pleiszenburg/scherbelberg/blob/master/LICENSE)
 [![status](https://img.shields.io/pypi/status/scherbelberg.svg?style=flat-square "Project Development Status")](https://github.com/pleiszenburg/scherbelberg/issues)
 [![pypi_version](https://img.shields.io/pypi/v/scherbelberg.svg?style=flat-square "Project Development Status")](https://pypi.python.org/pypi/scherbelberg)
 [![conda_version](https://img.shields.io/conda/vn/conda-forge/scherbelberg.svg?style=flat-square "conda version")](https://anaconda.org/conda-forge/scherbelberg)

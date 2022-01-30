@@ -7,7 +7,7 @@
 #
 #     src/scherbelberg/share/bootstrap_03.sh: Third stage node setup
 #
-#     Copyright (C) 2021 Sebastian M. Ernst <ernst@pleiszenburg.de>
+#     Copyright (C) 2021-2022 Sebastian M. Ernst <ernst@pleiszenburg.de>
 #
 # <LICENSE_BLOCK>
 # The contents of this file are subject to the BSD 3-Clause License
