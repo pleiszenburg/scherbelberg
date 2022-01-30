@@ -258,6 +258,7 @@ The actual use of Dask requires a ``dask.distributed.Client`` object. It can be 
 
 .. code:: ipython
 
+    >>>> cluster = await Cluster.from_existing()
     >>>> client = await cluster.get_client(asynchronous = False)
     >>>> type(client)
     distributed.client.Client
@@ -270,7 +271,46 @@ The actual use of Dask requires a ``dask.distributed.Client`` object. It can be 
 
 .. _running asynchronously: http://distributed.dask.org/en/stable/asynchronous.html
 
+Creating Powerful Clusters
+--------------------------
+
+So far, only minimal clusters have been shown for demonstration purposes. In reality, *scherbelberg* can manage much more powerful clusters. This is where the number of workers as well as the types of scheduler and workers becomes relevant. Hetzner offers a `variety of cloud servers`_ from which a potential user can pick.
+
+.. note::
+
+    The Dask scheduler is heavily CPU-bound and does not scale well across many cores. Anywhere from one to two cores is usually enough. Fast, dedicated vCPU cores are better.
+
+.. note::
+
+    Hetzner cloud serves tend to achieve a `network bandwidth`_ of around 300 to 500 Mbit/s. Larger instances might end up with more bandwidth because the underlying host has to deal with fewer instances sharing bandwidth. This has to be kept in mind when designing a cluster and ideally measured as well as monitored afterwards.
+
+.. warning::
+
+    Hetzner has a `per-user limit`_ specifying how many servers can be rented simultaneously at any given time. The limit can be adjusted.
+
+As of February 2022, "ccx52" is one of the most powerful offerings in Hetzner's portfolio. It includes 32 vCPU cores and 128 GB of RAM. A cluster of 8 servers of this kind, totaling 256 vCPU cores and 1 TB of RAM, plus a matching scheduler could for instance be created as follows:
+
+.. code:: bash
+
+    (env) user@computer:~> scherbelberg create --workers 8 --worker ccx52 --scheduler ccx12
+
+.. _variety of cloud servers: https://www.hetzner.com/cloud
+.. _per-user limit: https://docs.hetzner.com/cloud/servers/faq#how-many-servers-can-i-create
+.. _network bandwidth: https://docs.hetzner.com/cloud/technical-details/faq#what-kind-of-connection-do-the-instances-have
+
 Multiple Clusters Simultaneously
 --------------------------------
 
-Prefix ...
+*scherbelberg* clusters are referred to by their "prefix". The name of every cluster node, virtual network switch, firewall, configuration file and user name will start with the cluster prefix. By default, it is set to "cluster". Multiple clusters can be created, managed and used side by side by using different prefixes for them. Every relevant bit of CLI and API therefore supports a prefix parameter.
+
+In the command line, this may for instance look as follows:
+
+.. code:: bash
+
+    (env) user@computer:~> scherbelberg create --prefix morepower
+
+In terms of an API call, it may look as follows:
+
+.. code:: ipython
+
+    >>>> cluster = await Cluster.from_existing(prefix = "morepower")
