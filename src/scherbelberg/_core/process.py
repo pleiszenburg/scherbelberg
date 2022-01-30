@@ -60,7 +60,6 @@ class Process(ProcessABC):
         self._status = []
         self._exception = None
 
-
     def communicate(
         self,
         returncode: bool = False,
@@ -79,7 +78,7 @@ class Process(ProcessABC):
             A tuple, the first two elements containing data from standard output and standard error streams. If ``returncode`` is set to ``True``, the tuple has two additional entries, a list of return codes and an exception object that can be raised by the caller.
         """
 
-        self._complete(timeout = timeout)
+        self._complete(timeout=timeout)
 
         if returncode:
             return self._output, self._errors, self._status, self._exception
@@ -89,18 +88,13 @@ class Process(ProcessABC):
 
         return self._output, self._errors
 
-
     @property
     def running(self) -> bool:
         """
         Is any of the processes in the list of ``subprocess.Popen`` objects still running?
         """
 
-        return any((
-            proc.poll() is None
-            for proc in self._procs
-        ))
-
+        return any((proc.poll() is None for proc in self._procs))
 
     def _complete(
         self,
@@ -113,7 +107,7 @@ class Process(ProcessABC):
         for proc in self._procs[::-1]:  # inverse order, last process first
 
             try:
-                out, err = proc.communicate(timeout = timeout)
+                out, err = proc.communicate(timeout=timeout)
             except TimeoutExpired:
                 proc.kill()
                 out, err = proc.communicate()
@@ -126,11 +120,13 @@ class Process(ProcessABC):
         self._errors.reverse()
         self._status.reverse()
         self._exception = SystemError(
-            "command failed", str(self._command), self._output, self._errors,
+            "command failed",
+            str(self._command),
+            self._output,
+            self._errors,
         )
 
         self._completed = True
-
 
     @staticmethod
     def _com_to_str(com: Union[str, bytes, None]) -> str:
