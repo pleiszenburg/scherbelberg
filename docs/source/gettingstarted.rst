@@ -250,3 +250,27 @@ Similar to the CLI, it might be necessary to "nuke" the remains of a cluster whi
 .. note::
 
     "Nuke" is a class method which is directly called on the :class:`scherbelberg.Cluster` class. It is likely that connecting to a broken cluster fails which prohibits the creation of a :class:`scherbelberg.Cluster` object in the first place.
+
+Using a Cluster
+---------------
+
+The actual use of Dask requires a ``dask.distributed.Client`` object. It can be obtained from any living :class:`scherbelberg.Cluster` object as follows:
+
+.. code:: ipython
+
+    >>>> client = await cluster.get_client(asynchronous = False)
+    >>>> type(client)
+    distributed.client.Client
+    >>>> client
+    <Client: 'tls://78.47.76.87:9753' processes=1 threads=1, memory=1.89 GiB>
+
+.. note::
+
+    Dask fully supports `running asynchronously`_. Dask's mode of operation, synchronous or asynchronous, is specified at the time of creation of the client object. *scherbelberg* will **default to asynchronous Dask client objects**.
+
+.. _running asynchronously: http://distributed.dask.org/en/stable/asynchronous.html
+
+Multiple Clusters Simultaneously
+--------------------------------
+
+Prefix ...
