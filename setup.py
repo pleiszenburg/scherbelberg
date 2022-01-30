@@ -27,12 +27,14 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+import os
+
 from setuptools import (
     find_packages,
     setup,
 )
-import ast
-import os
+
+from docs.source.version import get_version
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # SETUP
@@ -54,20 +56,7 @@ with open(os.path.join(os.path.dirname(__file__), "README.md")) as f:
 SRC_DIR = "src"
 
 # Version
-def get_version(code):
-    tree = ast.parse(code)
-    for item in tree.body:
-        if not isinstance(item, ast.Assign):
-            continue
-        if len(item.targets) != 1:
-            continue
-        if item.targets[0].id != "__version__":
-            continue
-        return item.value.s
-
-
-with open(os.path.join(SRC_DIR, "scherbelberg", "__init__.py"), "r", encoding="utf-8") as f:
-    __version__ = get_version(f.read())
+version = get_version()
 
 # Requirements
 base_require = ["click", "hcloud", "pyyaml", "typeguard",]
@@ -84,15 +73,14 @@ setup(
     name="scherbelberg",
     packages=find_packages(SRC_DIR),
     package_dir={"": SRC_DIR},
-    version=__version__,
+    version=version,
     description="HPC cluster deployment and management for the Hetzner Cloud",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Sebastian M. Ernst",
     author_email="ernst@pleiszenburg.de",
     url="https://github.com/pleiszenburg/scherbelberg",
-    download_url="https://github.com/pleiszenburg/scherbelberg/archive/v%s.tar.gz"
-    % __version__,
+    download_url=f"https://github.com/pleiszenburg/scherbelberg/archive/v{version:s}.tar.gz",
     license="BSD",
     keywords=["HPC", "cluster", "dask"],
     scripts=[],
