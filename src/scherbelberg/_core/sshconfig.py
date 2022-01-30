@@ -75,7 +75,6 @@ class SSHConfig(SSHConfigABC):
         self._compression = compression
         self._cipher = cipher
 
-
     def new(
         self,
         name: Union[str, None],
@@ -100,14 +99,13 @@ class SSHConfig(SSHConfigABC):
         """
 
         return type(self)(
-            name = self._name if name is None else name,
-            user = self._user if user is None else user,
-            fn_private = self._fn_private if fn_private is None else fn_private,
-            port = self._port if port is None else port,
-            compression = self._compression if compression is None else compression,
-            cipher = self._cipher if cipher is None else cipher,
+            name=self._name if name is None else name,
+            user=self._user if user is None else user,
+            fn_private=self._fn_private if fn_private is None else fn_private,
+            port=self._port if port is None else port,
+            compression=self._compression if compression is None else compression,
+            cipher=self._cipher if cipher is None else cipher,
         )
-
 
     @property
     def name(self) -> str:
@@ -117,7 +115,6 @@ class SSHConfig(SSHConfigABC):
 
         return self._name
 
-
     @property
     def user(self) -> str:
         """
@@ -125,7 +122,6 @@ class SSHConfig(SSHConfigABC):
         """
 
         return self._user
-
 
     @property
     def fn_private(self) -> str:
@@ -135,7 +131,6 @@ class SSHConfig(SSHConfigABC):
 
         return self._fn_private
 
-
     @property
     def port(self) -> int:
         """
@@ -144,7 +139,6 @@ class SSHConfig(SSHConfigABC):
 
         return self._port
 
-
     @property
     def compression(self) -> bool:
         """
@@ -152,7 +146,6 @@ class SSHConfig(SSHConfigABC):
         """
 
         return self._compression
-
 
     @property
     def cipher(self) -> str:
