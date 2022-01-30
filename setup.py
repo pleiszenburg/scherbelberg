@@ -40,7 +40,7 @@ import os
 
 # List all versions of Python which are supported
 python_minor_min = 8
-python_minor_max = 9
+python_minor_max = 10
 confirmed_python_versions = [
     "Programming Language :: Python :: 3.{MINOR:d}".format(MINOR=minor)
     for minor in range(python_minor_min, python_minor_max + 1)
