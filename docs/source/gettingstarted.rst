@@ -8,7 +8,7 @@ Getting Started
 Cluster Management via CLI
 --------------------------
 
-*scherbelberg* has an extensive :ref:`command line interface (CLI) <cli>`. A cluster can be created by simply running the ``scherbelberg create`` command. Without further options, this will set up the smallest and most simple cluster possible, one scheduler node plus one worker node:
+*scherbelberg* has an extensive :ref:`command line interface (CLI) <cli>`. A cluster can be created simply by running the ``scherbelberg create`` command. Without further options, this will set up the smallest and most simple cluster possible, one scheduler node plus one worker node:
 
 .. code:: bash
 
@@ -83,7 +83,11 @@ Cluster Management via CLI
     cluster INFO 2022-01-28 14:29:15,130: [worker000] Dask worker started.
     cluster INFO 2022-01-28 14:29:15,130: Successfully created new cluster.
 
-Notice that creating a cluster requires around 3 to 10 minutes depending on its size. Once the cluster has been created, it can be viewed at any time using the ``scherbelberg ls`` command:
+.. note::
+
+    Creating a cluster requires around 3 to 10 minutes.
+
+Once the cluster has been created, it can be inspected at any time using the ``scherbelberg ls`` command:
 
 .. code:: bash
 
@@ -102,7 +106,7 @@ Notice that creating a cluster requires around 3 to 10 minutes depending on its 
 
             cluster-node-scheduler dash: http://78.47.76.87:9756/
 
-Sometimes, it is necessary to log into worker nodes or the scheduler. Because *scherbelberg* does not alter the system's or user's ssh configuration, it instead provides its own wrapper around ssh for quick logins. Worker nodes are accessible as follows:
+Sometimes, it is necessary to log into worker nodes or the scheduler. *scherbelberg* provides a thin wrapper around ``ssh`` for quick logins. Worker nodes are accessible as follows:
 
 .. code:: bash
 
@@ -119,6 +123,10 @@ Sometimes, it is necessary to log into worker nodes or the scheduler. Because *s
     (clusterenv) clusteruser@cluster-node-worker000:~$ exit
     logout
     (env) user@computer:~>
+
+.. note::
+
+    *scherbelberg* does not alter the system's or user's ssh configuration.
 
 The scheduler node is accessible as follows:
 
@@ -157,24 +165,88 @@ Once a cluster is not required anymore, it can be destroyed using the ``scherbel
     cluster INFO 2022-01-28 14:37:20,913: Cluster cluster destroyed.
     (env) user@computer:~>
 
+Under certain circumstances, the creation or destruction of a cluster may fail or result in an unclean state, for instance due to connectivity issues. In cases like this, it might be necessary to "nuke" the remains of the cluster before it can possibly be recreated:
+
+.. code:: bash
+
+    (env) user@computer:~> scherbelberg nuke
+    cluster INFO 2022-01-28 15:43:19,549: Creating cloud client ...
+    cluster INFO 2022-01-28 15:43:20,285: Cluster cluster nuked.
+    (env) user@computer:~>
+
 Cluster Management via API
 --------------------------
 
-Alternatively, also offers an equivalent :ref:`application programming interface (API) <api>`. The above steps now look as follows:
+Alternatively, also offers an equivalent :ref:`application programming interface (API) <api>`. First, the :class:`scherbelberg.Cluster` class needs to be imported:
 
 .. code:: ipython
 
     >>>> from scherbelberg import Cluster
+
+Based on that, one can now create a new cluster:
+
+.. code:: ipython
+
     >>>> cluster = await Cluster.from_new()
     >>>> cluster
     <Cluster prefix="cluster" alive=True workers=1 ipc=9753 dash=9756 nanny=9759>
+
+.. note::
+
+    Most of the *scherbelberg* API is designed to run asynchronously and therefore makes use of ``async`` and ``await``. If *scherbelberg* is used in a synchronous context, asynchronous functions/methods can simply be wrapped in ``asyncio.run`` which executes them as if they were normal, blocking functions/methods:
+
+    .. code:: ipython
+
+        >>>> from asyncio import run
+        >>>> cluster = run(Cluster.from_new())
+
+The cluster has one scheduler and a given number of workers, one by default:
+
+.. code:: ipython
+
     >>>> cluster.scheduler
     <Node name=cluster-node-scheduler public=78.47.76.87 private=10.0.1.200>
     >>>> len(cluster.workers)
     1
     >>>> cluster.workers
     [<Node name=cluster-node-worker000 public=188.34.155.13 private=10.0.1.100>]
+
+The status of the nodes, i.e. scheduler and workers, can be for instance tested by checking their availability via ``ssh``:
+
+.. code:: ipython
+
     >>>> await cluster.scheduler.ping_ssh()
     True
     >>>> await cluster.workers[0].ping_ssh()
     True
+
+The :class:`scherbelberg.Command` and :class:`scherbelberg.SSHConfig` classes provide basic facilities for executing commands on the nodes, for instance as follows:
+
+.. code:: ipython
+
+    >>>> out, err = await Command.from_str('uname -a').on_host(await cluster.scheduler.get_sshconfig()).run()
+    >>>> out, err
+    (['Linux cluster-node-scheduler 5.4.0-96-generic #109-Ubuntu SMP Wed Jan 12 16:49:16 UTC 2022 x86_64 x86_64 x86_64 GNU/Linux\n'],
+     ["Warning: Permanently added '78.47.76.87' (ED25519) to the list of known hosts.\r\n"])
+
+.. note::
+
+    Because *scherbelberg* does not touch the system's ``ssh`` configuration, ``ssh`` will keep telling that it "permanently added" keys to the list of known hosts. In reality, *scherbelberg* redirects the list of known hosts to a null device, ``/dev/null`` under Unix-like systems.
+
+At last, a cluster can quickly be destroyed as follows:
+
+ .. code:: ipython
+
+    >>>> await cluster.destroy()
+    >>>> cluster
+    <Cluster prefix="cluster" alive=False workers=0 ipc=9753 dash=9756 nanny=9759>
+
+Similar to the CLI, it might be necessary to "nuke" the remains of a cluster which ended up in an unclean state:
+
+.. code:: ipython
+
+   >>>> await Cluster.nuke()
+
+.. note::
+
+    "Nuke" is a class method which is directly called on the :class:`scherbelberg.Cluster` class. It is likely that connecting to a broken cluster fails which prohibits the creation of a :class:`scherbelberg.Cluster` object in the first place.
