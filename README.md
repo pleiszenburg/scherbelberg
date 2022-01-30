@@ -24,11 +24,13 @@ Next to impressive projects like [Fugaku](https://en.wikipedia.org/wiki/Fugaku_(
 
 ## Installation
 
-This package has been **tested on Linux and Windows 10**. It **should work on most Unix-like systems**. You must run a `conda` environment based entirely on recent versions of [conda-forge](https://conda-forge.org/) packages with CPython versions 3.8, 3.9 or 3.10. ``ssh`` must be installed separately as a prerequisite. A [Hetzner API token](https://docs.hetzner.cloud/#getting-started) is required - `scherbelberg` by default expects it to be located in the `HETZNER` environment variable. Then install as follows:
+`scherbelberg` can be installed via `conda` as follows:
 
 ```bash
 conda install -c conda-forge scherbelberg
 ```
+
+This package has been tested on Linux and Windows 10. It should work on most Unix-like systems. You must run a `conda` environment based entirely on recent versions of [conda-forge](https://conda-forge.org/) packages with CPython versions 3.8, 3.9 or 3.10. ``ssh`` must be installed separately as a prerequisite. A [Hetzner API token](https://docs.hetzner.cloud/#getting-started) is required. By default, `scherbelberg` expects it to be located in the `HETZNER` environment variable.
 
 See [chapter on installation](https://scherbelberg.readthedocs.io/en/latest/installation.html) in `scherbelberg`'s documentation for further details. Also see [section on how to get started](https://scherbelberg.readthedocs.io/en/latest/gettingstarted.html) for additional steps.
 
