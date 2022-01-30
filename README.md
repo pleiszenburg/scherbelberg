@@ -1,4 +1,18 @@
+![scherbelberg](https://github.com/pleiszenburg/bewegung/blob/master/docs/source/_static/logo01.png?raw=true)
+
 # SCHERBELBERG
+
+<!-- [![build_master](https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml/badge.svg?branch=master "Build Status: master / release")](https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml) -->
+[![docs_master](https://readthedocs.org/projects/scherbelberg/badge/?version=latest&style=flat-square "Documentation Status: master / release")](https://scherbelberg.readthedocs.io/en/latest/)
+[![license](https://img.shields.io/pypi/l/scherbelberg.svg?style=flat-square "GNU Lesser General Public License v2.1")](https://github.com/pleiszenburg/scherbelberg/blob/master/LICENSE)
+[![status](https://img.shields.io/pypi/status/scherbelberg.svg?style=flat-square "Project Development Status")](https://github.com/pleiszenburg/scherbelberg/issues)
+[![pypi_version](https://img.shields.io/pypi/v/scherbelberg.svg?style=flat-square "Project Development Status")](https://pypi.python.org/pypi/scherbelberg)
+[![conda_version](https://img.shields.io/conda/vn/conda-forge/scherbelberg.svg?style=flat-square "conda version")](https://anaconda.org/conda-forge/scherbelberg)
+[![pypi_versions](https://img.shields.io/pypi/pyversions/scherbelberg.svg?style=flat-square "Available on PyPi - the Python Package Index")](https://pypi.python.org/pypi/scherbelberg)
+<!-- [![chat](https://img.shields.io/matrix/zugbruecke:matrix.org.svg?style=flat-square "Matrix Chat Room")](https://matrix.to/#/#zugbruecke:matrix.org)
+[![mailing_list](https://img.shields.io/badge/mailing%20list-groups.io-8cbcd1.svg?style=flat-square "Mailing List")](https://groups.io/g/zugbruecke-dev) -->
+
+## Synopsis
 
 `scherbelberg` provides both a CLI interface and a library for deploying and managing small [Dask](https://dask.org/)-based HPC clusters in the [Hetzner cloud](http://cloud.hetzner.com/). Development status *alpha*, stability *acceptable*, security also *acceptable* but implementation needs a review.
 

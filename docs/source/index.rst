@@ -1,14 +1,14 @@
 :github_url:
 
-.. image:: http://www.pleiszenburg.de/scherbelberg_logo.png
+.. image:: https://github.com/pleiszenburg/bewegung/blob/master/docs/source/_static/logo01.png?raw=true
 	:alt: scherbelberg
 
 scherbelberg - HPC cluster deployment and management for the Hetzner Cloud
 ==========================================================================
 
-.. |build_master| image:: https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml/badge.svg?branch=master
-	:target: https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml
-	:alt: Test Status: master / release
+.. .. |build_master| image:: https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml/badge.svg?branch=master
+.. 	:target: https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml
+.. 	:alt: Test Status: master / release
 .. |docs_master| image:: https://readthedocs.org/projects/scherbelberg/badge/?version=latest&style=flat-square
 	:target: https://scherbelberg.readthedocs.io/en/latest/
 	:alt: Documentation Status: master / release
@@ -21,6 +21,9 @@ scherbelberg - HPC cluster deployment and management for the Hetzner Cloud
 .. |pypi_version| image:: https://img.shields.io/pypi/v/scherbelberg.svg?style=flat-square
 	:target: https://pypi.python.org/pypi/scherbelberg
 	:alt: pypi version
+.. |conda_version| image:: https://img.shields.io/conda/vn/conda-forge/scherbelberg.svg?style=flat-square
+	:target: https://anaconda.org/conda-forge/scherbelberg
+	:alt: conda version
 .. |pypi_versions| image:: https://img.shields.io/pypi/pyversions/scherbelberg.svg?style=flat-square
 	:target: https://pypi.python.org/pypi/scherbelberg
 	:alt: Available on PyPi - the Python Package Index
@@ -31,7 +34,9 @@ scherbelberg - HPC cluster deployment and management for the Hetzner Cloud
 .. 	:target: https://groups.io/g/scherbelberg-dev
 .. 	:alt: Mailing List
 
-|build_master| |docs_master| |license| |status| |pypi_version| |pypi_versions|
+.. .. |build_master|
+
+|docs_master| |license| |status| |pypi_version| |conda_version| |pypi_versions|
 
 .. .. |chat| |mailing_list|
 
