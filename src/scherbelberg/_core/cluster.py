@@ -159,39 +159,14 @@ class Cluster(ClusterABC):
         if not self.alive:
             raise SystemError("cluster is dead")
 
-        cats = [
-            getattr(self._client, name)
-            for name in (
-                "servers",
-                "networks",
-                "ssh_keys",
-                "firewalls",
-            )
-        ]
-
-        for cat in cats:
-            for item in cat.get_all():
-                if not item.name.startswith(self._prefix):
-                    self._log.warning("Not deleting %s ...", item.name)
-                    continue
-                self._log.info("Deleting %s ...", item.name)
-                item.delete()
+        self._remove_remote(self._client, self._prefix, self._log)
+        self._remove_local(self._prefix, self._log)
 
         self._client = None
         self._scheduler = None
         self._workers = None
         self._network = None
         self._firewall = None
-
-        if os.path.exists(self._fn_private(self._prefix)):
-            os.unlink(self._fn_private(self._prefix))
-        if os.path.exists(self._fn_public(self._prefix)):
-            os.unlink(self._fn_public(self._prefix))
-
-        for suffix in ("ca.key", "ca.crt", "node.key", "node.crt"):
-            fn = os.path.join(os.getcwd(), f"{self._prefix:s}_{suffix:s}")
-            if os.path.exists(fn):
-                os.unlink(fn)
 
         self._log.info("Cluster %s destroyed.", self._prefix)
 
@@ -264,6 +239,76 @@ class Cluster(ClusterABC):
         """
 
         return f"{cls._fn_private(prefix):s}.pub"
+
+    @classmethod
+    def _remove_local(
+        cls,
+        prefix: str,
+        log: Logger,
+    ):
+
+        if os.path.exists(cls._fn_private(prefix)):
+            os.unlink(cls._fn_private(prefix))
+        if os.path.exists(cls._fn_public(prefix)):
+            os.unlink(cls._fn_public(prefix))
+
+        for suffix in ("ca.key", "ca.crt", "node.key", "node.crt"):
+            fn = os.path.join(os.getcwd(), f"{prefix:s}_{suffix:s}")
+            if not os.path.exists(fn):
+                continue
+            log.info("Deleting local %s ...", fn)
+            os.unlink(fn)
+
+    @staticmethod
+    def _remove_remote(
+        client: Client,
+        prefix: str,
+        log: Logger,
+    ):
+
+        cats = [
+            getattr(client, name)
+            for name in (
+                "servers",
+                "networks",
+                "ssh_keys",
+                "firewalls",
+            )
+        ]
+
+        for cat in cats:
+            for item in cat.get_all():
+                if not item.name.startswith(prefix):
+                    log.warning("Not deleting %s ...", item.name)
+                    continue
+                log.info("Deleting remote %s ...", item.name)
+                item.delete()
+
+    @classmethod
+    async def nuke(
+        cls,
+        prefix: str = PREFIX,
+        tokenvar: str = TOKENVAR,
+        log: Union[Logger, None] = None,
+    ):
+        """
+        Nukes a possibly incomplete or broken cluster without prior connecting to it
+
+        Args:
+            prefix : Name of cluster, used as a prefix in names of every component.
+            tokenvar : Name of the environment variable holding the cloud API login token.
+            log : Allows to pass custom logger objects. Defaults to scherbelberg's own default logger.
+        """
+
+        log = getLogger(name=prefix) if log is None else log
+
+        log.info("Creating cloud client ...")
+        client = Client(token=os.environ[tokenvar])
+
+        cls._remove_remote(client, prefix, log)
+        cls._remove_local(prefix, log)
+
+        log.info("Cluster %s nuked.", prefix)
 
     @classmethod
     async def from_new(
