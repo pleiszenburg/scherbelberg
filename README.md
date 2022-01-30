@@ -2,28 +2,19 @@
 
 `scherbelberg` provides both a CLI interface and a library for deploying and managing small [Dask](https://dask.org/)-based HPC clusters in the [Hetzner cloud](http://cloud.hetzner.com/). Development status *alpha*, stability *acceptable*, security also *acceptable* but implementation needs a review.
 
-## Project's name
+## Project's Name
 
 Next to impressive projects like [Fugaku](https://en.wikipedia.org/wiki/Fugaku_(supercomputer)), which is named after [Mount Fuji](https://en.wikipedia.org/wiki/Mount_Fuji), the [TOP500](https://en.wikipedia.org/wiki/TOP500) are clearly missing an entry from the city of [Leipzig](https://en.wikipedia.org/wiki/Leipzig). This project is named after one of the few significant "mountains" in the city, the "Scherbelberg", also known as the "[Rosentalhügel](https://commons.wikimedia.org/wiki/Category:Rosentalh%C3%BCgel_(Leipzig))" (20 meters above the surrounding landscape and 125 meters above sea level). Starting out as a late 19th century landfill, it has since become part of a park-like landscape. As of 1975, a famously shaky steel [observation tower](https://commons.wikimedia.org/wiki/Category:Rosentalturm) with a rather [beautiful view](https://commons.wikimedia.org/wiki/Category:Views_from_Rosentalturm) is located at its top, overlooking not only the [Leipziger Auenwald](https://en.wikipedia.org/wiki/Leipzig_Riverside_Forest) forest but also the city's sewage treatment plant.
 
 ## Installation
 
-This package has been tested on Linux and Windows 10. It is likely to work on most Unix-like systems.
+This package has been **tested on Linux and Windows 10**. It **should work on most Unix-like systems**. You must run a `conda` environment based entirely on recent versions of [conda-forge](https://conda-forge.org/) packages with CPython versions 3.8, 3.9 or 3.10. ``ssh`` must be installed separately as a prerequisite. A [Hetzner API token](https://docs.hetzner.cloud/#getting-started) is required - `scherbelberg` by default expects it to be located in the `HETZNER` environment variable. Then install as follows:
 
-Prerequisites:
+```bash
+conda install -c conda-forge scherbelberg
+```
 
-- `ssh`
-- `scp`
-- `ssh-keygen`
-- `git`
-
-You must run a `conda` environment based entirely on [conda-forge](https://conda-forge.org/) with CPython version 3.8 and `dask` present. Once this environment has been created, configured and activated, you can install `scherbelberg` as follows:
-
-`pip install git+https://github.com/pleiszenburg/scherbelberg.git@master`
-
-`scherbelberg` will create equivalent `conda` environments on every cluster node. Although `scherbelberg` heavily relies on `ssh`, it will **NOT** alter your system's `ssh` configuration.
-
-For running any of the `scherbelberg` commands or routines, a [Hetzner API token](https://docs.hetzner.cloud/#getting-started) is required. `scherbelberg` by default expects it to be located in the `HETZNER` environment variable.
+See [chapter on installation](https://scherbelberg.readthedocs.io/en/latest/installation.html) in `scherbelberg`'s documentation for further details.
 
 ## CLI
 
