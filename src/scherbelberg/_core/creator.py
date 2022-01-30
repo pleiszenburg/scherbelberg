@@ -298,6 +298,7 @@ class Creator(CreatorABC):
         )
 
         await node.bootstrap()  # TODO param?
+        await node.update()
 
         return node
 
