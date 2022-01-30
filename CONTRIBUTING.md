@@ -1,4 +1,4 @@
-# How to contribute to *scherbelberg*
+# Contributing
 
 Thank you for considering contributing to *scherbelberg*!
 **Contributions are highly welcomed!**

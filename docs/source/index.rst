@@ -71,11 +71,8 @@ User's guide
    security
    changes
    faq
+   contributing
    support
-
-`Interested in contributing?`_
-
-.. _Interested in contributing?: https://github.com/pleiszenburg/scherbelberg/blob/master/CONTRIBUTING.md
 
 Indices and Tables
 ==================
