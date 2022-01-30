@@ -6,6 +6,10 @@
 scherbelberg - HPC cluster deployment and management for the Hetzner Cloud
 ==========================================================================
 
+*/ˈʃɛʁbɛlbɛʁk/* - German, toponym, male: "`mountain of shards`_" in Leipzig
+
+.. _mountain of shards: https://commons.wikimedia.org/wiki/Category:Rosentalh%C3%BCgel_(Leipzig)
+
 .. .. |build_master| image:: https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml/badge.svg?branch=master
 .. 	:target: https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml
 .. 	:alt: Test Status: master / release
