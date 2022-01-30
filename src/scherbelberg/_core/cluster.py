@@ -57,6 +57,7 @@ from .node import Node
 # CLASS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
 @typechecked
 class Cluster(ClusterABC):
     """
@@ -94,9 +95,9 @@ class Cluster(ClusterABC):
 
         assert len(workers) > 0
 
-        assert dask_ipc >= 2**10
-        assert dask_dash >= 2**10
-        assert dask_nanny >= 2**10
+        assert dask_ipc >= 2 ** 10
+        assert dask_dash >= 2 ** 10
+        assert dask_nanny >= 2 ** 10
 
         assert len({dask_ipc, dask_dash, dask_nanny}) == 3
 
@@ -106,14 +107,13 @@ class Cluster(ClusterABC):
         self._network = network
         self._firewall = firewall
 
-        self._dask_ipc = dask_ipc # port
-        self._dask_dash = dask_dash # port
-        self._dask_nanny = dask_nanny # port
+        self._dask_ipc = dask_ipc  # port
+        self._dask_dash = dask_dash  # port
+        self._dask_nanny = dask_nanny  # port
 
         self._prefix = prefix
         self._wait = wait
-        self._log = getLogger(name = prefix) if log is None else log
-
+        self._log = getLogger(name=prefix) if log is None else log
 
     def __repr__(self) -> str:
         """
@@ -121,7 +121,6 @@ class Cluster(ClusterABC):
         """
 
         return f'<Cluster prefix="{self._prefix:s}" alive={str(self.alive):s} workers={len(self._workers):d} ipc={self._dask_ipc:d} dash={self._dask_dash:d} nanny={self._dask_nanny:d}>'
-
 
     async def get_client(self, asynchronous: bool = True) -> Any:
         """
@@ -134,24 +133,23 @@ class Cluster(ClusterABC):
         """
 
         if not self.alive:
-            raise SystemError('cluster is dead')
+            raise SystemError("cluster is dead")
 
         from dask.distributed import Client as DaskClient
         from distributed.security import Security
 
         security = Security(
-            tls_ca_file = f'{self._prefix:s}_ca.crt',
-            tls_client_cert = f'{self._prefix:s}_node.crt',
-            tls_client_key = f'{self._prefix:s}_node.key',
-            require_encryption = True,
+            tls_ca_file=f"{self._prefix:s}_ca.crt",
+            tls_client_cert=f"{self._prefix:s}_node.crt",
+            tls_client_key=f"{self._prefix:s}_node.key",
+            require_encryption=True,
         )
 
         return DaskClient(
-            f'tls://{self._scheduler.public_ip4:s}:{self._dask_ipc:d}',
-            security = security,
-            asynchronous = asynchronous,
+            f"tls://{self._scheduler.public_ip4:s}:{self._dask_ipc:d}",
+            security=security,
+            asynchronous=asynchronous,
         )
-
 
     async def destroy(self):
         """
@@ -159,24 +157,24 @@ class Cluster(ClusterABC):
         """
 
         if not self.alive:
-            raise SystemError('cluster is dead')
+            raise SystemError("cluster is dead")
 
         cats = [
             getattr(self._client, name)
             for name in (
-                'servers',
-                'networks',
-                'ssh_keys',
-                'firewalls',
+                "servers",
+                "networks",
+                "ssh_keys",
+                "firewalls",
             )
         ]
 
         for cat in cats:
             for item in cat.get_all():
                 if not item.name.startswith(self._prefix):
-                    self._log.warning('Not deleting %s ...', item.name)
+                    self._log.warning("Not deleting %s ...", item.name)
                     continue
-                self._log.info('Deleting %s ...', item.name)
+                self._log.info("Deleting %s ...", item.name)
                 item.delete()
 
         self._client = None
@@ -190,13 +188,12 @@ class Cluster(ClusterABC):
         if os.path.exists(self._fn_public(self._prefix)):
             os.unlink(self._fn_public(self._prefix))
 
-        for suffix in ('ca.key', 'ca.crt', 'node.key', 'node.crt'):
-            fn = os.path.join(os.getcwd(), f'{self._prefix:s}_{suffix:s}')
+        for suffix in ("ca.key", "ca.crt", "node.key", "node.crt"):
+            fn = os.path.join(os.getcwd(), f"{self._prefix:s}_{suffix:s}")
             if os.path.exists(fn):
                 os.unlink(fn)
 
-        self._log.info('Cluster %s destroyed.', self._prefix)
-
+        self._log.info("Cluster %s destroyed.", self._prefix)
 
     @property
     def alive(self) -> bool:
@@ -206,7 +203,6 @@ class Cluster(ClusterABC):
 
         return self._scheduler is not None
 
-
     @property
     def dask_ipc(self) -> int:
         """
@@ -214,7 +210,6 @@ class Cluster(ClusterABC):
         """
 
         return self._dask_ipc
-
 
     @property
     def dask_dash(self) -> int:
@@ -224,7 +219,6 @@ class Cluster(ClusterABC):
 
         return self._dask_dash
 
-
     @property
     def dask_nanny(self) -> int:
         """
@@ -233,7 +227,6 @@ class Cluster(ClusterABC):
 
         return self._dask_nanny
 
-
     @property
     def scheduler(self) -> NodeABC:
         """
@@ -241,10 +234,9 @@ class Cluster(ClusterABC):
         """
 
         if not self.alive:
-            raise SystemError('cluster is dead')
+            raise SystemError("cluster is dead")
 
         return self._scheduler
-
 
     @property
     def workers(self) -> List[NodeABC]:
@@ -253,10 +245,9 @@ class Cluster(ClusterABC):
         """
 
         if not self.alive:
-            raise SystemError('cluster is dead')
+            raise SystemError("cluster is dead")
 
         return self._workers.copy()
-
 
     @classmethod
     def _fn_private(cls, prefix: str) -> str:
@@ -264,8 +255,7 @@ class Cluster(ClusterABC):
         Path to private key file
         """
 
-        return os.path.join(os.getcwd(), f'{prefix:s}.key')
-
+        return os.path.join(os.getcwd(), f"{prefix:s}.key")
 
     @classmethod
     def _fn_public(cls, prefix: str) -> str:
@@ -273,8 +263,7 @@ class Cluster(ClusterABC):
         Path to public key file
         """
 
-        return f'{cls._fn_private(prefix):s}.pub'
-
+        return f"{cls._fn_private(prefix):s}.pub"
 
     @classmethod
     async def from_new(
@@ -312,42 +301,41 @@ class Cluster(ClusterABC):
             Cluster object represeting an alive cluster.
         """
 
-        log = getLogger(name = prefix) if log is None else log
+        log = getLogger(name=prefix) if log is None else log
 
-        log.info('Creating cloud client ...')
-        client = Client(token = os.environ[tokenvar])
+        log.info("Creating cloud client ...")
+        client = Client(token=os.environ[tokenvar])
 
         creator = await Creator.from_async(
-            client = client,
-            prefix = prefix,
-            fn_public = cls._fn_public(prefix),
-            fn_private = cls._fn_private(prefix),
-            wait = wait,
-            dask_ipc = dask_ipc,
-            dask_dash = dask_dash,
-            dask_nanny = dask_nanny,
-            scheduler = scheduler,
-            worker = worker,
-            image = image,
-            datacenter = datacenter,
-            workers = workers,
-            log = log,
+            client=client,
+            prefix=prefix,
+            fn_public=cls._fn_public(prefix),
+            fn_private=cls._fn_private(prefix),
+            wait=wait,
+            dask_ipc=dask_ipc,
+            dask_dash=dask_dash,
+            dask_nanny=dask_nanny,
+            scheduler=scheduler,
+            worker=worker,
+            image=image,
+            datacenter=datacenter,
+            workers=workers,
+            log=log,
         )
 
         return cls(
-            client = client,
-            scheduler = creator.scheduler,
-            workers = creator.workers,
-            network = creator.network,
-            firewall = creator.firewall,
-            dask_ipc = dask_ipc,
-            dask_dash = dask_dash,
-            dask_nanny = dask_nanny,
-            prefix = prefix,
-            wait = wait,
-            log = log,
+            client=client,
+            scheduler=creator.scheduler,
+            workers=creator.workers,
+            network=creator.network,
+            firewall=creator.firewall,
+            dask_ipc=dask_ipc,
+            dask_dash=dask_dash,
+            dask_nanny=dask_nanny,
+            prefix=prefix,
+            wait=wait,
+            log=log,
         )
-
 
     @classmethod
     async def from_existing(
@@ -369,56 +357,56 @@ class Cluster(ClusterABC):
             Cluster object represeting an alive cluster.
         """
 
-        log = getLogger(name = prefix) if log is None else log
+        log = getLogger(name=prefix) if log is None else log
 
-        log.info('Creating cloud client ...')
-        client = Client(token = os.environ[tokenvar])
+        log.info("Creating cloud client ...")
+        client = Client(token=os.environ[tokenvar])
 
-        log.info('Getting handle on scheduler ...')
+        log.info("Getting handle on scheduler ...")
         scheduler = await Node.from_name(
-            name = f'{prefix:s}-node-scheduler',
-            client = client,
-            fn_private = cls._fn_private(prefix),
-            prefix = prefix,
-            wait = wait,
-            log = log,
+            name=f"{prefix:s}-node-scheduler",
+            client=client,
+            fn_private=cls._fn_private(prefix),
+            prefix=prefix,
+            wait=wait,
+            log=log,
         )
 
-        log.info('Getting handles on workers ...')
+        log.info("Getting handles on workers ...")
         workers = [
             Node(
-                server = server,
-                client = client,
-                fn_private = cls._fn_private(prefix),
-                prefix = prefix,
-                wait = wait,
-                log = log,
+                server=server,
+                client=client,
+                fn_private=cls._fn_private(prefix),
+                prefix=prefix,
+                wait=wait,
+                log=log,
             )
             for server in client.servers.get_all()
-            if server.name.startswith(prefix) and '-node-worker' in server.name
+            if server.name.startswith(prefix) and "-node-worker" in server.name
         ]
 
-        log.info('Getting handle on firewall ...')
+        log.info("Getting handle on firewall ...")
         firewall = client.firewalls.get_by_name(
-            name = f'{prefix:s}-firewall',
+            name=f"{prefix:s}-firewall",
         )
 
-        log.info('Getting handle on network ...')
+        log.info("Getting handle on network ...")
         network = client.networks.get_by_name(
-            name = f'{prefix:s}-network',
+            name=f"{prefix:s}-network",
         )
 
-        log.info('Successfully attached to existing cluster.')
+        log.info("Successfully attached to existing cluster.")
         return cls(
-            client = client,
-            scheduler = scheduler,
-            workers = workers,
-            network = network,
-            firewall = firewall,
-            dask_ipc = int(scheduler.labels["dask_ipc"]),
-            dask_dash = int(scheduler.labels["dask_dash"]),
-            dask_nanny = int(scheduler.labels["dask_nanny"]),
-            prefix = prefix,
-            wait = wait,
-            log = log,
+            client=client,
+            scheduler=scheduler,
+            workers=workers,
+            network=network,
+            firewall=firewall,
+            dask_ipc=int(scheduler.labels["dask_ipc"]),
+            dask_dash=int(scheduler.labels["dask_dash"]),
+            dask_nanny=int(scheduler.labels["dask_nanny"]),
+            prefix=prefix,
+            wait=wait,
+            log=log,
         )
