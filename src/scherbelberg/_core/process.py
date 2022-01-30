@@ -60,6 +60,13 @@ class Process(ProcessABC):
         self._status = []
         self._exception = None
 
+    def __repr__(self) -> str:
+        """
+        Interactive string representation
+        """
+
+        return "<Process>"
+
     def communicate(
         self,
         returncode: bool = False,
