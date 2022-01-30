@@ -41,9 +41,15 @@ from .abc import SSHConfigABC
 @typechecked
 class SSHConfig(SSHConfigABC):
     """
-    Holds informaton on an SSH connection.
+    Holds configuration for an SSH connection. Immutable.
 
-    Immutable.
+    Args:
+        name : Domain name or IP of remote system.
+        user : Remote user name.
+        fn_private : Location of private SSH key.
+        port : SSH port on remote system.
+        compression : Turns SSH compression on or off.
+        cipher : Specifies cipher for SSH connection.
     """
 
     def __init__(
@@ -79,6 +85,19 @@ class SSHConfig(SSHConfigABC):
         compression: Union[bool, None],
         cipher: Union[str, None],
     ) -> SSHConfigABC:
+        """
+        Generate a new SSH configuration from present object by changing individual parameters.
+
+        Args:
+            name : Domain name or IP of remote system.
+            user : Remote user name.
+            fn_private : Location of private SSH key.
+            port : SSH port on remote system.
+            compression : Turns SSH compression on or off.
+            cipher : Specifies cipher for SSH connection.
+        Returns:
+            New SSH configuration object.
+        """
 
         return type(self)(
             name = self._name if name is None else name,
@@ -92,35 +111,53 @@ class SSHConfig(SSHConfigABC):
 
     @property
     def name(self) -> str:
+        """
+        Domain name or IP of remote system
+        """
 
         return self._name
 
 
     @property
     def user(self) -> str:
+        """
+        Remote user name
+        """
 
         return self._user
 
 
     @property
     def fn_private(self) -> str:
+        """
+        Location of private SSH key
+        """
 
         return self._fn_private
 
 
     @property
     def port(self) -> int:
+        """
+        SSH port on remote system
+        """
 
         return self._port
 
 
     @property
     def compression(self) -> bool:
+        """
+        Turns SSH compression on or off
+        """
 
         return self._compression
 
 
     @property
     def cipher(self) -> str:
+        """
+        Specifies cipher for SSH connection
+        """
 
         return self._cipher
