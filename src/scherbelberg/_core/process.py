@@ -42,9 +42,11 @@ from .abc import CommandABC, ProcessABC
 @typechecked
 class Process(ProcessABC):
     """
-    Wrapper around a list of Popen objects (pipe).
+    Wrapper around a list of ``subprocess.Popen`` objects, managing their life-cycle. Mutable.
 
-    Mutable.
+    Args:
+        procs : A list of ``subprocess.Popen`` objects linked via pipes.
+        command : The source :class:`scherbelberg.Command` object.
     """
 
     def __init__(self, procs: List[Popen], command: CommandABC):
@@ -67,6 +69,15 @@ class Process(ProcessABC):
         Tuple[List[str], List[str], List[int], Exception],
         Tuple[List[str], List[str]],
     ]:
+        """
+        Run process or chain of processes.
+
+        Args:
+            returncode : If set to ``True``, returns actual return code and does not raise an exception if the process(es) failed. If set to ``False``, a failed process raises an exception and only data from standard output and standard error streams is returned.
+            timeout : Total timeout in seconds.
+        Returns:
+            A tuple, the first two elements containing data from standard output and standard error streams. If ``returncode`` is set to ``True``, the tuple has two additional entries, a list of return codes and an exception object that can be raised by the caller.
+        """
 
         self._complete(timeout = timeout)
 
@@ -81,6 +92,9 @@ class Process(ProcessABC):
 
     @property
     def running(self) -> bool:
+        """
+        Is any of the processes in the list of ``subprocess.Popen`` objects still running?
+        """
 
         return any((
             proc.poll() is None

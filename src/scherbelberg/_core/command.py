@@ -127,7 +127,7 @@ class Command(CommandABC):
         Tuple[List[str], List[str]],
     ]:
         """
-        Run command or chain of commands.
+        Run command or chain of commands in a :class:`scherbelberg.Process` object.
 
         Args:
             returncode : If set to ``True``, returns actual return code and does not raise an exception if the command(s) failed. If set to ``False``, a failed command raises an exception and only data from standard output and standard error streams is returned.
