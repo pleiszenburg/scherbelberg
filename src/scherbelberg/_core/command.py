@@ -59,14 +59,12 @@ class Command(CommandABC):
 
         self._cmd = [fragment.copy() for fragment in cmd]
 
-
     def __repr__(self) -> str:
         """
         Interactive string representation
         """
 
         return "<Command>"
-
 
     def __str__(self) -> str:
         """
@@ -75,7 +73,6 @@ class Command(CommandABC):
 
         return " | ".join([shlex.join(fragment) for fragment in self._cmd])
 
-
     def __len__(self) -> int:
         """
         Number of chained commmands
@@ -83,14 +80,12 @@ class Command(CommandABC):
 
         return len(self._cmd)
 
-
     def __or__(self, other: CommandABC) -> CommandABC:  # pipe
         """
         Pipe
         """
 
         return type(self)(self.cmd + other.cmd)
-
 
     @staticmethod
     def _split_list(data: List, delimiter: str) -> List[List]:
@@ -103,19 +98,21 @@ class Command(CommandABC):
             if not is_delimiter
         ]
 
-
     @staticmethod
     def _ssh_options() -> List[str]:
 
-        dev_null = '\\\\.\\NUL' if platform.startswith('win') else '/dev/null'
+        dev_null = "\\\\.\\NUL" if platform.startswith("win") else "/dev/null"
 
         return [
-            "-o", "StrictHostKeyChecking=no", # TODO security
-            "-o", f"UserKnownHostsFile={dev_null:s}", # TODO security
-            "-o", "BatchMode=yes",
-            "-o", "ConnectTimeout=5",
+            "-o",
+            "StrictHostKeyChecking=no",  # TODO security
+            "-o",
+            f"UserKnownHostsFile={dev_null:s}",  # TODO security
+            "-o",
+            "BatchMode=yes",
+            "-o",
+            "ConnectTimeout=5",
         ]
-
 
     async def run(
         self,
@@ -151,9 +148,9 @@ class Command(CommandABC):
             procs.append(proc)
 
         process = Process(
-            procs = procs,
-            command = self,
-            )
+            procs=procs,
+            command=self,
+        )
 
         start = time()
         while process.running:
@@ -162,10 +159,9 @@ class Command(CommandABC):
                 break
 
         return process.communicate(
-            returncode = returncode,
-            timeout = 0.1 if timeout is not None else None,
+            returncode=returncode,
+            timeout=0.1 if timeout is not None else None,
         )
-
 
     def on_host(self, host: SSHConfigABC) -> CommandABC:
         """
@@ -181,18 +177,23 @@ class Command(CommandABC):
         if host.name == "localhost":
             return self
 
-        return type(self).from_list([
-            "ssh",
-            "-T",  # Disable pseudo-terminal allocation
-            "-o", "Compression=yes" if host.compression else "Compression=no",
-            *self._ssh_options(),
-            "-p", f'{host.port:d}',
-            "-c", host.cipher,
-            "-i", host.fn_private,
-            f'{host.user:s}@{host.name:s}',
-            str(self),
-        ])
-
+        return type(self).from_list(
+            [
+                "ssh",
+                "-T",  # Disable pseudo-terminal allocation
+                "-o",
+                "Compression=yes" if host.compression else "Compression=no",
+                *self._ssh_options(),
+                "-p",
+                f"{host.port:d}",
+                "-c",
+                host.cipher,
+                "-i",
+                host.fn_private,
+                f"{host.user:s}@{host.name:s}",
+                str(self),
+            ]
+        )
 
     @property
     def cmd(self) -> List[List[str]]:
@@ -201,7 +202,6 @@ class Command(CommandABC):
         """
 
         return [fragment.copy() for fragment in self._cmd]
-
 
     @classmethod
     def from_str(cls, cmd: str) -> CommandABC:
@@ -216,7 +216,6 @@ class Command(CommandABC):
 
         return cls(cls._split_list(shlex.split(cmd), "|"))
 
-
     @classmethod
     def from_list(cls, cmd: List[str]) -> CommandABC:
         """
@@ -229,7 +228,6 @@ class Command(CommandABC):
         """
 
         return cls([cmd])
-
 
     @classmethod
     def from_scp(cls, *source: str, target: str, host: SSHConfigABC) -> CommandABC:
@@ -248,19 +246,22 @@ class Command(CommandABC):
         assert len(source) > 0
         assert len(target) > 0
 
-        if platform.startswith('win'): # Windows scp path fix
-            source = [
-                path.replace('\\\\', '/').replace('\\', '/')
-                for path in source
-            ]
+        if platform.startswith("win"):  # Windows scp path fix
+            source = [path.replace("\\\\", "/").replace("\\", "/") for path in source]
 
-        return cls.from_list([
-            "scp",
-            "-o", "Compression=yes" if host.compression else "Compression=no",
-            *cls._ssh_options(),
-            "-P", f'{host.port:d}',
-            "-c", host.cipher,
-            "-i", host.fn_private,
-            *source,
-            f'{host.user:s}@{host.name:s}:{target:s}',
-        ])
+        return cls.from_list(
+            [
+                "scp",
+                "-o",
+                "Compression=yes" if host.compression else "Compression=no",
+                *cls._ssh_options(),
+                "-P",
+                f"{host.port:d}",
+                "-c",
+                host.cipher,
+                "-i",
+                host.fn_private,
+                *source,
+                f"{host.user:s}@{host.name:s}:{target:s}",
+            ]
+        )
