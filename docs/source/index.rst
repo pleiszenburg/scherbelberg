@@ -1,6 +1,6 @@
 :github_url:
 
-.. image:: https://github.com/pleiszenburg/bewegung/blob/master/docs/source/_static/logo01.png?raw=true
+.. image:: _static/logo01.png
 	:alt: scherbelberg
 
 scherbelberg - HPC cluster deployment and management for the Hetzner Cloud
