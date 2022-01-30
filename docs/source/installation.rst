@@ -32,15 +32,17 @@ Under both **Linux** and **Mac OS X**, a current version of ``openssh`` is also 
 
     conda install -c conda-forge openssh
 
-One can determine the current ``openssh`` binaries via the ``which`` command:
+.. note::
 
-.. code:: bash
+    One can determine the current ``openssh`` binaries via the ``which`` command:
 
-    which ssh
-    which scp
-    which ssh-keygen
+    .. code:: bash
 
-On **Windows** 10 or greater, ``openssh`` is available as an optional operating system feature and `can be installed via Windows settings`_. The Windows Subsystem for Linux (WSL) is not required.
+        which ssh
+        which scp
+        which ssh-keygen
+
+On **Windows** 10 or greater, ``openssh`` is available as an optional operating system feature and `can be installed via Windows settings`_. The Windows Subsystem for Linux (WSL) or Putty are not required.
 
 .. _can be installed via Windows settings: https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse
 
