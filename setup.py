@@ -59,10 +59,26 @@ SRC_DIR = "src"
 version = get_version()
 
 # Requirements
-base_require = ["click", "hcloud", "pyyaml", "typeguard",]
+base_require = [
+    "click",
+    "hcloud",
+    "pyyaml",
+    "typeguard",
+]
 extras_require = {
     "base": base_require,
-    "dev": ["black", "myst-parser", "python-lsp-server[all]", "setuptools", "sphinx", "sphinx-click", "sphinx_rtd_theme", "sphinx-autodoc-typehints", "twine", "wheel",],
+    "dev": [
+        "black",
+        "myst-parser",
+        "python-lsp-server[all]",
+        "setuptools",
+        "sphinx",
+        "sphinx-click",
+        "sphinx_rtd_theme",
+        "sphinx-autodoc-typehints",
+        "twine",
+        "wheel",
+    ],
 }
 extras_require["all"] = list(
     {rq for target in extras_require.keys() for rq in extras_require[target]}
@@ -90,7 +106,11 @@ setup(
     install_requires=base_require,
     extras_require=extras_require,
     zip_safe=False,
-    entry_points={"console_scripts": ["scherbelberg = scherbelberg._cli:cli",],},
+    entry_points={
+        "console_scripts": [
+            "scherbelberg = scherbelberg._cli:cli",
+        ],
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",
