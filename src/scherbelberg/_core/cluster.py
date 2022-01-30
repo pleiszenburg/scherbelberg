@@ -120,7 +120,9 @@ class Cluster(ClusterABC):
         Interactive string representation
         """
 
-        return f'<Cluster prefix="{self._prefix:s}" alive={str(self.alive):s} workers={len(self._workers):d} ipc={self._dask_ipc:d} dash={self._dask_dash:d} nanny={self._dask_nanny:d}>'
+        workers = 0 if self._workers is None else len(self._workers)
+
+        return f'<Cluster prefix="{self._prefix:s}" alive={str(self.alive):s} workers={workers:d} ipc={self._dask_ipc:d} dash={self._dask_dash:d} nanny={self._dask_nanny:d}>'
 
     async def get_client(self, asynchronous: bool = True) -> Any:
         """
