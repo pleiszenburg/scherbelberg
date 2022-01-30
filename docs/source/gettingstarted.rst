@@ -174,3 +174,7 @@ Alternatively, also offers an equivalent :ref:`application programming interface
     1
     >>>> cluster.workers
     [<Node name=cluster-node-worker000 public=188.34.155.13 private=10.0.1.100>]
+    >>>> await cluster.scheduler.ping_ssh()
+    True
+    >>>> await cluster.workers[0].ping_ssh()
+    True
