@@ -162,6 +162,15 @@ Cluster Management via API
 
 Alternatively, also offers an equivalent :ref:`application programming interface (API) <api>`. The above steps now look as follows:
 
-.. code:: python
+.. code:: ipython
 
-    pass
+    >>>> from scherbelberg import Cluster
+    >>>> cluster = await Cluster.from_new()
+    >>>> cluster
+    <Cluster prefix="cluster" alive=True workers=1 ipc=9753 dash=9756 nanny=9759>
+    >>>> cluster.scheduler
+    <Node name=cluster-node-scheduler public=78.47.76.87 private=10.0.1.200>
+    >>>> len(cluster.workers)
+    1
+    >>>> cluster.workers
+    [<Node name=cluster-node-worker000 public=188.34.155.13 private=10.0.1.100>]
