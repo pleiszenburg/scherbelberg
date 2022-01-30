@@ -2,7 +2,7 @@
 
 # SCHERBELBERG
 
-*/ˈʃɛʁbɛlbɛʁk/ ([German, toponym, male: "mountain of shards" in Leipzig](https://commons.wikimedia.org/wiki/Category:Rosentalh%C3%BCgel_(Leipzig))))*
+*/ˈʃɛʁbɛlbɛʁk/ ([German, toponym, male: "mountain of shards" in Leipzig](https://commons.wikimedia.org/wiki/Category:Rosentalh%C3%BCgel_(Leipzig)))*
 
 <!-- [![build_master](https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml/badge.svg?branch=master "Build Status: master / release")](https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml) -->
 [![docs_master](https://readthedocs.org/projects/scherbelberg/badge/?version=latest&style=flat-square "Documentation Status: master / release")](https://scherbelberg.readthedocs.io/en/latest/)
