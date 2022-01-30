@@ -224,6 +224,14 @@ class Cluster(ClusterABC):
 
         return self._workers.copy()
 
+    @property
+    def prefix(self) -> str:
+        """
+        Name of cluster, used as a prefix in names of every component
+        """
+
+        return self._prefix
+
     @classmethod
     def _fn_private(cls, prefix: str) -> str:
         """
