@@ -42,9 +42,11 @@ from .abc import CommandABC, ProcessABC
 @typechecked
 class Process(ProcessABC):
     """
-    Wrapper around a list of Popen objects (pipe).
+    Wrapper around a list of ``subprocess.Popen`` objects, managing their life-cycle. Mutable.
 
-    Mutable.
+    Args:
+        procs : A list of ``subprocess.Popen`` objects linked via pipes.
+        command : The source :class:`scherbelberg.Command` object.
     """
 
     def __init__(self, procs: List[Popen], command: CommandABC):
@@ -58,6 +60,12 @@ class Process(ProcessABC):
         self._status = []
         self._exception = None
 
+    def __repr__(self) -> str:
+        """
+        Interactive string representation
+        """
+
+        return "<Process>"
 
     def communicate(
         self,
@@ -67,8 +75,17 @@ class Process(ProcessABC):
         Tuple[List[str], List[str], List[int], Exception],
         Tuple[List[str], List[str]],
     ]:
+        """
+        Run process or chain of processes.
 
-        self._complete(timeout = timeout)
+        Args:
+            returncode : If set to ``True``, returns actual return code and does not raise an exception if the process(es) failed. If set to ``False``, a failed process raises an exception and only data from standard output and standard error streams is returned.
+            timeout : Total timeout in seconds.
+        Returns:
+            A tuple, the first two elements containing data from standard output and standard error streams. If ``returncode`` is set to ``True``, the tuple has two additional entries, a list of return codes and an exception object that can be raised by the caller.
+        """
+
+        self._complete(timeout=timeout)
 
         if returncode:
             return self._output, self._errors, self._status, self._exception
@@ -78,15 +95,13 @@ class Process(ProcessABC):
 
         return self._output, self._errors
 
-
     @property
     def running(self) -> bool:
+        """
+        Is any of the processes in the list of ``subprocess.Popen`` objects still running?
+        """
 
-        return any((
-            proc.poll() is None
-            for proc in self._procs
-        ))
-
+        return any((proc.poll() is None for proc in self._procs))
 
     def _complete(
         self,
@@ -99,7 +114,7 @@ class Process(ProcessABC):
         for proc in self._procs[::-1]:  # inverse order, last process first
 
             try:
-                out, err = proc.communicate(timeout = timeout)
+                out, err = proc.communicate(timeout=timeout)
             except TimeoutExpired:
                 proc.kill()
                 out, err = proc.communicate()
@@ -112,11 +127,13 @@ class Process(ProcessABC):
         self._errors.reverse()
         self._status.reverse()
         self._exception = SystemError(
-            "command failed", str(self._command), self._output, self._errors,
+            "command failed",
+            str(self._command),
+            self._output,
+            self._errors,
         )
 
         self._completed = True
-
 
     @staticmethod
     def _com_to_str(com: Union[str, bytes, None]) -> str:

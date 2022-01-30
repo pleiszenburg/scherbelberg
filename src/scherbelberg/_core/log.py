@@ -33,9 +33,10 @@ from logging import basicConfig, INFO
 # ROUTINES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
 def configure_log():
 
     basicConfig(
-        format = '%(name)s %(levelname)s %(asctime)-15s: %(message)s',
-        level = INFO,
+        format="%(name)s %(levelname)s %(asctime)-15s: %(message)s",
+        level=INFO,
     )

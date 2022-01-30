@@ -41,9 +41,15 @@ from .abc import SSHConfigABC
 @typechecked
 class SSHConfig(SSHConfigABC):
     """
-    Holds informaton on an SSH connection.
+    Holds configuration for an SSH connection. Immutable.
 
-    Immutable.
+    Args:
+        name : Domain name or IP of remote system.
+        user : Remote user name.
+        fn_private : Location of private SSH key.
+        port : SSH port on remote system.
+        compression : Turns SSH compression on or off.
+        cipher : Specifies cipher for SSH connection.
     """
 
     def __init__(
@@ -69,6 +75,12 @@ class SSHConfig(SSHConfigABC):
         self._compression = compression
         self._cipher = cipher
 
+    def __repr__(self) -> str:
+        """
+        Interactive string representation
+        """
+
+        return f"<SSHConfig {self._user}@{self._name:s}:{self._port:d} compression={'yes' if self._compression else 'no':s} cipher={self._cipher:s}>"
 
     def new(
         self,
@@ -79,48 +91,73 @@ class SSHConfig(SSHConfigABC):
         compression: Union[bool, None],
         cipher: Union[str, None],
     ) -> SSHConfigABC:
+        """
+        Generate a new SSH configuration from present object by changing individual parameters.
+
+        Args:
+            name : Domain name or IP of remote system.
+            user : Remote user name.
+            fn_private : Location of private SSH key.
+            port : SSH port on remote system.
+            compression : Turns SSH compression on or off.
+            cipher : Specifies cipher for SSH connection.
+        Returns:
+            New SSH configuration object.
+        """
 
         return type(self)(
-            name = self._name if name is None else name,
-            user = self._user if user is None else user,
-            fn_private = self._fn_private if fn_private is None else fn_private,
-            port = self._port if port is None else port,
-            compression = self._compression if compression is None else compression,
-            cipher = self._cipher if cipher is None else cipher,
+            name=self._name if name is None else name,
+            user=self._user if user is None else user,
+            fn_private=self._fn_private if fn_private is None else fn_private,
+            port=self._port if port is None else port,
+            compression=self._compression if compression is None else compression,
+            cipher=self._cipher if cipher is None else cipher,
         )
-
 
     @property
     def name(self) -> str:
+        """
+        Domain name or IP of remote system
+        """
 
         return self._name
 
-
     @property
     def user(self) -> str:
+        """
+        Remote user name
+        """
 
         return self._user
 
-
     @property
     def fn_private(self) -> str:
+        """
+        Location of private SSH key
+        """
 
         return self._fn_private
 
-
     @property
     def port(self) -> int:
+        """
+        SSH port on remote system
+        """
 
         return self._port
 
-
     @property
     def compression(self) -> bool:
+        """
+        Turns SSH compression on or off
+        """
 
         return self._compression
 
-
     @property
     def cipher(self) -> str:
+        """
+        Specifies cipher for SSH connection
+        """
 
         return self._cipher

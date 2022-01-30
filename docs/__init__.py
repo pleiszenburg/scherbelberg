@@ -7,9 +7,9 @@ HPC cluster deployment and management for the Hetzner Cloud
 
 https://github.com/pleiszenburg/scherbelberg
 
-    src/scherbelberg/_core/const.py: Const values
+    docs/__init__.py: Docs root
 
-    Copyright (C) 2021 Sebastian M. Ernst <ernst@pleiszenburg.de>
+    Copyright (C) 2021-2022 Sebastian M. Ernst <ernst@pleiszenburg.de>
 
 <LICENSE_BLOCK>
 The contents of this file are subject to the BSD 3-Clause License
@@ -22,21 +22,3 @@ specific language governing rights and limitations under the License.
 </LICENSE_BLOCK>
 
 """
-
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# CONST
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-HETZNER_INSTANCE_TINY = "cx11"
-HETZNER_IMAGE_UBUNTU = "ubuntu-20.04"
-HETZNER_DATACENTER = "fsn1-dc14"
-
-WORKERS = 1
-
-DASK_IPC = 9753
-DASK_DASH = 9756
-DASK_NANNY = 9759
-
-PREFIX = "cluster"
-TOKENVAR = "HETZNER"
-WAIT = 1.0

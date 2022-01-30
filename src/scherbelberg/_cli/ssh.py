@@ -42,47 +42,55 @@ from .._core.log import configure_log
 # ROUTINES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
 async def _main(prefix, tokenvar, wait, hostname):
 
     cluster = await Cluster.from_existing(
-        prefix = prefix,
-        tokenvar = tokenvar,
-        wait = wait,
+        prefix=prefix,
+        tokenvar=tokenvar,
+        wait=wait,
     )
 
-    nodes = {
-        node.name.split('-node-')[1]: node
-        for node in cluster.workers
-    }
-    nodes['scheduler'] = cluster.scheduler
+    nodes = {node.name.split("-node-")[1]: node for node in cluster.workers}
+    nodes["scheduler"] = cluster.scheduler
 
     if hostname not in nodes.keys():
-        print(f'"{hostname:s}" is unknown in cluster "{prefix:s}": ' + ', '.join(nodes.keys()))
+        print(
+            f'"{hostname:s}" is unknown in cluster "{prefix:s}": '
+            + ", ".join(nodes.keys())
+        )
         sys.exit(1)
 
-    dev_null = '\\\\.\\NUL' if sys.platform.startswith('win') else '/dev/null'
+    dev_null = "\\\\.\\NUL" if sys.platform.startswith("win") else "/dev/null"
 
-    host = await nodes[hostname].get_sshconfig(user = f'{prefix:s}user')
+    host = await nodes[hostname].get_sshconfig(user=f"{prefix:s}user")
     cmd = [
         "ssh",
-        "-o", "StrictHostKeyChecking=no", # TODO security
-        "-o", f"UserKnownHostsFile={dev_null:s}", # TODO security
-        "-o", "ConnectTimeout=5",
-        "-o", "Compression=yes" if host.compression else "Compression=no",
-        "-p", f'{host.port:d}',
-        "-c", host.cipher,
-        "-i", host.fn_private,
+        "-o",
+        "StrictHostKeyChecking=no",  # TODO security
+        "-o",
+        f"UserKnownHostsFile={dev_null:s}",  # TODO security
+        "-o",
+        "ConnectTimeout=5",
+        "-o",
+        "Compression=yes" if host.compression else "Compression=no",
+        "-p",
+        f"{host.port:d}",
+        "-c",
+        host.cipher,
+        "-i",
+        host.fn_private,
         "-q",
-        f'{host.user:s}@{host.name:s}',
+        f"{host.user:s}@{host.name:s}",
     ]
     os.execvpe(cmd[0], cmd, os.environ)
 
 
-@click.command(short_help = "ssh into cluster member")
-@click.option('-p', '--prefix', default = PREFIX, type = str, show_default = True)
-@click.option('-t', '--tokenvar', default = TOKENVAR, type = str, show_default = True)
-@click.option('-a', '--wait', default = WAIT, type = float, show_default = True)
-@click.argument('hostname', nargs = 1, type = str)
+@click.command(short_help="ssh into cluster member")
+@click.option("-p", "--prefix", default=PREFIX, type=str, show_default=True)
+@click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
+@click.option("-a", "--wait", default=WAIT, type=float, show_default=True)
+@click.argument("hostname", nargs=1, type=str)
 def ssh(prefix, tokenvar, wait, hostname):
 
     configure_log()

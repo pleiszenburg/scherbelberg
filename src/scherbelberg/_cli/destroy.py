@@ -44,17 +44,17 @@ from .._core.log import configure_log
 async def _main(prefix, tokenvar, wait):
 
     cluster = await Cluster.from_existing(
-        prefix = prefix,
-        tokenvar = tokenvar,
-        wait = wait,
+        prefix=prefix,
+        tokenvar=tokenvar,
+        wait=wait,
     )
     await cluster.destroy()
 
 
-@click.command(short_help = "destroy cluster")
-@click.option('-p', '--prefix', default = PREFIX, type = str, show_default = True)
-@click.option('-t', '--tokenvar', default = TOKENVAR, type = str, show_default = True)
-@click.option('-a', '--wait', default = WAIT, type = float, show_default = True)
+@click.command(short_help="destroy cluster")
+@click.option("-p", "--prefix", default=PREFIX, type=str, show_default=True)
+@click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
+@click.option("-a", "--wait", default=WAIT, type=float, show_default=True)
 def destroy(prefix, tokenvar, wait):
 
     configure_log()

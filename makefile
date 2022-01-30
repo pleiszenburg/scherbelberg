@@ -14,6 +14,9 @@ clean:
 	-rm -r dist/*
 	-rm -r src/*.egg-info
 
+docs:
+	@(cd docs; make clean; make html)
+
 release:
 	make clean
 	python setup.py sdist bdist_wheel
@@ -28,3 +31,5 @@ install:
 # 	for filename in $$(ls dist/*.tar.gz dist/*.whl) ; do \
 # 		twine upload $$filename $$filename.asc ; \
 # 	done
+
+.PHONY: docs

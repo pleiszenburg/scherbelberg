@@ -27,12 +27,14 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+import os
+
 from setuptools import (
     find_packages,
     setup,
 )
-import ast
-import os
+
+from docs.source.version import get_version
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # SETUP
@@ -40,7 +42,7 @@ import os
 
 # List all versions of Python which are supported
 python_minor_min = 8
-python_minor_max = 9
+python_minor_max = 10
 confirmed_python_versions = [
     "Programming Language :: Python :: 3.{MINOR:d}".format(MINOR=minor)
     for minor in range(python_minor_min, python_minor_max + 1)
@@ -54,26 +56,30 @@ with open(os.path.join(os.path.dirname(__file__), "README.md")) as f:
 SRC_DIR = "src"
 
 # Version
-def get_version(code):
-    tree = ast.parse(code)
-    for item in tree.body:
-        if not isinstance(item, ast.Assign):
-            continue
-        if len(item.targets) != 1:
-            continue
-        if item.targets[0].id != "__version__":
-            continue
-        return item.value.s
-
-
-with open(os.path.join(SRC_DIR, "scherbelberg", "__init__.py"), "r", encoding="utf-8") as f:
-    __version__ = get_version(f.read())
+version = get_version()
 
 # Requirements
-base_require = ["click", "hcloud", "pyyaml", "typeguard",]
+base_require = [
+    "click",
+    "dask",
+    "hcloud",
+    "pyyaml",
+    "typeguard",
+]
 extras_require = {
     "base": base_require,
-    "dev": ["black", "python-language-server[all]", "setuptools", "twine", "wheel",],
+    "dev": [
+        "black",
+        "myst-parser",
+        "python-lsp-server[all]",
+        "setuptools",
+        "sphinx",
+        "sphinx-click",
+        "sphinx_rtd_theme",
+        "sphinx-autodoc-typehints",
+        "twine",
+        "wheel",
+    ],
 }
 extras_require["all"] = list(
     {rq for target in extras_require.keys() for rq in extras_require[target]}
@@ -84,15 +90,14 @@ setup(
     name="scherbelberg",
     packages=find_packages(SRC_DIR),
     package_dir={"": SRC_DIR},
-    version=__version__,
+    version=version,
     description="HPC cluster deployment and management for the Hetzner Cloud",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Sebastian M. Ernst",
     author_email="ernst@pleiszenburg.de",
     url="https://github.com/pleiszenburg/scherbelberg",
-    download_url="https://github.com/pleiszenburg/scherbelberg/archive/v%s.tar.gz"
-    % __version__,
+    download_url=f"https://github.com/pleiszenburg/scherbelberg/archive/v{version:s}.tar.gz",
     license="BSD",
     keywords=["HPC", "cluster", "dask"],
     scripts=[],
@@ -102,7 +107,11 @@ setup(
     install_requires=base_require,
     extras_require=extras_require,
     zip_safe=False,
-    entry_points={"console_scripts": ["scherbelberg = scherbelberg._cli:cli",],},
+    entry_points={
+        "console_scripts": [
+            "scherbelberg = scherbelberg._cli:cli",
+        ],
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Console",

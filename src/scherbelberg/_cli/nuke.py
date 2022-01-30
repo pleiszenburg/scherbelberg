@@ -7,7 +7,7 @@ HPC cluster deployment and management for the Hetzner Cloud
 
 https://github.com/pleiszenburg/scherbelberg
 
-    src/scherbelberg/_core/abc.py: Abstract base classes
+    src/scherbelberg/_cli/nuke.py: Nuke a cluster
 
     Copyright (C) 2021 Sebastian M. Ernst <ernst@pleiszenburg.de>
 
@@ -23,36 +23,37 @@ specific language governing rights and limitations under the License.
 
 """
 
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from abc import ABC
+from asyncio import run
+
+import click
+
+from .._core.cluster import Cluster
+from .._core.const import PREFIX, TOKENVAR
+from .._core.log import configure_log
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# CLASSES
+# ROUTINES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-class ClusterABC(ABC):
-    pass
+async def _main(prefix, tokenvar):
+
+    await Cluster.nuke(
+        prefix=prefix,
+        tokenvar=tokenvar,
+    )
 
 
-class CommandABC(ABC):
-    pass
+@click.command(short_help="nuke cluster")
+@click.option("-p", "--prefix", default=PREFIX, type=str, show_default=True)
+@click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
+def nuke(prefix, tokenvar):
 
+    configure_log()
 
-class CreatorABC(ABC):
-    pass
-
-
-class NodeABC(ABC):
-    pass
-
-
-class ProcessABC(ABC):
-    pass
-
-
-class SSHConfigABC(ABC):
-    pass
+    run(_main(prefix, tokenvar))

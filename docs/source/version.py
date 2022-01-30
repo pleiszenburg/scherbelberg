@@ -7,9 +7,9 @@ HPC cluster deployment and management for the Hetzner Cloud
 
 https://github.com/pleiszenburg/scherbelberg
 
-    src/scherbelberg/_core/abc.py: Abstract base classes
+    docs/source/version.py: Package version parser
 
-    Copyright (C) 2021 Sebastian M. Ernst <ernst@pleiszenburg.de>
+    Copyright (C) 2021-2022 Sebastian M. Ernst <ernst@pleiszenburg.de>
 
 <LICENSE_BLOCK>
 The contents of this file are subject to the BSD 3-Clause License
@@ -27,32 +27,46 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from abc import ABC
+import ast
+import os
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# CLASSES
+# CONFIG
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+SRC_DIR = "src"
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ROUTINES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-class ClusterABC(ABC):
-    pass
+def parse_version(code: str) -> str:
+
+    tree = ast.parse(code)
+
+    for item in tree.body:
+        if not isinstance(item, ast.Assign):
+            continue
+        if len(item.targets) != 1:
+            continue
+        if item.targets[0].id != "__version__":
+            continue
+        return item.value.s
 
 
-class CommandABC(ABC):
-    pass
+def get_version() -> str:
 
+    path = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "..",
+        SRC_DIR,
+        "scherbelberg",
+        "__init__.py",
+    )
 
-class CreatorABC(ABC):
-    pass
+    with open(path, "r", encoding="utf-8") as f:
+        version = parse_version(f.read())
 
-
-class NodeABC(ABC):
-    pass
-
-
-class ProcessABC(ABC):
-    pass
-
-
-class SSHConfigABC(ABC):
-    pass
+    return version

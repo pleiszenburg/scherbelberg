@@ -1,29 +1,38 @@
+![scherbelberg](docs/source/_static/logo01.png?raw=true)
+
 # SCHERBELBERG
+
+*/ˈʃɛʁbɛlbɛʁk/ ([German, toponym, male: "mountain of shards" in Leipzig](https://commons.wikimedia.org/wiki/Category:Rosentalh%C3%BCgel_(Leipzig)))*
+
+<!-- [![build_master](https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml/badge.svg?branch=master "Build Status: master / release")](https://github.com/pleiszenburg/scherbelberg/actions/workflows/test.yaml) -->
+[![docs_master](https://readthedocs.org/projects/scherbelberg/badge/?version=latest&style=flat-square "Documentation Status: master / release")](https://scherbelberg.readthedocs.io/en/latest/)
+[![license](https://img.shields.io/pypi/l/scherbelberg.svg?style=flat-square "GNU Lesser General Public License v2.1")](https://github.com/pleiszenburg/scherbelberg/blob/master/LICENSE)
+[![status](https://img.shields.io/pypi/status/scherbelberg.svg?style=flat-square "Project Development Status")](https://github.com/pleiszenburg/scherbelberg/issues)
+[![pypi_version](https://img.shields.io/pypi/v/scherbelberg.svg?style=flat-square "Project Development Status")](https://pypi.python.org/pypi/scherbelberg)
+[![conda_version](https://img.shields.io/conda/vn/conda-forge/scherbelberg.svg?style=flat-square "conda version")](https://anaconda.org/conda-forge/scherbelberg)
+[![pypi_versions](https://img.shields.io/pypi/pyversions/scherbelberg.svg?style=flat-square "Available on PyPi - the Python Package Index")](https://pypi.python.org/pypi/scherbelberg)
+<!-- [![chat](https://img.shields.io/matrix/zugbruecke:matrix.org.svg?style=flat-square "Matrix Chat Room")](https://matrix.to/#/#zugbruecke:matrix.org)
+[![mailing_list](https://img.shields.io/badge/mailing%20list-groups.io-8cbcd1.svg?style=flat-square "Mailing List")](https://groups.io/g/zugbruecke-dev) -->
+
+## Synopsis
 
 `scherbelberg` provides both a CLI interface and a library for deploying and managing small [Dask](https://dask.org/)-based HPC clusters in the [Hetzner cloud](http://cloud.hetzner.com/). Development status *alpha*, stability *acceptable*, security also *acceptable* but implementation needs a review.
 
-## Project's name
+## Project's Name
 
-Next to impressive projects like [Fugaku](https://en.wikipedia.org/wiki/Fugaku_(supercomputer)), which is named after [Mount Fuji](https://en.wikipedia.org/wiki/Mount_Fuji), the [TOP500](https://en.wikipedia.org/wiki/TOP500) are clearly missing an entry from the city of [Leipzig](https://en.wikipedia.org/wiki/Leipzig). This project is named after one of the few significant "mountains" in the city, the "Scherbelberg", also known as the "[Rosentalhügel](https://commons.wikimedia.org/wiki/Category:Rosentalh%C3%BCgel_(Leipzig))" (20 meters above the surrounding landscape and 125 meters above sea level). Starting out as a late 19th century landfill, it has since become part of a park-like landscape. As of 1975, a famously shaky steel [observation tower](https://commons.wikimedia.org/wiki/Category:Rosentalturm) with a rather [beautiful view](https://commons.wikimedia.org/wiki/Category:Views_from_Rosentalturm) is located at its top, overlooking not only the [Leipziger Auenwald](https://en.wikipedia.org/wiki/Leipzig_Riverside_Forest) forest but also the city's sewage treatment plant.
+Next to impressive projects like [Fugaku](https://en.wikipedia.org/wiki/Fugaku_(supercomputer)), which is named after [Mount Fuji](https://en.wikipedia.org/wiki/Mount_Fuji), the [TOP500](https://en.wikipedia.org/wiki/TOP500) are clearly missing an entry from the city of [Leipzig](https://en.wikipedia.org/wiki/Leipzig). This project is named after one of the few significant "mountains" in the city, the "Scherbelberg", also known as the "[Rosentalhügel](https://commons.wikimedia.org/wiki/Category:Rosentalh%C3%BCgel_(Leipzig))": 20 meters above the surrounding landscape and 125 meters above sea level. Starting out as a late 19th century landfill, it has since become part of a park-like landscape. As of 1975, a famously shaky steel [observation tower](https://commons.wikimedia.org/wiki/Category:Rosentalturm) with a rather [beautiful view](https://commons.wikimedia.org/wiki/Category:Views_from_Rosentalturm) is located at its top, overlooking not only the [Leipziger Auenwald](https://en.wikipedia.org/wiki/Leipzig_Riverside_Forest) forest but also the city's sewage treatment plant.
 
 ## Installation
 
-This package has been tested on Linux and Windows 10. It is likely to work on most Unix-like systems.
+`scherbelberg` can be installed via `conda` as follows:
 
-Prerequisites:
+```bash
+conda install -c conda-forge scherbelberg
+```
 
-- `ssh`
-- `scp`
-- `ssh-keygen`
-- `git`
+This package has been tested on Linux and Windows 10. It should work on most Unix-like systems. You must run a `conda` environment based entirely on recent versions of [conda-forge](https://conda-forge.org/) packages with CPython versions 3.8, 3.9 or 3.10. ``ssh`` must be installed separately as a prerequisite. A [Hetzner API token](https://docs.hetzner.cloud/#getting-started) is required. By default, `scherbelberg` expects it to be located in the `HETZNER` environment variable.
 
-You must run a `conda` environment based entirely on [conda-forge](https://conda-forge.org/) with CPython version 3.8 and `dask` present. Once this environment has been created, configured and activated, you can install `scherbelberg` as follows:
-
-`pip install git+https://github.com/pleiszenburg/scherbelberg.git@master`
-
-`scherbelberg` will create equivalent `conda` environments on every cluster node. Although `scherbelberg` heavily relies on `ssh`, it will **NOT** alter your system's `ssh` configuration.
-
-For running any of the `scherbelberg` commands or routines, a [Hetzner API token](https://docs.hetzner.cloud/#getting-started) is required. `scherbelberg` by default expects it to be located in the `HETZNER` environment variable.
+See [chapter on installation](https://scherbelberg.readthedocs.io/en/latest/installation.html) in `scherbelberg`'s documentation for further details. Also see [section on how to get started](https://scherbelberg.readthedocs.io/en/latest/gettingstarted.html) for additional steps.
 
 ## CLI
 
@@ -43,10 +52,13 @@ Commands:
   create   create cluster
   destroy  destroy cluster
   ls       list cluster members
+  nuke     nuke cluster
   ssh      ssh into cluster member
 ```
 
 At the moment, the ssh sub-command is broken on Windows.
+
+See [chapter on CLI](https://scherbelberg.readthedocs.io/en/latest/cli.html) in `scherbelberg`'s documentation for further details.
 
 ## API
 
@@ -83,3 +95,5 @@ dask_client = await c.get_client()
 # or
 dask_client = run(c.get_client(asynchronous = False))
 ```
+
+See [chapter on API](https://scherbelberg.readthedocs.io/en/latest/api.html) in `scherbelberg`'s documentation for further details.
