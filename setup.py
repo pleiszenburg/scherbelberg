@@ -61,6 +61,7 @@ version = get_version()
 # Requirements
 base_require = [
     "click",
+    "dask",
     "hcloud",
     "pyyaml",
     "typeguard",
