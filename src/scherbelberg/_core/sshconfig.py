@@ -75,6 +75,13 @@ class SSHConfig(SSHConfigABC):
         self._compression = compression
         self._cipher = cipher
 
+    def __repr__(self) -> str:
+        """
+        Interactive string representation
+        """
+
+        return f"<SSHConfig {self._user}@{self._name:s}:{self._port:d} compression={'yes' if self._compression else 'no':s} cipher={self._cipher:s}>"
+
     def new(
         self,
         name: Union[str, None],
