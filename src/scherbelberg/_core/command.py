@@ -49,7 +49,10 @@ from .process import Process
 @typechecked
 class Command(CommandABC):
     """
-    Immutable.
+    Representing a chain of commands, connected via pipes. Immutable.
+
+    Args:
+        cmd : List of list of strings. Each inner list represents one command compatible to ``subprocess.Popen``.
     """
 
     def __init__(self, cmd: List[List[str]]):
@@ -58,21 +61,33 @@ class Command(CommandABC):
 
 
     def __repr__(self) -> str:
+        """
+        Interactive string representation
+        """
 
         return "<Command>"
 
 
     def __str__(self) -> str:
+        """
+        String conversion
+        """
 
         return " | ".join([shlex.join(fragment) for fragment in self._cmd])
 
 
     def __len__(self) -> int:
+        """
+        Number of chained commmands
+        """
 
         return len(self._cmd)
 
 
     def __or__(self, other: CommandABC) -> CommandABC:  # pipe
+        """
+        Pipe
+        """
 
         return type(self)(self.cmd + other.cmd)
 
@@ -111,6 +126,14 @@ class Command(CommandABC):
         Tuple[List[str], List[str], List[int], Exception],
         Tuple[List[str], List[str]],
     ]:
+        """
+        Run command or chain of commands.
+
+        Args:
+            returncode : If set to ``True``, returns actual return code. If set to ``False``, success is indicated by a boolean.
+            timeout : Total timeout in seconds.
+            wait : Interval defining every how many seconds the status of the running process is being observed.
+        """
 
         procs = []  # all processes, connected with pipes
 
