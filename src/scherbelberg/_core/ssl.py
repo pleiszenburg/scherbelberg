@@ -43,6 +43,7 @@ from typeguard import typechecked
 # ROUTINES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
 @typechecked
 async def create_ca(
     prefix: str,
@@ -52,37 +53,34 @@ async def create_ca(
     assert valid_days > 0
     assert len(prefix) > 0
 
-    subject = x509.Name([
-        x509.NameAttribute(NameOID.COUNTRY_NAME, "GL"), # Greenland - why not?
-        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, f"{prefix:s} province"),
-        x509.NameAttribute(NameOID.LOCALITY_NAME, f"{prefix:s} locality"),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, f"{prefix:s} organization"),
-        x509.NameAttribute(NameOID.COMMON_NAME, f"{prefix:s} CA"),
-    ])
-    issuer = subject # identical
+    subject = x509.Name(
+        [
+            x509.NameAttribute(NameOID.COUNTRY_NAME, "GL"),  # Greenland - why not?
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, f"{prefix:s} province"),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, f"{prefix:s} locality"),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, f"{prefix:s} organization"),
+            x509.NameAttribute(NameOID.COMMON_NAME, f"{prefix:s} CA"),
+        ]
+    )
+    issuer = subject  # identical
 
     key = rsa.generate_private_key(
-        public_exponent = 65537,
-        key_size = 4096,
-        backend = default_backend()
+        public_exponent=65537, key_size=4096, backend=default_backend()
     )
 
-    cert = x509.CertificateBuilder().subject_name(
-        subject
-    ).issuer_name(
-        issuer
-    ).public_key(
-        key.public_key()
-    ).serial_number(
-        x509.random_serial_number()
-    ).not_valid_before(
-        datetime.utcnow() - timedelta(days = 1) # HACK
-    ).not_valid_after(
-        datetime.utcnow() + timedelta(days = valid_days)
-    ).add_extension(
-        x509.BasicConstraints(ca = True, path_length = None), critical = True, # ?
-    ).sign(
-        key, hashes.SHA256(), default_backend() # self sign
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(issuer)
+        .public_key(key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(datetime.utcnow() - timedelta(days=1))  # HACK
+        .not_valid_after(datetime.utcnow() + timedelta(days=valid_days))
+        .add_extension(
+            x509.BasicConstraints(ca=True, path_length=None),
+            critical=True,  # ?
+        )
+        .sign(key, hashes.SHA256(), default_backend())  # self sign
     )
 
     return key, cert
@@ -99,36 +97,34 @@ async def create_signed_cert(
     assert valid_days > 0
     assert len(prefix) > 0
 
-    subject = x509.Name([
-        x509.NameAttribute(NameOID.COUNTRY_NAME, "GL"), # Greenland - why not?
-        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, f"{prefix:s} province"),
-        x509.NameAttribute(NameOID.LOCALITY_NAME, f"{prefix:s} locality"),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, f"{prefix:s} node"),
-    ])
-
-    key = rsa.generate_private_key(
-        public_exponent = 65537,
-        key_size = 4096,
-        backend = default_backend()
+    subject = x509.Name(
+        [
+            x509.NameAttribute(NameOID.COUNTRY_NAME, "GL"),  # Greenland - why not?
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, f"{prefix:s} province"),
+            x509.NameAttribute(NameOID.LOCALITY_NAME, f"{prefix:s} locality"),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, f"{prefix:s} node"),
+        ]
     )
 
-    cert = x509.CertificateBuilder().subject_name(
-        subject
-    ).issuer_name(
-        ca_cert.issuer
-    ).public_key(
-        key.public_key()
-    ).serial_number(
-        x509.random_serial_number()
-    ).not_valid_before(
-        datetime.utcnow() - timedelta(days = 1) # HACK
-    ).not_valid_after(
-        datetime.utcnow() + timedelta(days = valid_days)
-   ).add_extension(
-       x509.SubjectAlternativeName([x509.DNSName("scherbelberg.solarsystem")]), # Dask does not check the domain
-       critical = False,
-    ).sign(
-        ca_key, hashes.SHA256(), default_backend()
+    key = rsa.generate_private_key(
+        public_exponent=65537, key_size=4096, backend=default_backend()
+    )
+
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(ca_cert.issuer)
+        .public_key(key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(datetime.utcnow() - timedelta(days=1))  # HACK
+        .not_valid_after(datetime.utcnow() + timedelta(days=valid_days))
+        .add_extension(
+            x509.SubjectAlternativeName(
+                [x509.DNSName("scherbelberg.solarsystem")]
+            ),  # Dask does not check the domain
+            critical=False,
+        )
+        .sign(ca_key, hashes.SHA256(), default_backend())
     )
 
     return key, cert
@@ -140,13 +136,17 @@ async def write_certs(key: rsa.RSAPrivateKey, cert: x509.Certificate, name: str)
     assert len(name) > 0
 
     with open(f"{name:s}.key", "wb") as f:
-        f.write(key.private_bytes(
-            encoding = serialization.Encoding.PEM,
-            format = serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm = serialization.NoEncryption(), # ?
-        ))
+        f.write(
+            key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption(),  # ?
+            )
+        )
 
     with open(f"{name:s}.crt", "wb") as f:
-        f.write(cert.public_bytes(
-            encoding = serialization.Encoding.PEM,
-        ))
+        f.write(
+            cert.public_bytes(
+                encoding=serialization.Encoding.PEM,
+            )
+        )
