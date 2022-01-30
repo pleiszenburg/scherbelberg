@@ -1,4 +1,4 @@
-![scherbelberg](https://github.com/pleiszenburg/bewegung/blob/master/docs/source/_static/logo01.png?raw=true)
+![scherbelberg](docs/source/_static/logo01.png?raw=true)
 
 # SCHERBELBERG
 
