@@ -22,7 +22,7 @@ Prerequisite: ``ssh``
 
     Although ``openssh`` is a definitive requirement of *scherbelberg*, the *scherbelberg* package does not specify this dependency explicitly. This is due to vastly different installation methods across different operating systems.
 
-On **Linux**, ``ssh`` can usually be installed best via the operating system's package manager.
+On **Linux**, ``openssh`` can usually be installed best via the operating system's package manager.
 
 By default, **Mac OS X** ships its own version of ``openssh`` as part of the operating system.
 
