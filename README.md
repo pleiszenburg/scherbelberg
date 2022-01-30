@@ -34,6 +34,7 @@ Commands:
   create   create cluster
   destroy  destroy cluster
   ls       list cluster members
+  nuke     nuke cluster
   ssh      ssh into cluster member
 ```
 
