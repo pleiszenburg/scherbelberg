@@ -70,7 +70,7 @@ class Node(NodeABC):
         log: Union[Logger, None] = None,
     ):
 
-        self._log = getLogger(name = prefix) if log is None else log
+        self._log = getLogger(name=prefix) if log is None else log
 
         assert len(fn_private) > 0
         assert wait > 0
@@ -81,19 +81,16 @@ class Node(NodeABC):
         self._prefix = prefix
         self._wait = wait
 
-
     def __repr__(self) -> str:
         """
         Interactive string representation
         """
 
-        return f'<node name={self.name:s} public={self.public_ip4:s} private={self.private_ip4}>'
-
+        return f"<node name={self.name:s} public={self.public_ip4:s} private={self.private_ip4}>"
 
     def _l(self, msg: str) -> str:
 
-        return f'[{self.suffix:s}] {msg:s}'
-
+        return f"[{self.suffix:s}] {msg:s}"
 
     async def get_sshconfig(self, user: str) -> SSHConfigABC:
         """
@@ -106,11 +103,10 @@ class Node(NodeABC):
         """
 
         return SSHConfig(
-            name = self.public_ip4,
-            user = user,
-            fn_private = self._fn_private,
+            name=self.public_ip4,
+            user=user,
+            fn_private=self._fn_private,
         )
-
 
     async def ping_ssh(self, user: str) -> bool:
         """
@@ -123,17 +119,18 @@ class Node(NodeABC):
             Success (or the lack thereof).
         """
 
-        _, _, status, _ = await Command.from_list(
-            ["exit"]
-        ).on_host(
-            host = await self.get_sshconfig(user = user),
-        ).run(returncode = True, timeout = 5, wait = self._wait)
+        _, _, status, _ = (
+            await Command.from_list(["exit"])
+            .on_host(
+                host=await self.get_sshconfig(user=user),
+            )
+            .run(returncode=True, timeout=5, wait=self._wait)
+        )
 
         assert len(status) == 1
         status = status[0]
 
         return status == 0
-
 
     async def reboot(self):
         """
@@ -142,14 +139,12 @@ class Node(NodeABC):
 
         self._server.reboot()
 
-
     async def update(self):
         """
         Updates the internal cloud API server object by requesting new information about the node from the cloud API.
         """
 
-        self._server = self._client.servers.get_by_name(name = self.name)
-
+        self._server = self._client.servers.get_by_name(name=self.name)
 
     async def bootstrap(self):
         """
@@ -161,64 +156,83 @@ class Node(NodeABC):
         - Conda-forge base install via mamba-forge
         """
 
-        await self.wait_for_ssh(user = 'root')
+        await self.wait_for_ssh(user="root")
 
-        self._log.info(self._l('Copying root files to node ...'))
+        self._log.info(self._l("Copying root files to node ..."))
         await Command.from_scp(
-            *[os.path.abspath(os.path.join(
-                os.path.dirname(__file__), '..', 'share', fn,
-            )) for fn in (
-                'bootstrap_01.sh',
-                'bootstrap_02.sh',
-                'sshd_config.patch',
-            )],
-            target = '~/',
-            host = await self.get_sshconfig(user = 'root'),
-        ).run(wait = self._wait)
+            *[
+                os.path.abspath(
+                    os.path.join(
+                        os.path.dirname(__file__),
+                        "..",
+                        "share",
+                        fn,
+                    )
+                )
+                for fn in (
+                    "bootstrap_01.sh",
+                    "bootstrap_02.sh",
+                    "sshd_config.patch",
+                )
+            ],
+            target="~/",
+            host=await self.get_sshconfig(user="root"),
+        ).run(wait=self._wait)
 
-        self._log.info(self._l('Running first bootstrap script ...'))
+        self._log.info(self._l("Running first bootstrap script ..."))
         await Command.from_list(["bash", "bootstrap_01.sh"]).on_host(
-            host = await self.get_sshconfig(user = 'root')
-        ).run(wait = self._wait)
+            host=await self.get_sshconfig(user="root")
+        ).run(wait=self._wait)
 
-        self._log.info(self._l('Rebooting ...'))
+        self._log.info(self._l("Rebooting ..."))
         await self.reboot()
-        await self.wait_for_ssh(user = 'root')
+        await self.wait_for_ssh(user="root")
 
-        self._log.info(self._l('Running second bootstrap script ...'))
+        self._log.info(self._l("Running second bootstrap script ..."))
         await Command.from_list(["bash", "bootstrap_02.sh", self._prefix]).on_host(
-            host = await self.get_sshconfig(user = 'root')
-        ).run(wait = self._wait)
-        await self.wait_for_ssh(user = f'{self._prefix:s}user')
+            host=await self.get_sshconfig(user="root")
+        ).run(wait=self._wait)
+        await self.wait_for_ssh(user=f"{self._prefix:s}user")
 
-        self._log.info(self._l('Copying user files to node ...'))
+        self._log.info(self._l("Copying user files to node ..."))
         await Command.from_scp(
-            *[os.path.abspath(os.path.join(
-                os.path.dirname(__file__), '..', 'share', fn,
-            )) for fn in (
-                'bootstrap_03.sh',
-                'bootstrap_scheduler.sh',
-                'bootstrap_worker.sh',
-                'requirements_conda.txt',
-                'requirements_pypi.txt',
-            )],
-            *[os.path.abspath(os.path.join(os.getcwd(), f'{self._prefix:s}_{suffix:s}'))
-            for suffix in (
-                'ca.crt',
-                'node.key',
-                'node.crt',
-            )],
-            target = '~/',
-            host = await self.get_sshconfig(user = f'{self._prefix:s}user'),
-        ).run(wait = self._wait)
+            *[
+                os.path.abspath(
+                    os.path.join(
+                        os.path.dirname(__file__),
+                        "..",
+                        "share",
+                        fn,
+                    )
+                )
+                for fn in (
+                    "bootstrap_03.sh",
+                    "bootstrap_scheduler.sh",
+                    "bootstrap_worker.sh",
+                    "requirements_conda.txt",
+                    "requirements_pypi.txt",
+                )
+            ],
+            *[
+                os.path.abspath(
+                    os.path.join(os.getcwd(), f"{self._prefix:s}_{suffix:s}")
+                )
+                for suffix in (
+                    "ca.crt",
+                    "node.key",
+                    "node.crt",
+                )
+            ],
+            target="~/",
+            host=await self.get_sshconfig(user=f"{self._prefix:s}user"),
+        ).run(wait=self._wait)
 
-        self._log.info(self._l('Running third (user) bootstrap script ...'))
+        self._log.info(self._l("Running third (user) bootstrap script ..."))
         await Command.from_list(["bash", "bootstrap_03.sh", self._prefix]).on_host(
-            host = await self.get_sshconfig(user = f'{self._prefix:s}user')
-        ).run(wait = self._wait)
+            host=await self.get_sshconfig(user=f"{self._prefix:s}user")
+        ).run(wait=self._wait)
 
-        self._log.info(self._l('Bootstrapping done.'))
-
+        self._log.info(self._l("Bootstrapping done."))
 
     async def start_scheduler(self, dask_ipc: int, dask_dash: int):
         """
@@ -229,25 +243,33 @@ class Node(NodeABC):
             dask_dash : Port used for Dask's dashboard.
         """
 
-        assert dask_ipc >= 2**10
-        assert dask_dash >= 2**10
+        assert dask_ipc >= 2 ** 10
+        assert dask_dash >= 2 ** 10
 
         assert dask_ipc != dask_dash
 
-        await self.wait_for_ssh(user = f'{self._prefix:s}user')
+        await self.wait_for_ssh(user=f"{self._prefix:s}user")
 
-        self._log.info(self._l('Staring dask scheduler ...'))
+        self._log.info(self._l("Staring dask scheduler ..."))
 
         await Command.from_list(
-            ["bash", "-i", "bootstrap_scheduler.sh", f'{dask_ipc:d}', f'{dask_dash:d}', self._prefix]
-        ).on_host(
-            host = await self.get_sshconfig(user = f'{self._prefix:s}user')
-        ).run(wait = self._wait)
+            [
+                "bash",
+                "-i",
+                "bootstrap_scheduler.sh",
+                f"{dask_ipc:d}",
+                f"{dask_dash:d}",
+                self._prefix,
+            ]
+        ).on_host(host=await self.get_sshconfig(user=f"{self._prefix:s}user")).run(
+            wait=self._wait
+        )
 
-        self._log.info(self._l('Dask scheduler started.'))
+        self._log.info(self._l("Dask scheduler started."))
 
-
-    async def start_worker(self, dask_ipc: int, dask_dash: int, dask_nanny: int, scheduler_ip4: str):
+    async def start_worker(
+        self, dask_ipc: int, dask_dash: int, dask_nanny: int, scheduler_ip4: str
+    ):
         """
         Starts Dask scheduler on node.
 
@@ -258,24 +280,32 @@ class Node(NodeABC):
             scheduler_ip4 : IPv4 address of scheduler node.
         """
 
-        assert dask_ipc >= 2**10
-        assert dask_dash >= 2**10
-        assert dask_nanny >= 2**10
+        assert dask_ipc >= 2 ** 10
+        assert dask_dash >= 2 ** 10
+        assert dask_nanny >= 2 ** 10
 
         assert len({dask_ipc, dask_dash, dask_nanny}) == 3
 
-        await self.wait_for_ssh(user = f'{self._prefix:s}user')
+        await self.wait_for_ssh(user=f"{self._prefix:s}user")
 
-        self._log.info(self._l('Staring dask worker ...'))
+        self._log.info(self._l("Staring dask worker ..."))
 
         await Command.from_list(
-            ["bash", "-i", "bootstrap_worker.sh", scheduler_ip4, f'{dask_ipc:d}', f'{dask_dash:d}', f'{dask_nanny:d}', self._prefix]
-        ).on_host(
-            host = await self.get_sshconfig(user = f'{self._prefix:s}user')
-        ).run(wait = self._wait)
+            [
+                "bash",
+                "-i",
+                "bootstrap_worker.sh",
+                scheduler_ip4,
+                f"{dask_ipc:d}",
+                f"{dask_dash:d}",
+                f"{dask_nanny:d}",
+                self._prefix,
+            ]
+        ).on_host(host=await self.get_sshconfig(user=f"{self._prefix:s}user")).run(
+            wait=self._wait
+        )
 
-        self._log.info(self._l('Dask worker started.'))
-
+        self._log.info(self._l("Dask worker started."))
 
     async def wait_for_ssh(self, user: str):
         """
@@ -285,17 +315,16 @@ class Node(NodeABC):
             user : Remote user name.
         """
 
-        self._log.info(self._l('[%s] Waiting for SSH ...'), user)
+        self._log.info(self._l("[%s] Waiting for SSH ..."), user)
 
         while True:
             ssh_up = await self.ping_ssh(user)
             if ssh_up:
                 break
             await sleep(self._wait)
-            self._log.info(self._l('[%s] Continuing to wait for SSH ...'), user)
+            self._log.info(self._l("[%s] Continuing to wait for SSH ..."), user)
 
-        self._log.info(self._l('[%s] SSH up.'), user)
-
+        self._log.info(self._l("[%s] SSH up."), user)
 
     @property
     def name(self) -> str:
@@ -305,7 +334,6 @@ class Node(NodeABC):
 
         return self._server.name
 
-
     @property
     def labels(self) -> Dict[str, str]:
         """
@@ -314,7 +342,6 @@ class Node(NodeABC):
 
         return self._server.labels.copy()
 
-
     @property
     def public_ip4(self) -> str:
         """
@@ -322,7 +349,6 @@ class Node(NodeABC):
         """
 
         return self._server.public_net.ipv4.ip
-
 
     @property
     def private_ip4(self) -> str:
@@ -334,15 +360,13 @@ class Node(NodeABC):
 
         return self._server.private_net[0].ip
 
-
     @property
     def suffix(self) -> str:
         """
         Suffix portion of name of node / server
         """
 
-        return self.name.split('-node-')[1]
-
+        return self.name.split("-node-")[1]
 
     @classmethod
     async def from_async(cls, **kwargs) -> NodeABC:
@@ -354,7 +378,6 @@ class Node(NodeABC):
         """
 
         return cls(**kwargs)
-
 
     @classmethod
     async def from_name(
@@ -381,10 +404,10 @@ class Node(NodeABC):
         """
 
         return cls(
-            server = client.servers.get_by_name(name = name),
-            client = client,
-            fn_private = fn_private,
-            prefix = prefix,
-            wait = wait,
-            log = log,
+            server=client.servers.get_by_name(name=name),
+            client=client,
+            fn_private=fn_private,
+            prefix=prefix,
+            wait=wait,
+            log=log,
         )
