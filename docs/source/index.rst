@@ -77,9 +77,9 @@ User's guide
 
 .. _Interested in contributing?: https://github.com/pleiszenburg/scherbelberg/blob/master/CONTRIBUTING.md
 
-.. Indices and Tables
-.. ==================
-..
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
+Indices and Tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
