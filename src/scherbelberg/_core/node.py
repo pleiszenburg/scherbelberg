@@ -30,7 +30,7 @@ specific language governing rights and limitations under the License.
 from asyncio import sleep
 from logging import getLogger, Logger
 import os
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from hcloud import Client
 from hcloud.servers.client import BoundServer
@@ -92,15 +92,18 @@ class Node(NodeABC):
 
         return f"[{self.suffix:s}] {msg:s}"
 
-    async def get_sshconfig(self, user: str) -> SSHConfigABC:
+    async def get_sshconfig(self, user: Optional[str] = None) -> SSHConfigABC:
         """
         Generates SSH configuration for commands that are supposed to be executed on this node.
 
         Args:
-            user : Remote user name.
+            user : Remote user name, defaults to standard cluster user name.
         Returns:
             SSH configuration.
         """
+
+        if user is None:
+            user = f"{self._prefix:s}user"
 
         return SSHConfig(
             name=self.public_ip4,
@@ -108,16 +111,19 @@ class Node(NodeABC):
             fn_private=self._fn_private,
         )
 
-    async def ping_ssh(self, user: str) -> bool:
+    async def ping_ssh(self, user: Optional[str] = None) -> bool:
         """
         Checks if node can be contacted via SSH by executing an ``exit`` command on it.
         Performs exactly one single try. Does not raise any type of exception.
 
         Args:
-            user : Remote user name.
+            user : Remote user name, defaults to standard cluster user name.
         Returns:
             Success (or the lack thereof).
         """
+
+        if user is None:
+            user = f"{self._prefix:s}user"
 
         _, _, status, _ = (
             await Command.from_list(["exit"])
@@ -224,12 +230,12 @@ class Node(NodeABC):
                 )
             ],
             target="~/",
-            host=await self.get_sshconfig(user=f"{self._prefix:s}user"),
+            host=await self.get_sshconfig(),
         ).run(wait=self._wait)
 
         self._log.info(self._l("Running third (user) bootstrap script ..."))
         await Command.from_list(["bash", "bootstrap_03.sh", self._prefix]).on_host(
-            host=await self.get_sshconfig(user=f"{self._prefix:s}user")
+            host=await self.get_sshconfig()
         ).run(wait=self._wait)
 
         self._log.info(self._l("Bootstrapping done."))
@@ -248,7 +254,7 @@ class Node(NodeABC):
 
         assert dask_ipc != dask_dash
 
-        await self.wait_for_ssh(user=f"{self._prefix:s}user")
+        await self.wait_for_ssh()
 
         self._log.info(self._l("Staring dask scheduler ..."))
 
@@ -261,7 +267,7 @@ class Node(NodeABC):
                 f"{dask_dash:d}",
                 self._prefix,
             ]
-        ).on_host(host=await self.get_sshconfig(user=f"{self._prefix:s}user")).run(
+        ).on_host(host=await self.get_sshconfig()).run(
             wait=self._wait
         )
 
@@ -286,7 +292,7 @@ class Node(NodeABC):
 
         assert len({dask_ipc, dask_dash, dask_nanny}) == 3
 
-        await self.wait_for_ssh(user=f"{self._prefix:s}user")
+        await self.wait_for_ssh()
 
         self._log.info(self._l("Staring dask worker ..."))
 
@@ -301,19 +307,22 @@ class Node(NodeABC):
                 f"{dask_nanny:d}",
                 self._prefix,
             ]
-        ).on_host(host=await self.get_sshconfig(user=f"{self._prefix:s}user")).run(
+        ).on_host(host=await self.get_sshconfig()).run(
             wait=self._wait
         )
 
         self._log.info(self._l("Dask worker started."))
 
-    async def wait_for_ssh(self, user: str):
+    async def wait_for_ssh(self, user: Optional[str] = None):
         """
         Keeps pinging the server on SSH via :meth:`scherbelberg.Node.ping_ssh` until success in ``wait`` second intervals.
 
         Args:
-            user : Remote user name.
+            user : Remote user name, defaults to standard cluster user name.
         """
+
+        if user is None:
+            user = f"{self._prefix:s}user"
 
         self._log.info(self._l("[%s] Waiting for SSH ..."), user)
 
