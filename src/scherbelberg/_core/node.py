@@ -267,9 +267,7 @@ class Node(NodeABC):
                 f"{dask_dash:d}",
                 self._prefix,
             ]
-        ).on_host(host=await self.get_sshconfig()).run(
-            wait=self._wait
-        )
+        ).on_host(host=await self.get_sshconfig()).run(wait=self._wait)
 
         self._log.info(self._l("Dask scheduler started."))
 
@@ -307,9 +305,7 @@ class Node(NodeABC):
                 f"{dask_nanny:d}",
                 self._prefix,
             ]
-        ).on_host(host=await self.get_sshconfig()).run(
-            wait=self._wait
-        )
+        ).on_host(host=await self.get_sshconfig()).run(wait=self._wait)
 
         self._log.info(self._l("Dask worker started."))
 
