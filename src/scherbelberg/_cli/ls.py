@@ -44,9 +44,9 @@ from .._core.log import configure_log
 async def _main(prefix, tokenvar, wait):
 
     cluster = await Cluster.from_existing(
-        prefix = prefix,
-        tokenvar = tokenvar,
-        wait = wait,
+        prefix=prefix,
+        tokenvar=tokenvar,
+        wait=wait,
     )
 
     print(cluster)
@@ -55,17 +55,22 @@ async def _main(prefix, tokenvar, wait):
         print(worker)
     print(cluster.scheduler)
 
-    print('')
+    print("")
     for worker in cluster.workers:
-        print(f'\t{worker.name:s} dash: http://{worker.public_ip4}:{cluster.dask_dash:d}/')
-    print('')
-    print(f'\t{cluster.scheduler.name:s} dash: http://{cluster.scheduler.public_ip4}:{cluster.dask_dash:d}/')
-    print('')
+        print(
+            f"\t{worker.name:s} dash: http://{worker.public_ip4}:{cluster.dask_dash:d}/"
+        )
+    print("")
+    print(
+        f"\t{cluster.scheduler.name:s} dash: http://{cluster.scheduler.public_ip4}:{cluster.dask_dash:d}/"
+    )
+    print("")
 
-@click.command(short_help = "list cluster members")
-@click.option('-p', '--prefix', default = PREFIX, type = str, show_default = True)
-@click.option('-t', '--tokenvar', default = TOKENVAR, type = str, show_default = True)
-@click.option('-a', '--wait', default = WAIT, type = float, show_default = True)
+
+@click.command(short_help="list cluster members")
+@click.option("-p", "--prefix", default=PREFIX, type=str, show_default=True)
+@click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
+@click.option("-a", "--wait", default=WAIT, type=float, show_default=True)
 def ls(prefix, tokenvar, wait):
 
     configure_log()
