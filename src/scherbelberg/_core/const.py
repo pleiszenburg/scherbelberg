@@ -27,9 +27,9 @@ specific language governing rights and limitations under the License.
 # CONST
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-HETZNER_INSTANCE_TINY = 'cx11'
-HETZNER_IMAGE_UBUNTU = 'ubuntu-20.04'
-HETZNER_DATACENTER = 'fsn1-dc14'
+HETZNER_INSTANCE_TINY = "cx11"
+HETZNER_IMAGE_UBUNTU = "ubuntu-20.04"
+HETZNER_DATACENTER = "fsn1-dc14"
 
 WORKERS = 1
 
