@@ -14,7 +14,7 @@ This package has been **tested on Linux and Windows 10**. It **should work on mo
 conda install -c conda-forge scherbelberg
 ```
 
-See [chapter on installation](https://scherbelberg.readthedocs.io/en/latest/installation.html) in `scherbelberg`'s documentation for further details.
+See [chapter on installation](https://scherbelberg.readthedocs.io/en/latest/installation.html) in `scherbelberg`'s documentation for further details. Also see [section on how to get started](https://scherbelberg.readthedocs.io/en/latest/gettingstarted.html) for additional steps.
 
 ## CLI
 
@@ -38,6 +38,8 @@ Commands:
 ```
 
 At the moment, the ssh sub-command is broken on Windows.
+
+See [chapter on CLI](https://scherbelberg.readthedocs.io/en/latest/cli.html) in `scherbelberg`'s documentation for further details.
 
 ## API
 
@@ -74,3 +76,5 @@ dask_client = await c.get_client()
 # or
 dask_client = run(c.get_client(asynchronous = False))
 ```
+
+See [chapter on API](https://scherbelberg.readthedocs.io/en/latest/api.html) in `scherbelberg`'s documentation for further details.
