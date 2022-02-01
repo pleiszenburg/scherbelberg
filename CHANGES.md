@@ -1,8 +1,8 @@
 # Changes
 
-## 0.0.2 (2022-XX-XX)
+## 0.0.2 (2022-02-01)
 
-- (TBD)
+- Include docs into source distribution.
 
 ## 0.0.1 (2022-02-01)
 
