@@ -1,5 +1,5 @@
 # Changes
 
-## 0.0.1 (2022-XX-XX)
+## 0.0.1 (2022-02-01)
 
 - Initial release.
