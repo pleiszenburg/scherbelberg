@@ -49,7 +49,9 @@ confirmed_python_versions = [
 ]
 
 # Fetch readme file
-with open(os.path.join(os.path.dirname(__file__), "README.md")) as f:
+with open(
+    os.path.join(os.path.dirname(__file__), "README.md"), mode="r", encoding="utf-8"
+) as f:
     long_description = f.read()
 
 # Define source directory (path)
