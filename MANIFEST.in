@@ -1,1 +1,11 @@
+include docs/Makefile
+include docs/make.bat
+recursive-include docs/ *.py
+recursive-include docs/source/ *.py
+recursive-include docs/source/ *.rst
+recursive-include docs/source/_static/ *.png
+recursive-include docs/source/_static/ *.jpg
+recursive-include docs/source/_static/ *.gif
+recursive-include docs/source/_templates/ *.htm
+recursive-include docs/source/_templates/ *.html
 recursive-include src/scherbelberg/share/ *.*
