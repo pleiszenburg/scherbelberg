@@ -1,5 +1,9 @@
 # Changes
 
+## 0.0.4 (2022-02-02)
+
+- FIX: Remove old and empty `scripts` parameter from `setup.py`.
+
 ## 0.0.3 (2022-02-01)
 
 - FIX: Encoding of `README.md` explicitly set to UTF-8. Installation would fail on Windows otherwise.
