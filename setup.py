@@ -102,7 +102,6 @@ setup(
     download_url=f"https://github.com/pleiszenburg/scherbelberg/archive/v{version:s}.tar.gz",
     license="BSD",
     keywords=["HPC", "cluster", "dask"],
-    scripts=[],
     include_package_data=True,
     python_requires=">=3.{MINOR:d}".format(MINOR=python_minor_min),
     setup_requires=[],
