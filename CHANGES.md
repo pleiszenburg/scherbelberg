@@ -1,5 +1,9 @@
 # Changes
 
+## 0.0.5 (2022-XX-XX)
+
+- (TBD)
+
 ## 0.0.4 (2022-02-02)
 
 - FIX: Remove old and empty `scripts` parameter from `setup.py`.
