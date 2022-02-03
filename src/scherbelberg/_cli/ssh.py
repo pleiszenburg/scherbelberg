@@ -59,10 +59,20 @@ async def _main(prefix, tokenvar, wait, hostname):
             wait=wait,
         )
     except ClusterSchedulerNotFound:
-        click.echo('Cluster scheduler could not be found. Cluster likely does not exist.', err=True)
+        click.echo(
+            "Cluster scheduler could not be found. Cluster likely does not exist.",
+            err=True,
+        )
         sys.exit(1)
-    except (ClusterWorkerNotFound, ClusterFirewallNotFound, ClusterNetworkNotFound) as e:
-        click.echo(f'Cluster component missing ({type(e).__name__:s}). Cluster likely needs to be nuked.', err=True)
+    except (
+        ClusterWorkerNotFound,
+        ClusterFirewallNotFound,
+        ClusterNetworkNotFound,
+    ) as e:
+        click.echo(
+            f"Cluster component missing ({type(e).__name__:s}). Cluster likely needs to be nuked.",
+            err=True,
+        )
         sys.exit(1)
 
     nodes = {node.name.split("-node-")[1]: node for node in cluster.workers}
@@ -71,7 +81,8 @@ async def _main(prefix, tokenvar, wait, hostname):
     if hostname not in nodes.keys():
         click.echo(
             f'"{hostname:s}" is unknown in cluster "{prefix:s}": '
-            + ", ".join(nodes.keys()), err=True
+            + ", ".join(nodes.keys()),
+            err=True,
         )
         sys.exit(1)
 
