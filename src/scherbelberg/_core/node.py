@@ -217,7 +217,6 @@ class Node(NodeABC):
                     "bootstrap_scheduler.sh",
                     "bootstrap_worker.sh",
                     "requirements_conda.txt",
-                    "requirements_pypi.txt",
                 )
             ],
             *[
