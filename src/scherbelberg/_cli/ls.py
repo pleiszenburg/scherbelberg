@@ -32,7 +32,13 @@ from asyncio import run
 
 import click
 
-from .._core.cluster import Cluster
+from .._core.cluster import (
+    Cluster,
+    ClusterSchedulerNotFound,
+    ClusterWorkerNotFound,
+    ClusterFirewallNotFound,
+    ClusterNetworkNotFound,
+)
 from .._core.const import PREFIX, TOKENVAR, WAIT
 from .._core.log import configure_log
 
@@ -43,28 +49,35 @@ from .._core.log import configure_log
 
 async def _main(prefix, tokenvar, wait):
 
-    cluster = await Cluster.from_existing(
-        prefix=prefix,
-        tokenvar=tokenvar,
-        wait=wait,
-    )
+    try:
+        cluster = await Cluster.from_existing(
+            prefix=prefix,
+            tokenvar=tokenvar,
+            wait=wait,
+        )
+    except ClusterSchedulerNotFound:
+        click.echo('Cluster scheduler could not be found. Cluster likely does not exist.', err=True)
+        return
+    except (ClusterWorkerNotFound, ClusterFirewallNotFound, ClusterNetworkNotFound) as e:
+        click.echo(f'Cluster component missing ({type(e).__name__:s}). Cluster likely needs to be nuked.', err=True)
+        return
 
-    print(cluster)
+    click.echo(cluster)
 
     for worker in cluster.workers:
-        print(worker)
-    print(cluster.scheduler)
+        click.echo(worker)
+    click.echo(cluster.scheduler)
 
-    print("")
+    click.echo("")
     for worker in cluster.workers:
-        print(
+        click.echo(
             f"\t{worker.name:s} dash: http://{worker.public_ip4}:{cluster.dask_dash:d}/"
         )
-    print("")
-    print(
+    click.echo("")
+    click.echo(
         f"\t{cluster.scheduler.name:s} dash: http://{cluster.scheduler.public_ip4}:{cluster.dask_dash:d}/"
     )
-    print("")
+    click.echo("")
 
 
 @click.command(short_help="list cluster members")
