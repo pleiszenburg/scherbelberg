@@ -424,7 +424,7 @@ class Cluster(ClusterABC):
         """
         Attaches to existing cluster.
         Raises :class:`scherbelberg.ClusterSchedulerNotFound` if scheduler can not be found.
-        This is the also most likely exception if a cluster for a given prefix simply does not exist.
+        This is also the most likely exception if a cluster for a given prefix simply does not exist.
         Raises :class:`scherbelberg.ClusterWorkerNotFound` if a worker can not be found.
         Raises :class:`scherbelberg.ClusterFirewallNotFound` if the firewall can not be found.
         Raises :class:`scherbelberg.ClusterNetworkNotFound` if the private network can not be found.
