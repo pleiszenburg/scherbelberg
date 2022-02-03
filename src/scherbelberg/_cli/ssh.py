@@ -55,9 +55,9 @@ async def _main(prefix, tokenvar, wait, hostname):
     nodes["scheduler"] = cluster.scheduler
 
     if hostname not in nodes.keys():
-        print(
+        click.echo(
             f'"{hostname:s}" is unknown in cluster "{prefix:s}": '
-            + ", ".join(nodes.keys())
+            + ", ".join(nodes.keys()), err=True
         )
         sys.exit(1)
 
