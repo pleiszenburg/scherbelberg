@@ -29,10 +29,17 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from asyncio import run
+import sys
 
 import click
 
-from .._core.cluster import Cluster
+from .._core.cluster import (
+    Cluster,
+    ClusterSchedulerNotFound,
+    ClusterWorkerNotFound,
+    ClusterFirewallNotFound,
+    ClusterNetworkNotFound,
+)
 from .._core.const import PREFIX, TOKENVAR, WAIT
 from .._core.log import configure_log
 
@@ -43,11 +50,19 @@ from .._core.log import configure_log
 
 async def _main(prefix, tokenvar, wait):
 
-    cluster = await Cluster.from_existing(
-        prefix=prefix,
-        tokenvar=tokenvar,
-        wait=wait,
-    )
+    try:
+        cluster = await Cluster.from_existing(
+            prefix=prefix,
+            tokenvar=tokenvar,
+            wait=wait,
+        )
+    except ClusterSchedulerNotFound:
+        click.echo('Cluster scheduler could not be found. Cluster likely does not exist.', err=True)
+        sys.exit(1)
+    except (ClusterWorkerNotFound, ClusterFirewallNotFound, ClusterNetworkNotFound) as e:
+        click.echo(f'Cluster component missing ({type(e).__name__:s}). Cluster likely needs to be nuked.', err=True)
+        sys.exit(1)
+
     await cluster.destroy()
 
 
