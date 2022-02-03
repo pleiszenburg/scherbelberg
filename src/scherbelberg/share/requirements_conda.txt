@@ -3,6 +3,7 @@ cython
 dask
 dask-labextension
 h5py
+hcloud
 ipykernel
 ipympl
 joblib
