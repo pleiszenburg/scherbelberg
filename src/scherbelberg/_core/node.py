@@ -43,6 +43,15 @@ from .command import Command
 from .sshconfig import SSHConfig
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ERRORS
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+class NodeNotFound(Exception):
+    pass
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -401,6 +410,7 @@ class Node(NodeABC):
     ) -> NodeABC:
         """
         Creates :class:`scherbelberg.Node` object by connecting to an existing server.
+        Raises :class:`scherbelberg.NodeNotFound` if no matching server can be found.
 
         Args:
             name : Full name of node / server.
@@ -413,8 +423,12 @@ class Node(NodeABC):
             New node object
         """
 
+        server = client.servers.get_by_name(name=name)
+        if server is None:
+            raise NodeNotFound(f"node '{name:s}' in '{prefix:s}' could not be found")
+
         return cls(
-            server=client.servers.get_by_name(name=name),
+            server=server,
             client=client,
             fn_private=fn_private,
             prefix=prefix,
