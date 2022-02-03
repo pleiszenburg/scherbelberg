@@ -30,6 +30,7 @@ specific language governing rights and limitations under the License.
 from asyncio import sleep
 from logging import getLogger, Logger
 import os
+import sys
 from typing import Dict, Optional, Union
 
 from hcloud import Client
@@ -234,9 +235,14 @@ class Node(NodeABC):
         ).run(wait=self._wait)
 
         self._log.info(self._l("Running third (user) bootstrap script ..."))
-        await Command.from_list(["bash", "bootstrap_03.sh", self._prefix]).on_host(
-            host=await self.get_sshconfig()
-        ).run(wait=self._wait)
+        await Command.from_list(
+            [
+                "bash",
+                "bootstrap_03.sh",
+                self._prefix,
+                f"{sys.version_info.major:d}.{sys.version_info.minor:d}",
+            ]
+        ).on_host(host=await self.get_sshconfig()).run(wait=self._wait)
 
         self._log.info(self._l("Bootstrapping done."))
 
