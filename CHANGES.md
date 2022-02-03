@@ -3,9 +3,12 @@
 ## 0.0.5 (2022-XX-XX)
 
 - FEATURE: Raise proper exceptions when trying to connect to a broken or not existing cluster.
+- FEATURE: CLI shows proper messages when trying to connect to a broken or not existing cluster.
 - FIX: Workers and scheduler run same major & minor version of Python as client does.
 - FIX: Remove remaining dependencies to Python wheels.
 - FIX: Python language server dependency set to up-to-date package.
+- FIX: Inconsistent CLI output behavior depending on platform.
+- FIX: All error messages go to stderr.
 
 ## 0.0.4 (2022-02-02)
 
