@@ -29,6 +29,7 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from asyncio import run
+import sys
 
 import click
 
@@ -57,10 +58,10 @@ async def _main(prefix, tokenvar, wait):
         )
     except ClusterSchedulerNotFound:
         click.echo('Cluster scheduler could not be found. Cluster likely does not exist.', err=True)
-        return
+        sys.exit(1)
     except (ClusterWorkerNotFound, ClusterFirewallNotFound, ClusterNetworkNotFound) as e:
         click.echo(f'Cluster component missing ({type(e).__name__:s}). Cluster likely needs to be nuked.', err=True)
-        return
+        sys.exit(1)
 
     click.echo(cluster)
 
