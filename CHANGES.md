@@ -3,6 +3,8 @@
 ## 0.0.5 (2022-XX-XX)
 
 - FIX: Workers and scheduler run same major & minor version of Python as client does.
+- FIX: Remove remaining dependencies to Python wheels.
+- FIX: Python language server dependency set to up-to-date package.
 
 ## 0.0.4 (2022-02-02)
 
