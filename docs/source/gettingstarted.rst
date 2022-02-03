@@ -282,7 +282,7 @@ So far, only minimal clusters have been shown for demonstration purposes. In rea
 
 .. note::
 
-    Hetzner cloud serves tend to achieve a `network bandwidth`_ of around 300 to 500 Mbit/s. Larger instances might end up with more bandwidth because the underlying host has to deal with fewer instances sharing bandwidth. This has to be kept in mind when designing a cluster and ideally measured as well as monitored afterwards.
+    Hetzner cloud servers tend to achieve a `network bandwidth`_ of around 300 to 500 Mbit/s. Larger instances might end up with more bandwidth because the underlying host has to deal with fewer instances sharing bandwidth. This has to be kept in mind when designing a cluster and ideally measured as well as monitored afterwards.
 
 .. warning::
 
