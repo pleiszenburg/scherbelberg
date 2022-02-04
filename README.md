@@ -51,9 +51,10 @@ Options:
 Commands:
   create   create cluster
   destroy  destroy cluster
-  ls       list cluster members
+  ls       list cluster nodes
   nuke     nuke cluster
-  ssh      ssh into cluster member
+  scp      scp from/to cluster node
+  ssh      ssh into cluster node
 ```
 
 At the moment, the ssh sub-command is broken on Windows.

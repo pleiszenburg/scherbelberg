@@ -160,7 +160,7 @@ async def _main(prefix, tokenvar, wait, verbose, source, target):
     os.execvpe(cmd[0], cmd, os.environ)
 
 
-@click.command(short_help="scp from/to cluster member")
+@click.command(short_help="scp from/to cluster node")
 @click.option("-p", "--prefix", default=PREFIX, type=str, show_default=True)
 @click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
 @click.option("-a", "--wait", default=WAIT, type=float, show_default=True)
