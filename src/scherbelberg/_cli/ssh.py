@@ -118,7 +118,7 @@ async def _main(prefix, tokenvar, wait, hostname, command):
 @click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
 @click.option("-a", "--wait", default=WAIT, type=float, show_default=True)
 @click.argument("hostname", nargs=1, type=str)
-@click.argument('command', nargs=1, type=str, default='')
+@click.argument("command", nargs=1, type=str, default="")
 def ssh(prefix, tokenvar, wait, hostname, command):
 
     configure_log()
