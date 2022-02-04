@@ -96,7 +96,7 @@ class Node(NodeABC):
         Interactive string representation
         """
 
-        return f"<Node name={self.name:s} public={self.public_ip4:s} private={self.private_ip4}>"
+        return f"<Node name={self.name:s} public={self.public_ip4:s} private={self.private_ip4:s}>"
 
     def _l(self, msg: str) -> str:
 
