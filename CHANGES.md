@@ -5,7 +5,8 @@
 - FEATURE: Raise proper exceptions when trying to connect to a broken or not existing cluster.
 - FEATURE: CLI shows proper messages when trying to connect to a broken or not existing cluster.
 - FEATURE: Workers and scheduler run same major & minor version of Python as client does, see #2.
-- FEATURE: ``scherbelberg ssh`` can directly run commands on the remote host if passed as an optional string on the command line.
+- FEATURE: `scherbelberg ssh` can directly run commands on the remote host if passed as an optional string on the command line.
+- FEATURE: Added `scherbelberg scp` command to complement the already existing API.
 - FIX: Remove remaining dependencies to Python wheels.
 - FIX: Python language server dependency set to up-to-date package.
 - FIX: Inconsistent CLI output behavior depending on platform.
