@@ -98,6 +98,10 @@ class Node(NodeABC):
 
         return f"<Node name={self.name:s} public={self.public_ip4:s} private={self.private_ip4:s}>"
 
+    def __hash__(self) -> int:
+
+        return hash((self.name, self.public_ip4, self.private_ip4))
+
     def _l(self, msg: str) -> str:
 
         return f"[{self.suffix:s}] {msg:s}"
