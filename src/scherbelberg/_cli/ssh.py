@@ -29,11 +29,10 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from asyncio import run
+import os
 import sys
 
 import click
-import os
-import sys
 
 from .._core.cluster import (
     Cluster,
