@@ -49,7 +49,7 @@ from .._core.log import configure_log
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-async def _main(prefix, tokenvar, wait, hostname):
+async def _main(prefix, tokenvar, wait, hostname, command):
 
     try:
         cluster = await Cluster.from_existing(
@@ -107,6 +107,9 @@ async def _main(prefix, tokenvar, wait, hostname):
         "-q",
         f"{host.user:s}@{host.name:s}",
     ]
+    if len(command) > 0:
+        cmd.append(command)
+
     os.execvpe(cmd[0], cmd, os.environ)
 
 
@@ -115,8 +118,9 @@ async def _main(prefix, tokenvar, wait, hostname):
 @click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
 @click.option("-a", "--wait", default=WAIT, type=float, show_default=True)
 @click.argument("hostname", nargs=1, type=str)
-def ssh(prefix, tokenvar, wait, hostname):
+@click.argument('command', nargs=1, type=str, default='')
+def ssh(prefix, tokenvar, wait, hostname, command):
 
     configure_log()
 
-    run(_main(prefix, tokenvar, wait, hostname))
+    run(_main(prefix, tokenvar, wait, hostname, command))
