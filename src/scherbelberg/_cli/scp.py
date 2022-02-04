@@ -49,7 +49,9 @@ from .._core.log import configure_log
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-async def _lookup_host(path, prefix, nodes):
+async def _fix_path(path, prefix, nodes):
+
+    path = path.replace("\\\\", "/").replace("\\", "/")  # Windows SCP path fix
 
     if ":" not in path:
         return path, None
@@ -97,8 +99,8 @@ async def _main(prefix, tokenvar, wait, verbose, source, target):
     nodes = {node.name.split("-node-")[1]: node for node in cluster.workers}
     nodes["scheduler"] = cluster.scheduler
 
-    source = [await _lookup_host(path, prefix, nodes) for path in source]
-    target = await _lookup_host(target, prefix, nodes)
+    source = [await _fix_path(path, prefix, nodes) for path in source]
+    target = await _fix_path(target, prefix, nodes)
 
     source_hosts = {host for _, host in source}
     source = [path for path, _ in source]
