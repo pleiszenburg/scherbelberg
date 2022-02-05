@@ -12,3 +12,4 @@ dist/
 notebooks/
 dask-worker-space/
 _*.ipynb
+notes.md
