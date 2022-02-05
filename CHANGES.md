@@ -2,6 +2,7 @@
 
 ## 0.0.5 (2022-XX-XX)
 
+- FEATURE: Dask scheduler and worker processes run as systemd services, allowing them to be restarted and the nodes to be rebooted.
 - FEATURE: Raise proper exceptions when trying to connect to a broken or not existing cluster.
 - FEATURE: CLI shows proper messages when trying to connect to a broken or not existing cluster.
 - FEATURE: Workers and scheduler run same major & minor version of Python as client does, see #2.
