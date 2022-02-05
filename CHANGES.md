@@ -5,7 +5,7 @@
 - FEATURE: Dask scheduler and worker processes run as systemd services, allowing them to be restarted and the nodes to be rebooted.
 - FEATURE: Raise proper exceptions when trying to connect to a broken or not existing cluster.
 - FEATURE: CLI shows proper messages when trying to connect to a broken or not existing cluster.
-- FEATURE: Workers and scheduler run same major & minor version of Python as client does, see #2.
+- FEATURE: Workers and scheduler run the same major & minor version of Python as the client does, see #2.
 - FEATURE: `scherbelberg ssh` can directly run commands on the remote host if passed as an optional string on the command line.
 - FEATURE: Added `scherbelberg scp` command to complement the already existing API.
 - FIX: Remove remaining dependencies to Python wheels.
