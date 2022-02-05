@@ -40,10 +40,12 @@ WorkingDirectory=$HOME
 User=${PREFIX}user
 Environment="PATH=${FORGE}/envs/${PREFIX}env/bin:${PATH}"
 ExecStart=${FORGE}/envs/${PREFIX}env/bin/python ${FORGE}/envs/${PREFIX}env/bin/dask-scheduler \
+    --pid-file=$HOME/scheduler.pid \
     --protocol tls \
     --tls-ca-file $HOME/${PREFIX}_ca.crt \
     --tls-cert $HOME/${PREFIX}_node.crt --tls-key $HOME/${PREFIX}_node.key \
     --port $PORT --dashboard-address $DASHPORT
+ExecStop=/bin/kill `/bin/cat $HOME/scheduler.pid`
 
 [Install]
 WantedBy=default.target
