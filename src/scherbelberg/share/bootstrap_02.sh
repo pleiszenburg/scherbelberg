@@ -29,6 +29,9 @@ apt --yes --force-yes -q install screen glances build-essential python3-venv pyt
 # create new user
 adduser --disabled-password --gecos "" -q $USERNAME
 
+# allow lingering for user (services)
+loginctl enable-linger $USERNAME
+
 # provide user with ssh key, remove from root account
 cp -a /root/.ssh /home/$USERNAME/
 chown $USERNAME:$USERNAME /home/$USERNAME/.ssh /home/$USERNAME/.ssh/*
