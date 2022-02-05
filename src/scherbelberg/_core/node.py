@@ -279,7 +279,6 @@ class Node(NodeABC):
         await Command.from_list(
             [
                 "bash",
-                "-i",
                 "bootstrap_scheduler.sh",
                 f"{dask_ipc:d}",
                 f"{dask_dash:d}",
@@ -315,7 +314,6 @@ class Node(NodeABC):
         await Command.from_list(
             [
                 "bash",
-                "-i",
                 "bootstrap_worker.sh",
                 scheduler_ip4,
                 f"{dask_ipc:d}",
