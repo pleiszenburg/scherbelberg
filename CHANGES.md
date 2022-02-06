@@ -1,6 +1,6 @@
 # Changes
 
-## 0.0.5 (2022-XX-XX)
+## 0.0.5 (2022-02-06)
 
 - FEATURE: Dask scheduler and worker processes run as systemd services, allowing them to be restarted and the nodes to be rebooted, see #1.
 - FEATURE: Raise proper exceptions when trying to connect to a broken or not existing cluster.
