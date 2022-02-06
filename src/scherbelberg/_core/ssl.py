@@ -135,7 +135,7 @@ async def write_certs(key: rsa.RSAPrivateKey, cert: x509.Certificate, name: str)
 
     assert len(name) > 0
 
-    with open(f"{name:s}.key", "wb") as f:
+    with open(name, "wb") as f:
         f.write(
             key.private_bytes(
                 encoding=serialization.Encoding.PEM,
@@ -144,7 +144,7 @@ async def write_certs(key: rsa.RSAPrivateKey, cert: x509.Certificate, name: str)
             )
         )
 
-    with open(f"{name:s}.crt", "wb") as f:
+    with open(f"{name:s}.pub", "wb") as f:
         f.write(
             cert.public_bytes(
                 encoding=serialization.Encoding.PEM,

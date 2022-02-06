@@ -40,6 +40,7 @@ from ._core.cluster import (
     ClusterFirewallNotFound,
     ClusterNetworkNotFound,
 )
+from ._core.creator import ClusterPrefixFolderExists
 from ._core.command import Command
 from ._core.node import (
     Node,

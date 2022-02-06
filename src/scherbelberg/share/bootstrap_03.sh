@@ -21,17 +21,19 @@
 
 # run as user
 
+# Prefix
+PREFIX=$1
 # Install location
 FORGE=$HOME/forge
 # Environment
-ENVNAME=$(echo $1)env
+ENVNAME=${PREFIX}env
 # Python version
 PYTHONVERSION=$(echo $2)
 
 # Python-Installer, alternative: Miniforge3-Linux-x86_64.sh
 INSTALLER=Mambaforge-Linux-x86_64.sh
 # Required packages
-PACKAGES=$HOME/requirements_conda.txt
+PACKAGES=${HOME}/.${PREFIX}/requirements_conda.txt
 
 # Load Conda-Forge-installer
 wget -q https://github.com/conda-forge/miniforge/releases/latest/download/$INSTALLER

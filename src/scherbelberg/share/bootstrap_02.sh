@@ -21,7 +21,8 @@
 
 # run as root
 
-USERNAME=$(echo $1)user
+PREFIX=$1
+USERNAME=${PREFIX}user
 
 # install required software
 apt --yes --force-yes -q install screen glances build-essential python3-venv python3-dev > /dev/null
@@ -42,5 +43,5 @@ usermod -aG sudo $USERNAME
 echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 # disallow password and root logins via ssh
-patch /etc/ssh/sshd_config /root/sshd_config.patch
+patch /etc/ssh/sshd_config /root/.$PREFIX/sshd_config.patch
 systemctl reload ssh

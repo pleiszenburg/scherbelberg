@@ -42,14 +42,14 @@ WorkingDirectory=$HOME
 User=${PREFIX}user
 Environment="PATH=${FORGE}/envs/${PREFIX}env/bin:${PATH}"
 ExecStart=${FORGE}/envs/${PREFIX}env/bin/python ${FORGE}/envs/${PREFIX}env/bin/dask-worker \
-    --pid-file=$HOME/worker.pid \
+    --pid-file=$HOME/.${PREFIX}/worker.pid \
     --protocol tls \
-    --tls-ca-file $HOME/${PREFIX}_ca.crt \
-    --tls-cert $HOME/${PREFIX}_node.crt --tls-key $HOME/${PREFIX}_node.key \
+    --tls-ca-file $HOME/.${PREFIX}/ca.pub \
+    --tls-cert $HOME/.${PREFIX}/cert.pub --tls-key $HOME/.${PREFIX}/cert \
     --dashboard-address $DASHPORT --nanny-port $NANNY \
     --worker-port $PORT \
     tls://$SCHEDULER:$PORT
-ExecStop=/bin/kill `/bin/cat $HOME/worker.pid`
+ExecStop=/bin/kill `/bin/cat $HOME/.${PREFIX}/worker.pid`
 
 [Install]
 WantedBy=default.target
