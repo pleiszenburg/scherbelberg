@@ -1,0 +1,21 @@
+:github_url:
+
+.. _debugging:
+
+Debugging
+=========
+
+Every :ref:`CLI <cli>` command supports the ``-l`` or ``--log_level`` option, which adjusts `log level`_ of the application. Set it to ``INFO`` (i.e. ``20``) for general information on what is happening. Set it to ``DEBUG`` (i.e. ``10``) for full debugging output.
+
+If *scherbelberg* is used via its :ref:`API <api>`, the log level can be adjusted via Python's standard library's logging module for instance as follows:
+
+.. code:: python
+
+    from logging import basicConfig, INFO
+
+    basicConfig(
+        format="%(name)s %(levelname)s %(asctime)-15s: %(message)s",
+        level=INFO,
+    )
+
+.. _log level: https://docs.python.org/3/library/logging.html#levels
