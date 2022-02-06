@@ -29,6 +29,7 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from asyncio import run
+from logging import ERROR
 
 import click
 
@@ -52,8 +53,9 @@ async def _main(prefix, tokenvar):
 @click.command(short_help="nuke cluster")
 @click.option("-p", "--prefix", default=PREFIX, type=str, show_default=True)
 @click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
-def nuke(prefix, tokenvar):
+@click.option("-l", "--log_level", default=ERROR, type=int, show_default=True)
+def nuke(prefix, tokenvar, log_level):
 
-    configure_log()
+    configure_log(log_level)
 
     run(_main(prefix, tokenvar))

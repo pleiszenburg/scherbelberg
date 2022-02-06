@@ -29,6 +29,7 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from asyncio import run
+from logging import ERROR
 import os
 import sys
 
@@ -117,10 +118,11 @@ async def _main(prefix, tokenvar, wait, hostname, command):
 @click.option("-p", "--prefix", default=PREFIX, type=str, show_default=True)
 @click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
 @click.option("-a", "--wait", default=WAIT, type=float, show_default=True)
+@click.option("-l", "--log_level", default=ERROR, type=int, show_default=True)
 @click.argument("hostname", nargs=1, type=str)
 @click.argument("command", nargs=1, type=str, default="")
-def ssh(prefix, tokenvar, wait, hostname, command):
+def ssh(prefix, tokenvar, wait, log_level, hostname, command):
 
-    configure_log()
+    configure_log(log_level)
 
     run(_main(prefix, tokenvar, wait, hostname, command))

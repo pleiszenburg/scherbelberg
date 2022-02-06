@@ -29,6 +29,7 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from asyncio import run
+from logging import ERROR
 
 import click
 
@@ -72,6 +73,7 @@ from .._core.log import configure_log
 @click.option("-c", "--dask_ipc", default=DASK_IPC, type=int, show_default=True)
 @click.option("-d", "--dask_dash", default=DASK_DASH, type=int, show_default=True)
 @click.option("-e", "--dask_nanny", default=DASK_NANNY, type=int, show_default=True)
+@click.option("-l", "--log_level", default=ERROR, type=int, show_default=True)
 def create(
     prefix,
     tokenvar,
@@ -84,9 +86,10 @@ def create(
     dask_ipc,
     dask_dash,
     dask_nanny,
+    log_level,
 ):
 
-    configure_log()
+    configure_log(log_level)
 
     run(
         Cluster.from_new(

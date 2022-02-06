@@ -29,6 +29,7 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from asyncio import run
+from logging import ERROR
 import sys
 
 import click
@@ -80,8 +81,9 @@ async def _main(prefix, tokenvar, wait):
 @click.option("-p", "--prefix", default=PREFIX, type=str, show_default=True)
 @click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
 @click.option("-a", "--wait", default=WAIT, type=float, show_default=True)
-def destroy(prefix, tokenvar, wait):
+@click.option("-l", "--log_level", default=ERROR, type=int, show_default=True)
+def destroy(prefix, tokenvar, wait, log_level):
 
-    configure_log()
+    configure_log(log_level)
 
     run(_main(prefix, tokenvar, wait))
