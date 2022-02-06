@@ -36,10 +36,9 @@ from typing import Dict, Optional, Union
 from hcloud import Client
 from hcloud.servers.client import BoundServer
 
-from typeguard import typechecked
-
 from .abc import NodeABC, SSHConfigABC
 from .command import Command
+from .debug import typechecked
 from .sshconfig import SSHConfig
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -30,9 +30,8 @@ specific language governing rights and limitations under the License.
 from subprocess import Popen, TimeoutExpired
 from typing import List, Tuple, Union
 
-from typeguard import typechecked
-
 from .abc import CommandABC, ProcessABC
+from .debug import typechecked
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS

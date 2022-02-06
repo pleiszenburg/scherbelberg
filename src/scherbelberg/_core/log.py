@@ -29,7 +29,7 @@ specific language governing rights and limitations under the License.
 
 from logging import basicConfig, ERROR
 
-from typeguard import typechecked
+from .debug import typechecked
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ROUTINES

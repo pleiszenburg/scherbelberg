@@ -29,9 +29,8 @@ specific language governing rights and limitations under the License.
 
 from typing import Union
 
-from typeguard import typechecked
-
 from .abc import SSHConfigABC
+from .debug import typechecked
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS

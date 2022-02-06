@@ -35,8 +35,6 @@ from hcloud import Client
 from hcloud.firewalls.client import BoundFirewall
 from hcloud.networks.client import BoundNetwork
 
-from typeguard import typechecked
-
 from .abc import ClusterABC, NodeABC
 from .const import (
     DASK_IPC,
@@ -51,6 +49,7 @@ from .const import (
     WORKERS,
 )
 from .creator import Creator
+from .debug import typechecked
 from .node import Node, NodeNotFound
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
