@@ -5,7 +5,7 @@
 Debugging
 =========
 
-Every :ref:`CLI <cli>` command supports the ``-l`` or ``--log_level`` option, which adjusts `log level`_ of the application. Set it to ``INFO`` (i.e. ``20``) for general information on what is happening. Set it to ``DEBUG`` (i.e. ``10``) for full debugging output.
+Every :ref:`CLI <cli>` command supports the ``-l`` or ``--log_level`` option, which adjusts `log level`_ of the application. Set it to ``INFO`` (i.e. ``20``) for general information on what is happening. Set it to ``DEBUG`` (i.e. ``10``) for full debugging output, e.g. ``scherbelberg create -l 10``.
 
 If *scherbelberg* is used via its :ref:`API <api>`, the log level can be adjusted via Python's standard library's logging module for instance as follows:
 
@@ -17,5 +17,9 @@ If *scherbelberg* is used via its :ref:`API <api>`, the log level can be adjuste
         format="%(name)s %(levelname)s %(asctime)-15s: %(message)s",
         level=INFO,
     )
+
+.. note::
+
+    The used logger is, by default, named after the cluster, i.e. its ``prefix``.
 
 .. _log level: https://docs.python.org/3/library/logging.html#levels
