@@ -2,7 +2,8 @@
 
 ## 0.0.6 (2022-XX-XX)
 
-- (TBD)
+- FEATURE: Moved all cluster configuration files, scripts and keys into hidden folder named equivalent to the cluster prefix, both local and remote.
+- FIX: Added missing logging during cluster destruction.
 
 ## 0.0.5 (2022-02-06)
 
