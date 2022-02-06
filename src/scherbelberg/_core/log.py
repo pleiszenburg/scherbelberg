@@ -27,16 +27,18 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from logging import basicConfig, INFO
+from logging import basicConfig, ERROR
+
+from .debug import typechecked
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ROUTINES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
-def configure_log():
+@typechecked
+def configure_log(level: int = ERROR):
 
     basicConfig(
         format="%(name)s %(levelname)s %(asctime)-15s: %(message)s",
-        level=INFO,
+        level=level,
     )

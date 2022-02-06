@@ -69,6 +69,7 @@ User's guide
    :caption: Advanced
 
    security
+   debugging
    changes
    faq
    contributing

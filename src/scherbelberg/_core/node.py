@@ -30,16 +30,25 @@ specific language governing rights and limitations under the License.
 from asyncio import sleep
 from logging import getLogger, Logger
 import os
+import sys
 from typing import Dict, Optional, Union
 
 from hcloud import Client
 from hcloud.servers.client import BoundServer
 
-from typeguard import typechecked
-
 from .abc import NodeABC, SSHConfigABC
 from .command import Command
+from .debug import typechecked
 from .sshconfig import SSHConfig
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ERRORS
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+class NodeNotFound(Exception):
+    pass
+
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS
@@ -86,7 +95,11 @@ class Node(NodeABC):
         Interactive string representation
         """
 
-        return f"<Node name={self.name:s} public={self.public_ip4:s} private={self.private_ip4}>"
+        return f"<Node name={self.name:s} public={self.public_ip4:s} private={self.private_ip4:s}>"
+
+    def __hash__(self) -> int:
+
+        return hash((self.name, self.public_ip4, self.private_ip4))
 
     def _l(self, msg: str) -> str:
 
@@ -216,7 +229,6 @@ class Node(NodeABC):
                     "bootstrap_scheduler.sh",
                     "bootstrap_worker.sh",
                     "requirements_conda.txt",
-                    "requirements_pypi.txt",
                 )
             ],
             *[
@@ -234,9 +246,14 @@ class Node(NodeABC):
         ).run(wait=self._wait)
 
         self._log.info(self._l("Running third (user) bootstrap script ..."))
-        await Command.from_list(["bash", "bootstrap_03.sh", self._prefix]).on_host(
-            host=await self.get_sshconfig()
-        ).run(wait=self._wait)
+        await Command.from_list(
+            [
+                "bash",
+                "bootstrap_03.sh",
+                self._prefix,
+                f"{sys.version_info.major:d}.{sys.version_info.minor:d}",
+            ]
+        ).on_host(host=await self.get_sshconfig()).run(wait=self._wait)
 
         self._log.info(self._l("Bootstrapping done."))
 
@@ -261,7 +278,6 @@ class Node(NodeABC):
         await Command.from_list(
             [
                 "bash",
-                "-i",
                 "bootstrap_scheduler.sh",
                 f"{dask_ipc:d}",
                 f"{dask_dash:d}",
@@ -297,7 +313,6 @@ class Node(NodeABC):
         await Command.from_list(
             [
                 "bash",
-                "-i",
                 "bootstrap_worker.sh",
                 scheduler_ip4,
                 f"{dask_ipc:d}",
@@ -396,6 +411,7 @@ class Node(NodeABC):
     ) -> NodeABC:
         """
         Creates :class:`scherbelberg.Node` object by connecting to an existing server.
+        Raises :class:`scherbelberg.NodeNotFound` if no matching server can be found.
 
         Args:
             name : Full name of node / server.
@@ -408,8 +424,12 @@ class Node(NodeABC):
             New node object
         """
 
+        server = client.servers.get_by_name(name=name)
+        if server is None:
+            raise NodeNotFound(f"node '{name:s}' in '{prefix:s}' could not be found")
+
         return cls(
-            server=client.servers.get_by_name(name=name),
+            server=server,
             client=client,
             fn_private=fn_private,
             prefix=prefix,

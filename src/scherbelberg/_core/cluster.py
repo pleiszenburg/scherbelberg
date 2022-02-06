@@ -35,8 +35,6 @@ from hcloud import Client
 from hcloud.firewalls.client import BoundFirewall
 from hcloud.networks.client import BoundNetwork
 
-from typeguard import typechecked
-
 from .abc import ClusterABC, NodeABC
 from .const import (
     DASK_IPC,
@@ -51,7 +49,29 @@ from .const import (
     WORKERS,
 )
 from .creator import Creator
-from .node import Node
+from .debug import typechecked
+from .node import Node, NodeNotFound
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# CLASS
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+class ClusterSchedulerNotFound(Exception):
+    pass
+
+
+class ClusterWorkerNotFound(Exception):
+    pass
+
+
+class ClusterFirewallNotFound(Exception):
+    pass
+
+
+class ClusterNetworkNotFound(Exception):
+    pass
+
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS
@@ -401,7 +421,12 @@ class Cluster(ClusterABC):
         log: Union[Logger, None] = None,
     ) -> ClusterABC:
         """
-        Attaches to existing cluster
+        Attaches to existing cluster.
+        Raises :class:`scherbelberg.ClusterSchedulerNotFound` if scheduler can not be found.
+        This is also the most likely exception if a cluster for a given prefix simply does not exist.
+        Raises :class:`scherbelberg.ClusterWorkerNotFound` if a worker can not be found.
+        Raises :class:`scherbelberg.ClusterFirewallNotFound` if the firewall can not be found.
+        Raises :class:`scherbelberg.ClusterNetworkNotFound` if the private network can not be found.
 
         Args:
             prefix : Name of cluster, used as a prefix in names of every component.
@@ -418,38 +443,48 @@ class Cluster(ClusterABC):
         client = Client(token=os.environ[tokenvar])
 
         log.info("Getting handle on scheduler ...")
-        scheduler = await Node.from_name(
-            name=f"{prefix:s}-node-scheduler",
-            client=client,
-            fn_private=cls._fn_private(prefix),
-            prefix=prefix,
-            wait=wait,
-            log=log,
-        )
-
-        log.info("Getting handles on workers ...")
-        workers = [
-            Node(
-                server=server,
+        try:
+            scheduler = await Node.from_name(
+                name=f"{prefix:s}-node-scheduler",
                 client=client,
                 fn_private=cls._fn_private(prefix),
                 prefix=prefix,
                 wait=wait,
                 log=log,
             )
-            for server in client.servers.get_all()
-            if server.name.startswith(prefix) and "-node-worker" in server.name
-        ]
+        except NodeNotFound as e:
+            raise ClusterSchedulerNotFound() from e
+
+        log.info("Getting handles on workers ...")
+        try:
+            workers = [
+                Node(
+                    server=server,
+                    client=client,
+                    fn_private=cls._fn_private(prefix),
+                    prefix=prefix,
+                    wait=wait,
+                    log=log,
+                )
+                for server in client.servers.get_all()
+                if server.name.startswith(prefix) and "-node-worker" in server.name
+            ]
+        except NodeNotFound as e:
+            raise ClusterWorkerNotFound() from e
 
         log.info("Getting handle on firewall ...")
         firewall = client.firewalls.get_by_name(
             name=f"{prefix:s}-firewall",
         )
+        if firewall is None:
+            raise ClusterFirewallNotFound()
 
         log.info("Getting handle on network ...")
         network = client.networks.get_by_name(
             name=f"{prefix:s}-network",
         )
+        if network is None:
+            raise ClusterNetworkNotFound()
 
         log.info("Successfully attached to existing cluster.")
         return cls(

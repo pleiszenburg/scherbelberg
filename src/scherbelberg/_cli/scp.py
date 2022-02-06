@@ -7,7 +7,7 @@ HPC cluster deployment and management for the Hetzner Cloud
 
 https://github.com/pleiszenburg/scherbelberg
 
-    src/scherbelberg/_cli/ssh.py: ssh into cluster member
+    src/scherbelberg/_cli/scp.py: scp from/to cluster member
 
     Copyright (C) 2021-2022 Sebastian M. Ernst <ernst@pleiszenburg.de>
 
@@ -50,7 +50,29 @@ from .._core.log import configure_log
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-async def _main(prefix, tokenvar, wait, hostname, command):
+async def _fix_path(path, prefix, nodes):
+
+    path = path.replace("\\\\", "/").replace("\\", "/")  # Windows SCP path fix
+
+    if ":" not in path:
+        return path, None
+
+    hostname, path = path.split(":", maxsplit=-1)
+
+    if hostname not in nodes.keys():
+        click.echo(
+            f'"{hostname:s}" is unknown in cluster "{prefix:s}": '
+            + ", ".join(nodes.keys()),
+            err=True,
+        )
+        sys.exit(1)
+
+    host = await nodes[hostname].get_sshconfig(user=f"{prefix:s}user")
+
+    return f"{host.user:s}@{host.name:s}:{path:s}", host
+
+
+async def _main(prefix, tokenvar, wait, verbose, source, target):
 
     try:
         cluster = await Cluster.from_existing(
@@ -78,19 +100,41 @@ async def _main(prefix, tokenvar, wait, hostname, command):
     nodes = {node.name.split("-node-")[1]: node for node in cluster.workers}
     nodes["scheduler"] = cluster.scheduler
 
-    if hostname not in nodes.keys():
+    source = [await _fix_path(path, prefix, nodes) for path in source]
+    target = await _fix_path(target, prefix, nodes)
+
+    source_hosts = {host for _, host in source}
+    source = [path for path, _ in source]
+    target, target_host = target
+
+    if None in source_hosts:
+        source_hosts.remove(None)
+
+    if len(source_hosts) > 1:
         click.echo(
-            f'"{hostname:s}" is unknown in cluster "{prefix:s}": '
-            + ", ".join(nodes.keys()),
+            "Can not copy data from multiple hosts.",
+            err=True,
+        )
+        sys.exit(1)
+    if target_host is None and len(source_hosts) == 0:
+        click.echo(
+            "No host provided.",
+            err=True,
+        )
+        sys.exit(1)
+    if target_host is not None and len(source_hosts) == 1:
+        click.echo(
+            "Can not copy data from one host to another",
             err=True,
         )
         sys.exit(1)
 
+    host = target_host if target_host is not None else source_hosts.pop()
+
     dev_null = "\\\\.\\NUL" if sys.platform.startswith("win") else "/dev/null"
 
-    host = await nodes[hostname].get_sshconfig(user=f"{prefix:s}user")
     cmd = [
-        "ssh",
+        "scp",
         "-o",
         "StrictHostKeyChecking=no",  # TODO security
         "-o",
@@ -99,30 +143,36 @@ async def _main(prefix, tokenvar, wait, hostname, command):
         "ConnectTimeout=5",
         "-o",
         "Compression=yes" if host.compression else "Compression=no",
-        "-p",
+        "-P",  # instead of "p" like in `ssh`
         f"{host.port:d}",
         "-c",
         host.cipher,
         "-i",
         host.fn_private,
         "-q",
-        f"{host.user:s}@{host.name:s}",
     ]
-    if len(command) > 0:
-        cmd.append(command)
+    if verbose:
+        cmd.append("-v")
+    cmd.extend(
+        [
+            *source,
+            target,
+        ]
+    )
 
     os.execvpe(cmd[0], cmd, os.environ)
 
 
-@click.command(short_help="ssh into cluster node")
+@click.command(short_help="scp from/to cluster node")
 @click.option("-p", "--prefix", default=PREFIX, type=str, show_default=True)
 @click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
 @click.option("-a", "--wait", default=WAIT, type=float, show_default=True)
 @click.option("-l", "--log_level", default=ERROR, type=int, show_default=True)
-@click.argument("hostname", nargs=1, type=str)
-@click.argument("command", nargs=1, type=str, default="")
-def ssh(prefix, tokenvar, wait, log_level, hostname, command):
+@click.option("-v", "--verbose", is_flag=True, show_default=True)
+@click.argument("source", nargs=-1)
+@click.argument("target", nargs=1)
+def scp(prefix, tokenvar, wait, log_level, verbose, source, target):
 
     configure_log(log_level)
 
-    run(_main(prefix, tokenvar, wait, hostname, command))
+    run(_main(prefix, tokenvar, wait, verbose, source, target))

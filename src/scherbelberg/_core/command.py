@@ -35,10 +35,9 @@ import shlex
 from sys import platform
 from time import time
 
-from typeguard import typechecked
-
 from .abc import CommandABC, SSHConfigABC
 from .const import WAIT
+from .debug import typechecked
 from .process import Process
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -7,7 +7,7 @@ HPC cluster deployment and management for the Hetzner Cloud
 
 https://github.com/pleiszenburg/scherbelberg
 
-    src/scherbelberg/_cli/nuke.py: Nuke a cluster
+    src/scherbelberg/_core/debug.py: Debugging
 
     Copyright (C) 2021-2022 Sebastian M. Ernst <ernst@pleiszenburg.de>
 
@@ -23,39 +23,17 @@ specific language governing rights and limitations under the License.
 
 """
 
-
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from asyncio import run
-from logging import ERROR
+import os
+import warnings
 
-import click
-
-from .._core.cluster import Cluster
-from .._core.const import PREFIX, TOKENVAR
-from .._core.log import configure_log
-
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# ROUTINES
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-async def _main(prefix, tokenvar):
-
-    await Cluster.nuke(
-        prefix=prefix,
-        tokenvar=tokenvar,
-    )
-
-
-@click.command(short_help="nuke cluster")
-@click.option("-p", "--prefix", default=PREFIX, type=str, show_default=True)
-@click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
-@click.option("-l", "--log_level", default=ERROR, type=int, show_default=True)
-def nuke(prefix, tokenvar, log_level):
-
-    configure_log(log_level)
-
-    run(_main(prefix, tokenvar))
+if os.environ.get('SCHERBELBERG_DEBUG', '0') == '1':
+    DEBUG = True
+    from typeguard import typechecked
+    warnings.warn("running in debug mode with activated run-time type checks", RuntimeWarning)
+else:
+    DEBUG = False
+    typechecked = lambda x: x

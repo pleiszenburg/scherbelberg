@@ -27,11 +27,40 @@ DASHPORT=$3
 NANNY=$4
 PREFIX=$5
 
-dask-worker \
+# Install location
+FORGE=$HOME/forge
+
+# Systemd service unit file
+SERVICE=$(cat <<-END
+[Unit]
+Description=Dask Worker
+After=syslog.target network.target
+
+[Service]
+Type=simple
+WorkingDirectory=$HOME
+User=${PREFIX}user
+Environment="PATH=${FORGE}/envs/${PREFIX}env/bin:${PATH}"
+ExecStart=${FORGE}/envs/${PREFIX}env/bin/python ${FORGE}/envs/${PREFIX}env/bin/dask-worker \
+    --pid-file=$HOME/worker.pid \
     --protocol tls \
-    --tls-ca-file ${PREFIX}_ca.crt \
-    --tls-cert ${PREFIX}_node.crt --tls-key ${PREFIX}_node.key \
+    --tls-ca-file $HOME/${PREFIX}_ca.crt \
+    --tls-cert $HOME/${PREFIX}_node.crt --tls-key $HOME/${PREFIX}_node.key \
     --dashboard-address $DASHPORT --nanny-port $NANNY \
     --worker-port $PORT \
-    tls://$SCHEDULER:$PORT \
-    > worker_out 2> worker_err < /dev/null &
+    tls://$SCHEDULER:$PORT
+ExecStop=/bin/kill `/bin/cat $HOME/worker.pid`
+
+[Install]
+WantedBy=default.target
+END
+)
+
+# Write unit file
+echo "$SERVICE" | sudo tee /etc/systemd/system/dask_worker.service > /dev/null
+
+# Reload units, useful for debugging
+sudo systemctl daemon-reload
+
+# Start service
+sudo systemctl start dask_worker

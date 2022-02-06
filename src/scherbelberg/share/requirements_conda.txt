@@ -3,6 +3,7 @@ cython
 dask
 dask-labextension
 h5py
+hcloud
 ipykernel
 ipympl
 joblib
@@ -13,7 +14,7 @@ numpy
 pandas
 psutil
 pylint
-python-language-server
+python-lsp-server
 scipy
 xarray
 zarr

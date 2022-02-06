@@ -32,8 +32,6 @@ from logging import getLogger, Logger
 import os
 from typing import Dict, List, Union
 
-from typeguard import typechecked
-
 from hcloud import Client
 from hcloud.datacenters.domain import Datacenter
 from hcloud.firewalls.client import BoundFirewall
@@ -57,6 +55,7 @@ from .const import (
     HETZNER_IMAGE_UBUNTU,
     HETZNER_DATACENTER,
 )
+from .debug import typechecked
 from .node import Node
 from .ssl import create_ca, create_signed_cert, write_certs
 

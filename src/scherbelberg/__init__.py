@@ -27,14 +27,23 @@ specific language governing rights and limitations under the License.
 # VERSION
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # EXPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from ._core.cluster import Cluster
+from ._core.cluster import (
+    Cluster,
+    ClusterSchedulerNotFound,
+    ClusterWorkerNotFound,
+    ClusterFirewallNotFound,
+    ClusterNetworkNotFound,
+)
 from ._core.command import Command
-from ._core.node import Node
+from ._core.node import (
+    Node,
+    NodeNotFound,
+)
 from ._core.process import Process
 from ._core.sshconfig import SSHConfig

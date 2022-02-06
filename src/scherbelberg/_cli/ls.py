@@ -29,10 +29,18 @@ specific language governing rights and limitations under the License.
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from asyncio import run
+from logging import ERROR
+import sys
 
 import click
 
-from .._core.cluster import Cluster
+from .._core.cluster import (
+    Cluster,
+    ClusterSchedulerNotFound,
+    ClusterWorkerNotFound,
+    ClusterFirewallNotFound,
+    ClusterNetworkNotFound,
+)
 from .._core.const import PREFIX, TOKENVAR, WAIT
 from .._core.log import configure_log
 
@@ -43,36 +51,54 @@ from .._core.log import configure_log
 
 async def _main(prefix, tokenvar, wait):
 
-    cluster = await Cluster.from_existing(
-        prefix=prefix,
-        tokenvar=tokenvar,
-        wait=wait,
-    )
+    try:
+        cluster = await Cluster.from_existing(
+            prefix=prefix,
+            tokenvar=tokenvar,
+            wait=wait,
+        )
+    except ClusterSchedulerNotFound:
+        click.echo(
+            "Cluster scheduler could not be found. Cluster likely does not exist.",
+            err=True,
+        )
+        sys.exit(1)
+    except (
+        ClusterWorkerNotFound,
+        ClusterFirewallNotFound,
+        ClusterNetworkNotFound,
+    ) as e:
+        click.echo(
+            f"Cluster component missing ({type(e).__name__:s}). Cluster likely needs to be nuked.",
+            err=True,
+        )
+        sys.exit(1)
 
-    print(cluster)
+    click.echo(cluster)
 
     for worker in cluster.workers:
-        print(worker)
-    print(cluster.scheduler)
+        click.echo(worker)
+    click.echo(cluster.scheduler)
 
-    print("")
+    click.echo("")
     for worker in cluster.workers:
-        print(
+        click.echo(
             f"\t{worker.name:s} dash: http://{worker.public_ip4}:{cluster.dask_dash:d}/"
         )
-    print("")
-    print(
+    click.echo("")
+    click.echo(
         f"\t{cluster.scheduler.name:s} dash: http://{cluster.scheduler.public_ip4}:{cluster.dask_dash:d}/"
     )
-    print("")
+    click.echo("")
 
 
-@click.command(short_help="list cluster members")
+@click.command(short_help="list cluster nodes")
 @click.option("-p", "--prefix", default=PREFIX, type=str, show_default=True)
 @click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
 @click.option("-a", "--wait", default=WAIT, type=float, show_default=True)
-def ls(prefix, tokenvar, wait):
+@click.option("-l", "--log_level", default=ERROR, type=int, show_default=True)
+def ls(prefix, tokenvar, wait, log_level):
 
-    configure_log()
+    configure_log(log_level)
 
     run(_main(prefix, tokenvar, wait))
