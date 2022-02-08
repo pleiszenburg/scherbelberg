@@ -63,12 +63,12 @@ async def get_locations(tokenvar: str = TOKENVAR) -> List[Dict[str, Any]]:
     ]
 
 @typechecked
-async def get_servertypes(location: str = 'fsn1', tokenvar: str = TOKENVAR) -> List[Dict[str, Any]]:
+async def get_servertypes(datacenter: str = 'fsn1', tokenvar: str = TOKENVAR) -> List[Dict[str, Any]]:
     """
     Queries a list of server types plus their specifications and prices.
 
     Args:
-        location : Name of data center location.
+        datacenter : Name of data center location.
         tokenvar : Name of the environment variable holding the cloud API login token.
     Returns:
         Server types plus their specifications and prices.
@@ -80,7 +80,7 @@ async def get_servertypes(location: str = 'fsn1', tokenvar: str = TOKENVAR) -> L
 
     servertypes = [_parse_model(servertype.data_model) for servertype in servertypes]
 
-    servertypes = [_parse_prices(servertype, location = location) for servertype in servertypes]
+    servertypes = [_parse_prices(servertype, datacenter = datacenter) for servertype in servertypes]
     servertypes = [servertype for servertype in servertypes if servertype is not None]
 
     servertypes.sort(key = _sort_key)
@@ -107,12 +107,12 @@ def _parse_model(model: ServerType) -> Dict[str, Any]:
     return model
 
 @typechecked
-def _parse_prices(servertype: Dict[str, Any], location: str = 'fsn1') -> Optional[Dict[str, Any]]:
+def _parse_prices(servertype: Dict[str, Any], datacenter: str = 'fsn1') -> Optional[Dict[str, Any]]:
     prices = servertype.pop('prices')
-    prices = {price['location']: price for price in prices if price['location'] == location}
-    if location not in prices.keys():
+    prices = {price['location']: price for price in prices if price['location'] == datacenter}
+    if datacenter not in prices.keys():
         return None
-    price = prices[location]
+    price = prices[datacenter]
     price.pop('location')
     for price_type in ('price_hourly', 'price_monthly'):
         price.update({f'{price_type:s}_{k:s}': v  for k, v in price.pop(price_type).items()})
