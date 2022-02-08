@@ -77,6 +77,8 @@ def get_servertypes(client: Client, location: str = 'fsn1') -> List[Dict[str, An
     servertypes = [_parse_prices(servertype, location = location) for servertype in servertypes]
     servertypes = [servertype for servertype in servertypes if servertype is not None]
 
+    servertypes.sort(key = _sort_key)
+
     return servertypes
 
 @typechecked
@@ -110,3 +112,8 @@ def _parse_prices(servertype: Dict[str, Any], location: str = 'fsn1') -> Optiona
         price.update({f'{price_type:s}_{k:s}': v  for k, v in price.pop(price_type).items()})
     servertype.update(price)
     return servertype
+
+@typechecked
+def _sort_key(servertype: Dict[str, Any]):
+
+    return servertype['cpu_type'].ljust(100) + f"{servertype['cores']:05d}"
