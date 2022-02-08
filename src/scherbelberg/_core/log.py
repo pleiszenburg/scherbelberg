@@ -27,9 +27,9 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-from logging import basicConfig, ERROR
+from logging import basicConfig, ERROR, DEBUG
 
-from .debug import typechecked
+from .debug import typechecked, DEBUG as DEBUG_FLAG
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ROUTINES
@@ -37,6 +37,9 @@ from .debug import typechecked
 
 @typechecked
 def configure_log(level: int = ERROR):
+
+    if DEBUG_FLAG:
+        level = DEBUG
 
     basicConfig(
         format="%(name)s %(levelname)s %(asctime)-15s: %(message)s",
