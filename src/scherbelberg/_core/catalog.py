@@ -27,6 +27,7 @@ specific language governing rights and limitations under the License.
 # IMPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+import os
 from typing import Any, Dict, List, Optional
 
 from hcloud import Client
@@ -36,6 +37,7 @@ from hcloud.server_types.domain import ServerType
 from hcloud.locations.client import LocationsClient
 from hcloud.locations.domain import Location
 
+from .const import TOKENVAR
 from .debug import typechecked
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -43,15 +45,17 @@ from .debug import typechecked
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 @typechecked
-def get_locations(client: Client) -> List[Dict[str, Any]]:
+async def get_locations(tokenvar: str = TOKENVAR) -> List[Dict[str, Any]]:
     """
     Queries a list of data center locations.
 
     Args:
-        client : A cloud-API client object.
+        tokenvar : Name of the environment variable holding the cloud API login token.
     Returns:
         Data center locations.
     """
+
+    client = Client(token=os.environ[tokenvar])
 
     return [
         _parse_location(location.data_model)
@@ -59,16 +63,18 @@ def get_locations(client: Client) -> List[Dict[str, Any]]:
     ]
 
 @typechecked
-def get_servertypes(client: Client, location: str = 'fsn1') -> List[Dict[str, Any]]:
+async def get_servertypes(location: str = 'fsn1', tokenvar: str = TOKENVAR) -> List[Dict[str, Any]]:
     """
     Queries a list of server types plus their specifications and prices.
 
     Args:
-        client : A cloud-API client object.
         location : Name of data center location.
+        tokenvar : Name of the environment variable holding the cloud API login token.
     Returns:
         Server types plus their specifications and prices.
     """
+
+    client = Client(token=os.environ[tokenvar])
 
     servertypes = ServerTypesClient(client).get_all()
 
