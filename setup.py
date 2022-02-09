@@ -66,6 +66,7 @@ base_require = [
     "dask",
     "hcloud",
     "pyyaml",
+    "tabulate",
     "typeguard",
 ]
 extras_require = {
