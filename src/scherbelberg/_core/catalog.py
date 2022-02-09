@@ -31,13 +31,16 @@ import os
 from typing import Any, Dict, List, Optional
 
 from hcloud import Client
+
+from hcloud.datacenters.client import DatacentersClient
+from hcloud.datacenters.domain import Datacenter
+
+from hcloud.locations.domain import Location
+
 from hcloud.server_types.client import ServerTypesClient
 from hcloud.server_types.domain import ServerType
 
-from hcloud.locations.client import LocationsClient
-from hcloud.locations.domain import Location
-
-from .const import TOKENVAR
+from .const import HETZNER_DATACENTER, TOKENVAR
 from .debug import typechecked
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -45,25 +48,25 @@ from .debug import typechecked
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 @typechecked
-async def get_locations(tokenvar: str = TOKENVAR) -> List[Dict[str, Any]]:
+async def get_datacenters(tokenvar: str = TOKENVAR) -> List[Dict[str, Any]]:
     """
-    Queries a list of data center locations.
+    Queries a list of data centers.
 
     Args:
         tokenvar : Name of the environment variable holding the cloud API login token.
     Returns:
-        Data center locations.
+        Data centers.
     """
 
     client = Client(token=os.environ[tokenvar])
 
     return [
-        _parse_location(location.data_model)
-        for location in LocationsClient(client).get_all()
+        _parse_datacenter(datacenter.data_model)
+        for datacenter in DatacentersClient(client).get_all()
     ]
 
 @typechecked
-async def get_servertypes(datacenter: str = 'fsn1', tokenvar: str = TOKENVAR) -> List[Dict[str, Any]]:
+async def get_servertypes(datacenter: str = HETZNER_DATACENTER, tokenvar: str = TOKENVAR) -> List[Dict[str, Any]]:
     """
     Queries a list of server types plus their specifications and prices.
 
@@ -88,6 +91,19 @@ async def get_servertypes(datacenter: str = 'fsn1', tokenvar: str = TOKENVAR) ->
     return servertypes
 
 @typechecked
+def _parse_datacenter(location: Datacenter) -> Dict[str, Any]:
+    datacenter = {
+        attr: getattr(location, attr)
+        for attr in dir(location)
+        if not attr.startswith('_') and attr not in ('from_dict', 'id', 'id_or_name', 'server_types')
+    }
+    location = _parse_location(datacenter.pop('location').data_model)
+    location['location_description'] = location.pop('description')
+    location['location_name'] = location.pop('name')
+    datacenter.update(location)
+    return datacenter
+
+@typechecked
 def _parse_location(location: Location) -> Dict[str, Any]:
     return {
         attr: getattr(location, attr)
@@ -107,12 +123,13 @@ def _parse_model(model: ServerType) -> Dict[str, Any]:
     return model
 
 @typechecked
-def _parse_prices(servertype: Dict[str, Any], datacenter: str = 'fsn1') -> Optional[Dict[str, Any]]:
+def _parse_prices(servertype: Dict[str, Any], datacenter: str) -> Optional[Dict[str, Any]]:
+    location, _ = datacenter.split('-')
     prices = servertype.pop('prices')
-    prices = {price['location']: price for price in prices if price['location'] == datacenter}
-    if datacenter not in prices.keys():
+    prices = {price['location']: price for price in prices if price['location'] == location}
+    if location not in prices.keys():
         return None
-    price = prices[datacenter]
+    price = prices[location]
     price.pop('location')
     for price_type in ('price_hourly', 'price_monthly'):
         price.update({f'{price_type:s}_{k:s}': v  for k, v in price.pop(price_type).items()})

@@ -8,6 +8,6 @@ Catalog
 Routines
 --------
 
-.. autofunction:: scherbelberg.get_locations
+.. autofunction:: scherbelberg.get_datacenters
 
 .. autofunction:: scherbelberg.get_servertypes

@@ -34,7 +34,7 @@ __version__ = "0.0.6"
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from ._core.catalog import (
-    get_locations,
+    get_datacenters,
     get_servertypes,
 )
 from ._core.cluster import (
