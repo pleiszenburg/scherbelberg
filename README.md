@@ -49,6 +49,7 @@ Options:
   --help     Show this message and exit.
 
 Commands:
+  catalog  list data centers and available servers types
   create   create cluster
   destroy  destroy cluster
   ls       list cluster nodes
