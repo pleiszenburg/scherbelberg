@@ -38,51 +38,50 @@ from .._core.catalog import (
     get_datacenters,
     get_servertypes,
 )
-from .._core.const import (
-    TOKENVAR,
-    HETZNER_DATACENTER,
-)
+from .._core.const import TOKENVAR
 from .._core.log import configure_log
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # ROUTINES
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-@click.command(short_help="create cluster")
+@click.command(short_help="list data centers and available servers types")
 @click.option("-t", "--tokenvar", default=TOKENVAR, type=str, show_default=True)
-@click.option(
-    "-d", "--datacenter", default=HETZNER_DATACENTER, type=str, show_default=True
-)
 @click.option("-l", "--log_level", default=ERROR, type=int, show_default=True)
+@click.argument("datacenter", nargs=1, required=False)
 def catalog(
     tokenvar,
-    datacenter,
     log_level,
+    datacenter,
 ):
 
     configure_log(log_level)
 
-    table = run(get_datacenters(tokenvar = tokenvar))
-    columns = (
-        'name',
-        'city',
-        'country',
-        'description',
-        'latitude',
-        'longitude',
-        'network_zone',
-        'location_name',
-        'location_description',
-    )
-    table = [
-        [row[column] for column in columns]
-        for row in table
-    ]
-    click.echo(tabulate(
-        table,
-        headers=columns,
-        tablefmt="github",
-    ))
+    if datacenter is None:
+
+        table = run(get_datacenters(tokenvar = tokenvar))
+        columns = (
+            'name',
+            'city',
+            'country',
+            'description',
+            'latitude',
+            'longitude',
+            'network_zone',
+            'location_name',
+            'location_description',
+        )
+        table = [
+            [row[column] for column in columns]
+            for row in table
+        ]
+        click.echo(tabulate(
+            table,
+            headers=columns,
+            tablefmt="github",
+        ))
+
+        return
 
     table = run(get_servertypes(datacenter = datacenter, tokenvar = tokenvar))
     columns = (
