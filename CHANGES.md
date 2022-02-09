@@ -3,7 +3,7 @@
 ## 0.0.6 (2022-XX-XX)
 
 - FEATURE: Moved all cluster configuration files, scripts and keys into hidden folder named equivalent to the cluster prefix, both local and remote.
-- FEATURE: New API for accessing the catalog of server types, their specifications, prices and data center locations.
+- FEATURE: New CLI and API for accessing the catalog of server types, their specifications, prices and data center locations.
 - FIX: Setting debug environment variable `SCHERBELBERG_DEBUG` to `1` also automatically lowers the log level to `DEBUG` (`10`) if *scherbelberg* is used via the CLI.
 - FIX: Added missing logging during cluster destruction.
 
