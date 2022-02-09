@@ -58,8 +58,6 @@ Commands:
   ssh      ssh into cluster node
 ```
 
-At the moment, the ssh sub-command is broken on Windows.
-
 See [chapter on CLI](https://scherbelberg.readthedocs.io/en/latest/cli.html) in `scherbelberg`'s documentation for further details.
 
 ## API
