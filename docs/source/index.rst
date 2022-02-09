@@ -47,7 +47,7 @@ scherbelberg - HPC cluster deployment and management for the Hetzner Cloud
 User's guide
 ------------
 
-*scherbelberg* provides both a **CLI interface** and a **Python API** for deploying and managing small **Dask-based HPC clusters in the Hetzner cloud**. Development status alpha, stability acceptable, security also acceptable but implementation needs a review.
+*scherbelberg* provides both a **CLI** and a **Python API** for deploying and managing small **Dask-based HPC clusters in the Hetzner cloud**. Development status alpha, stability acceptable, security also acceptable but implementation needs a review.
 
 .. toctree::
    :maxdepth: 2
