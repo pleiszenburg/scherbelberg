@@ -1,5 +1,9 @@
 # Changes
 
+## 0.0.7 (2022-XX-XX)
+
+- (TBD)
+
 ## 0.0.6 (2022-02-11)
 
 - FEATURE: Moved all cluster configuration files, scripts and keys into hidden folder named equivalent to the cluster prefix, both local and remote.
