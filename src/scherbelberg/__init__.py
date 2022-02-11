@@ -27,12 +27,16 @@ specific language governing rights and limitations under the License.
 # VERSION
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # EXPORT
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+from ._core.catalog import (
+    get_datacenters,
+    get_servertypes,
+)
 from ._core.cluster import (
     Cluster,
     ClusterSchedulerNotFound,
@@ -40,6 +44,7 @@ from ._core.cluster import (
     ClusterFirewallNotFound,
     ClusterNetworkNotFound,
 )
+from ._core.creator import ClusterPrefixFolderExists
 from ._core.command import Command
 from ._core.node import (
     Node,

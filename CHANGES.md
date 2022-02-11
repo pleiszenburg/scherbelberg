@@ -1,5 +1,12 @@
 # Changes
 
+## 0.0.6 (2022-02-11)
+
+- FEATURE: Moved all cluster configuration files, scripts and keys into hidden folder named equivalent to the cluster prefix, both local and remote.
+- FEATURE: New CLI and API for accessing the catalog of server types, their specifications, prices and data center locations.
+- FIX: Setting debug environment variable `SCHERBELBERG_DEBUG` to `1` also automatically lowers the log level to `DEBUG` (`10`) if *scherbelberg* is used via the CLI.
+- FIX: Added missing logging during cluster destruction.
+
 ## 0.0.5 (2022-02-06)
 
 - FEATURE: Dask scheduler and worker processes run as systemd services, allowing them to be restarted and the nodes to be rebooted, see #1.

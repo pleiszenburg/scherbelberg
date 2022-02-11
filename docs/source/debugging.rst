@@ -22,7 +22,7 @@ If *scherbelberg* is used via its :ref:`API <api>`, the log level can be adjuste
 
     The used logger is, by default, named after the cluster, i.e. its ``prefix``.
 
-For additional insights and debugging output, run-time type checks based on `typeguard`_ can be activated by setting the ``SCHERBELBERG_DEBUG`` environment variable to ``1`` prior to running a CLI command or prior to importing *scherbelberg* in Python.
+For additional insights and debugging output, run-time type checks based on `typeguard`_ can be activated by setting the ``SCHERBELBERG_DEBUG`` environment variable to ``1`` prior to running a CLI command or prior to importing *scherbelberg* in Python. As a side effect, this will also automatically set the log level to ``DEBUG`` (i.e. ``10``) if *scherbelberg* is used via the command line.
 
 .. _log level: https://docs.python.org/3/library/logging.html#levels
 .. _typeguard: https://typeguard.readthedocs.io/

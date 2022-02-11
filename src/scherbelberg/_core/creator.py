@@ -60,6 +60,15 @@ from .node import Node
 from .ssl import create_ca, create_signed_cert, write_certs
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ERRORS
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+class ClusterPrefixFolderExists(Exception):
+    pass
+
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -115,6 +124,11 @@ class Creator(CreatorABC):
         assert dask_nanny >= 2 ** 10
 
         assert len({dask_ipc, dask_dash, dask_nanny}) == 3
+
+        fld = os.path.join(os.getcwd(), f".{self._prefix:s}")
+        if os.path.exists(fld):
+            raise ClusterPrefixFolderExists(fld)
+        os.mkdir(fld)
 
         await self._create_certs()
         self._ssh_key = await self._create_ssh_key()
@@ -353,7 +367,7 @@ class Creator(CreatorABC):
         await write_certs(
             ca_key,
             ca_cert,
-            name=f"{self._prefix:s}_ca",
+            name=os.path.join(f".{self._prefix:s}", "ca"),
         )
 
         ca_key, ca_cert = await create_signed_cert(
@@ -364,7 +378,7 @@ class Creator(CreatorABC):
         await write_certs(
             ca_key,
             ca_cert,
-            name=f"{self._prefix:s}_node",
+            name=os.path.join(f".{self._prefix:s}", "cert"),
         )
 
     @classmethod

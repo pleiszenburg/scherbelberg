@@ -161,9 +161,9 @@ class Cluster(ClusterABC):
         from distributed.security import Security
 
         security = Security(
-            tls_ca_file=f"{self._prefix:s}_ca.crt",
-            tls_client_cert=f"{self._prefix:s}_node.crt",
-            tls_client_key=f"{self._prefix:s}_node.key",
+            tls_ca_file=os.path.join(f".{self._prefix:s}", "ca.pub"),
+            tls_client_cert=os.path.join(f".{self._prefix:s}", "cert.pub"),
+            tls_client_key=os.path.join(f".{self._prefix:s}", "cert"),
             require_encryption=True,
         )
 
@@ -260,7 +260,7 @@ class Cluster(ClusterABC):
         Path to private key file
         """
 
-        return os.path.join(os.getcwd(), f"{prefix:s}.key")
+        return os.path.join(os.getcwd(), f".{prefix:s}", "ssh")
 
     @classmethod
     def _fn_public(cls, prefix: str) -> str:
@@ -278,16 +278,22 @@ class Cluster(ClusterABC):
     ):
 
         if os.path.exists(cls._fn_private(prefix)):
+            log.info("Deleting local %s ...", cls._fn_private(prefix))
             os.unlink(cls._fn_private(prefix))
         if os.path.exists(cls._fn_public(prefix)):
+            log.info("Deleting local %s ...", cls._fn_public(prefix))
             os.unlink(cls._fn_public(prefix))
 
-        for suffix in ("ca.key", "ca.crt", "node.key", "node.crt"):
-            fn = os.path.join(os.getcwd(), f"{prefix:s}_{suffix:s}")
+        for suffix in ("ca", "ca.pub", "cert", "cert.pub"):
+            fn = os.path.join(os.getcwd(), f".{prefix:s}", suffix)
             if not os.path.exists(fn):
                 continue
             log.info("Deleting local %s ...", fn)
             os.unlink(fn)
+
+        fld = os.path.join(os.getcwd(), f".{prefix:s}")
+        log.info("Deleting local %s ...", fld)
+        os.rmdir(fld)
 
     @staticmethod
     def _remove_remote(

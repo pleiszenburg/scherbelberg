@@ -16,7 +16,7 @@
 
 ## Synopsis
 
-`scherbelberg` provides both a CLI interface and a library for deploying and managing small [Dask](https://dask.org/)-based HPC clusters in the [Hetzner cloud](http://cloud.hetzner.com/). Development status *alpha*, stability *acceptable*, security also *acceptable* but implementation needs a review.
+`scherbelberg` provides both a CLI and an API for deploying and managing small [Dask](https://dask.org/)-based HPC clusters in the [Hetzner cloud](http://cloud.hetzner.com/). Development status *alpha*, stability *acceptable*, security also *acceptable* but implementation needs a review.
 
 ## Project's Name
 
@@ -49,6 +49,7 @@ Options:
   --help     Show this message and exit.
 
 Commands:
+  catalog  list data centers and available servers types
   create   create cluster
   destroy  destroy cluster
   ls       list cluster nodes
@@ -56,8 +57,6 @@ Commands:
   scp      scp from/to cluster node
   ssh      ssh into cluster node
 ```
-
-At the moment, the ssh sub-command is broken on Windows.
 
 See [chapter on CLI](https://scherbelberg.readthedocs.io/en/latest/cli.html) in `scherbelberg`'s documentation for further details.
 

@@ -177,6 +177,11 @@ class Node(NodeABC):
 
         await self.wait_for_ssh(user="root")
 
+        self._log.info(self._l("Create folder for root files on node ..."))
+        await Command.from_list(["mkdir", f"/root/.{self._prefix:s}"]).on_host(
+            host=await self.get_sshconfig(user="root")
+        ).run(wait=self._wait)
+
         self._log.info(self._l("Copying root files to node ..."))
         await Command.from_scp(
             *[
@@ -194,12 +199,12 @@ class Node(NodeABC):
                     "sshd_config.patch",
                 )
             ],
-            target="~/",
+            target=f"~/.{self._prefix:s}/",
             host=await self.get_sshconfig(user="root"),
         ).run(wait=self._wait)
 
         self._log.info(self._l("Running first bootstrap script ..."))
-        await Command.from_list(["bash", "bootstrap_01.sh"]).on_host(
+        await Command.from_list(["bash", f"/root/.{self._prefix:s}/bootstrap_01.sh"]).on_host(
             host=await self.get_sshconfig(user="root")
         ).run(wait=self._wait)
 
@@ -208,10 +213,15 @@ class Node(NodeABC):
         await self.wait_for_ssh(user="root")
 
         self._log.info(self._l("Running second bootstrap script ..."))
-        await Command.from_list(["bash", "bootstrap_02.sh", self._prefix]).on_host(
+        await Command.from_list(["bash", f"/root/.{self._prefix:s}/bootstrap_02.sh", self._prefix]).on_host(
             host=await self.get_sshconfig(user="root")
         ).run(wait=self._wait)
         await self.wait_for_ssh(user=f"{self._prefix:s}user")
+
+        self._log.info(self._l("Create folder for user files on node ..."))
+        await Command.from_list(["mkdir", f"/home/{self._prefix:s}user/.{self._prefix:s}"]).on_host(
+            host=await self.get_sshconfig()
+        ).run(wait=self._wait)
 
         self._log.info(self._l("Copying user files to node ..."))
         await Command.from_scp(
@@ -233,15 +243,15 @@ class Node(NodeABC):
             ],
             *[
                 os.path.abspath(
-                    os.path.join(os.getcwd(), f"{self._prefix:s}_{suffix:s}")
+                    os.path.join(os.getcwd(), f".{self._prefix:s}", suffix)
                 )
                 for suffix in (
-                    "ca.crt",
-                    "node.key",
-                    "node.crt",
+                    "ca.pub",
+                    "cert",
+                    "cert.pub",
                 )
             ],
-            target="~/",
+            target=f"~/.{self._prefix:s}/",
             host=await self.get_sshconfig(),
         ).run(wait=self._wait)
 
@@ -249,7 +259,7 @@ class Node(NodeABC):
         await Command.from_list(
             [
                 "bash",
-                "bootstrap_03.sh",
+                f"/home/{self._prefix:s}user/.{self._prefix:s}/bootstrap_03.sh",
                 self._prefix,
                 f"{sys.version_info.major:d}.{sys.version_info.minor:d}",
             ]
@@ -278,7 +288,7 @@ class Node(NodeABC):
         await Command.from_list(
             [
                 "bash",
-                "bootstrap_scheduler.sh",
+                f"/home/{self._prefix:s}user/.{self._prefix:s}/bootstrap_scheduler.sh",
                 f"{dask_ipc:d}",
                 f"{dask_dash:d}",
                 self._prefix,
@@ -313,7 +323,7 @@ class Node(NodeABC):
         await Command.from_list(
             [
                 "bash",
-                "bootstrap_worker.sh",
+                f"/home/{self._prefix:s}user/.{self._prefix:s}/bootstrap_worker.sh",
                 scheduler_ip4,
                 f"{dask_ipc:d}",
                 f"{dask_dash:d}",
